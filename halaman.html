@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="tf5E6vnLXUEUghh8JeTRZBNED83OpPweTemOz9E5">
+
+        <title>Detail &amp; Tracking Pesanan #DIAG-HTML-1 - Record - Setiap Langkah Bernilai</title>
+
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+        
+        <link rel="preload" as="style" href="http://localhost/build/assets/app-Cu2rwifn.css" /><link rel="modulepreload" as="script" href="http://localhost/build/assets/app-Cs7tmWIq.js" /><link rel="stylesheet" href="http://localhost/build/assets/app-Cu2rwifn.css" /><script type="module" src="http://localhost/build/assets/app-Cs7tmWIq.js"></script>
+        
+                <style>
+            /* Modal alasan pembatalan — CSS sendiri agar tidak bergantung
+               pada hasil build Tailwind. */
+            [x-cloak] { display: none !important; }
+
+            .batal-lapis {
+                position: fixed;
+                inset: 0;
+                z-index: 60;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+                background: rgb(15 23 42 / 0.55);
+            }
+
+            .batal-kotak {
+                width: 100%;
+                max-width: 480px;
+                max-height: 90vh;
+                /* dvh mengikuti tinggi layar sebenarnya di HP, saat bilah
+                   alamat browser muncul-hilang. vh di atas jadi cadangan. */
+                max-height: 90dvh;
+                display: flex;
+                flex-direction: column;
+                background: #fff;
+                border-radius: 10px;
+                box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35);
+                overflow: hidden;
+            }
+
+            .batal-kepala {
+                flex-shrink: 0;   /* kepala tetap terlihat saat isi digulir */
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 18px 20px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .batal-judul {
+                font-size: 15px;
+                font-weight: 800;
+                color: #1f2937;
+            }
+            .batal-nomor {
+                font-size: 12px;
+                color: #9ca3af;
+                margin-top: 2px;
+            }
+            .batal-tutup {
+                flex-shrink: 0;
+                width: 30px;
+                height: 30px;
+                border: 0;
+                background: none;
+                color: #9ca3af;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+            .batal-tutup:hover { background: #f3f4f6; color: #374151; }
+
+            /* Form ikut jadi kolom flex, sebab isi & kaki modal berada
+               di dalamnya — bukan langsung di bawah .batal-kotak. */
+            .batal-form {
+                flex: 1 1 auto;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .batal-isi {
+                /* min-height: 0 wajib ada. Tanpa itu, elemen flex memakai
+                   min-height: auto sehingga tidak mau menyusut, modal meluap
+                   melewati 90vh, dan overflow-y tidak pernah aktif. */
+                flex: 1 1 auto;
+                min-height: 0;
+                padding: 20px;
+                overflow-y: auto;
+                /* Gulir berhenti di dalam modal, tidak merembet ke halaman */
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Batang gulir yang lebih tipis dan tidak mencolok */
+            .batal-isi::-webkit-scrollbar { width: 8px; }
+            .batal-isi::-webkit-scrollbar-track { background: transparent; }
+            .batal-isi::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 9999px;
+            }
+            .batal-isi::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+            .batal-isi { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+            .batal-tanya {
+                font-size: 14px;
+                font-weight: 700;
+                color: #374151;
+            }
+            .batal-catatan {
+                font-size: 12px;
+                line-height: 1.7;
+                color: #6b7280;
+                margin-top: 4px;
+                margin-bottom: 16px;
+            }
+
+            .batal-galat {
+                font-size: 12px;
+                font-weight: 600;
+                color: #b91c1c;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 6px;
+                padding: 8px 12px;
+                margin-bottom: 12px;
+            }
+
+            /* Daftar pilihan */
+            .batal-pilihan {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .batal-opsi {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+                padding: 12px 14px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: border-color 160ms ease, background-color 160ms ease;
+            }
+            .batal-opsi:hover { border-color: #cbd5e1; background: #f9fafb; }
+            .batal-opsi-aktif {
+                border-color: var(--color-primary, #1B3A6B);
+                background: #eff6ff;
+            }
+            .batal-radio {
+                flex-shrink: 0;
+                width: 16px;
+                height: 16px;
+                accent-color: var(--color-primary, #1B3A6B);
+                cursor: pointer;
+            }
+            .batal-opsi-teks {
+                font-size: 13.5px;
+                color: #374151;
+                line-height: 1.5;
+            }
+            .batal-opsi-aktif .batal-opsi-teks { font-weight: 600; color: #1f2937; }
+
+            /* Kolom penjelasan */
+            .batal-jelas { margin-top: 18px; }
+            .batal-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 12px;
+                font-weight: 700;
+                color: #374151;
+                margin-bottom: 7px;
+            }
+            .batal-wajib {
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: #b91c1c;
+                background: #fef2f2;
+                padding: 2px 7px;
+                border-radius: 9999px;
+            }
+            .batal-opsional {
+                font-size: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: #9ca3af;
+            }
+            .batal-textarea {
+                width: 100%;
+                padding: 11px 13px;
+                font-size: 13px;
+                line-height: 1.6;
+                color: #1f2937;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                resize: vertical;
+                outline: none;
+                transition: border-color 180ms ease, box-shadow 180ms ease;
+            }
+            .batal-textarea:focus {
+                border-color: var(--color-primary, #1B3A6B);
+                box-shadow: 0 0 0 3px rgb(27 58 107 / 0.10);
+            }
+            .batal-hitung {
+                text-align: right;
+                font-size: 11px;
+                color: #9ca3af;
+                margin-top: 4px;
+            }
+
+            /* Kaki modal */
+            .batal-kaki {
+                flex-shrink: 0;   /* tombol tetap terlihat saat isi digulir */
+                display: flex;
+                flex-direction: column-reverse;
+                gap: 8px;
+                padding: 16px 20px;
+                border-top: 1px solid #e5e7eb;
+                background: #f9fafb;
+            }
+            @media (min-width: 480px) {
+                .batal-kaki { flex-direction: row; justify-content: flex-end; }
+            }
+            .batal-tombol {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                padding: 11px 20px;
+                font-size: 12.5px;
+                font-weight: 700;
+                border-radius: 6px;
+                border: 1px solid transparent;
+                cursor: pointer;
+                transition: background-color 180ms ease, border-color 180ms ease;
+            }
+            .batal-tombol-batal {
+                background: #fff;
+                color: #4b5563;
+                border-color: #d1d5db;
+            }
+            .batal-tombol-batal:hover { background: #f3f4f6; }
+            .batal-tombol-kirim {
+                background: #dc2626;
+                color: #fff;
+            }
+            .batal-tombol-kirim:hover { background: #b91c1c; }
+            .batal-tombol-mati {
+                background: #e5e7eb;
+                color: #9ca3af;
+                cursor: not-allowed;
+            }
+            .batal-tombol-mati:hover { background: #e5e7eb; }
+        </style>
+        <style>
+        /* ── Modal pengembalian ─────────────────────────────────────
+           Kerangka modalnya memakai kembali .batal-* yang sudah terbukti
+           bisa digulir; di sini hanya isian khas pengembalian. */
+        .retur-pilihan {
+            display: flex; gap: 11px; align-items: flex-start;
+            padding: 12px 14px; border: 1.5px solid #e5e7eb;
+            border-radius: 12px; background: #fff; cursor: pointer;
+            transition: border-color 160ms ease, background-color 160ms ease;
+        }
+        .retur-pilihan:hover { border-color: #cbd5e1; background: #f9fafb; }
+        .retur-pilihan-aktif {
+            border-color: #1B3A6B; background: #eff6ff;
+            box-shadow: 0 0 0 3px rgb(27 58 107 / .08);
+        }
+        .retur-radio {
+            width: 17px; height: 17px; border-radius: 50%;
+            border: 2px solid #cbd5e1; flex-shrink: 0; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .retur-pilihan-aktif .retur-radio { border-color: #1B3A6B; }
+        .retur-radio-titik { width: 8px; height: 8px; border-radius: 50%; background: #1B3A6B; }
+        .retur-pilihan-teks { display: flex; flex-direction: column; gap: 2px; }
+        .retur-pilihan-label { font-size: 12.5px; font-weight: 700; color: #374151; }
+        .retur-pilihan-ket { font-size: 10.5px; color: #9ca3af; line-height: 1.5; }
+
+        .retur-blok { margin-top: 18px; }
+
+        .retur-selesai-baris { display: grid; gap: 10px; }
+        @media (min-width: 640px) { .retur-selesai-baris { grid-template-columns: 1fr 1fr; } }
+
+        .retur-selesai {
+            display: flex; flex-direction: column; gap: 3px;
+            padding: 14px; border: 1.5px solid #e5e7eb; border-radius: 12px;
+            background: #fff; cursor: pointer;
+            transition: border-color 160ms ease, background-color 160ms ease;
+        }
+        .retur-selesai:hover { border-color: #cbd5e1; background: #f9fafb; }
+        .retur-selesai-aktif {
+            border-color: #1B3A6B; background: #eff6ff;
+            box-shadow: 0 0 0 3px rgb(27 58 107 / .08);
+        }
+        .retur-selesai i { font-size: 15px; color: #1B3A6B; margin-bottom: 3px; }
+        .retur-selesai-label { font-size: 12.5px; font-weight: 800; color: #374151; }
+        .retur-selesai-ket { font-size: 10.5px; color: #9ca3af; line-height: 1.5; }
+
+        .retur-input {
+            width: 100%; font-size: 12px; background: #fff;
+            border: 1px solid #e5e7eb; border-radius: 10px;
+            padding: 10px 12px; margin-top: 8px;
+        }
+        .retur-input:focus {
+            outline: none; border-color: #1B3A6B;
+            box-shadow: 0 0 0 3px rgb(27 58 107 / .1);
+        }
+        .retur-bantu { font-size: 10px; color: #9ca3af; margin-top: 5px; line-height: 1.5; }
+        .galat-retur { font-size: 10.5px; color: #dc2626; font-weight: 600; margin-top: 6px; }
+
+        .retur-catatan {
+            display: flex; gap: 9px; align-items: flex-start;
+            background: #eff6ff; border: 1px solid #dbeafe; border-radius: 10px;
+            padding: 12px 14px; margin-top: 18px;
+            font-size: 11px; color: #1e40af; line-height: 1.6;
+        }
+        .retur-catatan i { margin-top: 2px; }
+
+        /* ── Kaki modal & tombolnya ─────────────────────────────────
+           flex-shrink: 0 menjaga tombol tetap terlihat saat isi modal
+           digulir — bagian ini tidak boleh ikut menciut. */
+        .retur-kaki {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+            background: linear-gradient(to bottom, #fbfcfd, #f6f7f9);
+        }
+        @media (min-width: 560px) {
+            .retur-kaki { flex-direction: row; align-items: center; justify-content: space-between; }
+        }
+
+        .retur-kaki-sisa,
+        .retur-kaki-siap {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 11px; font-weight: 600; line-height: 1.4;
+        }
+        .retur-kaki-sisa { color: #b45309; }
+        .retur-kaki-siap { color: #047857; }
+        .retur-kaki-sisa i,
+        .retur-kaki-siap i { font-size: 12px; flex-shrink: 0; }
+
+        .retur-kaki-tombol {
+            display: flex; gap: 10px;
+            flex-direction: column-reverse;
+        }
+        @media (min-width: 560px) {
+            .retur-kaki-tombol { flex-direction: row; margin-left: auto; }
+        }
+
+        .retur-tombol {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 22px;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: .01em;
+            border-radius: 10px;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 180ms ease, border-color 180ms ease,
+                        box-shadow 180ms ease, transform 120ms ease;
+        }
+        .retur-tombol:active { transform: translateY(1px); }
+        .retur-tombol:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgb(27 58 107 / .25);
+        }
+
+        .retur-tombol-nanti {
+            background: #fff;
+            color: #6b7280;
+            border-color: #e5e7eb;
+        }
+        .retur-tombol-nanti:hover { background: #f3f4f6; border-color: #d1d5db; color: #374151; }
+
+        .retur-tombol-kirim {
+            background: var(--color-primary, #1B3A6B);
+            color: #fff;
+            box-shadow: 0 2px 8px rgb(27 58 107 / .22);
+        }
+        .retur-tombol-kirim:hover:not(:disabled) {
+            background: #2d5a9e;
+            box-shadow: 0 4px 14px rgb(27 58 107 / .3);
+        }
+
+        /* Keadaan mati dibuat jelas terbaca sebagai "belum bisa", bukan
+           sekadar tombol pudar yang menyisakan tanda tanya. */
+        .retur-tombol-kirim:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .retur-tombol i { font-size: 11px; }
+
+        /* ══ Timeline pengembalian ══════════════════════════════════ */
+        .retur-jalur {
+            border-top: 1px solid #e5e7eb;
+            margin-top: 6px;
+        }
+        .retur-jalur-kepala {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .retur-jalur-judul {
+            font-size: 12px; font-weight: 900; color: #1B3A6B;
+            text-transform: uppercase; letter-spacing: .05em;
+        }
+        .retur-jalur-sub { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+
+        .retur-lencana {
+            padding: 5px 11px; border-radius: 999px;
+            font-size: 10px; font-weight: 800; white-space: nowrap;
+            border: 1px solid;
+        }
+        .retur-lencana-warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+        .retur-lencana-info    { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+        .retur-lencana-success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .retur-lencana-danger  { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+
+        /* Garis penghubung digambar dari titik langkah, bukan elemen sendiri,
+           supaya panjangnya selalu pas dengan tinggi isi tiap langkah. */
+        .retur-langkah { list-style: none; margin: 0; padding: 0; }
+        .retur-langkah-item {
+            position: relative;
+            display: flex; gap: 14px;
+            padding-bottom: 20px;
+        }
+        .retur-langkah-item:last-child { padding-bottom: 0; }
+        .retur-langkah-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px; top: 32px; bottom: 4px;
+            width: 2px; background: #e5e7eb;
+        }
+        .retur-langkah-selesai:not(:last-child)::before { background: #10b981; }
+
+        .retur-titik {
+            position: relative; z-index: 1; flex-shrink: 0;
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; border: 2px solid;
+        }
+        .retur-langkah-selesai .retur-titik {
+            background: #10b981; border-color: #10b981; color: #fff;
+        }
+        .retur-langkah-sekarang .retur-titik {
+            background: #fff; border-color: #1B3A6B; color: #1B3A6B;
+            box-shadow: 0 0 0 4px rgb(27 58 107 / .12);
+        }
+        .retur-langkah-menunggu .retur-titik {
+            background: #f9fafb; border-color: #e5e7eb; color: #d1d5db;
+        }
+
+        .retur-langkah-teks { padding-top: 4px; min-width: 0; }
+        .retur-langkah-judul { font-size: 12.5px; font-weight: 800; color: #374151; }
+        .retur-langkah-ket { font-size: 11px; color: #6b7280; line-height: 1.6; margin-top: 2px; }
+        .retur-langkah-waktu { font-size: 10px; color: #9ca3af; margin-top: 4px; }
+        .retur-langkah-menunggu .retur-langkah-judul { color: #9ca3af; }
+        .retur-langkah-menunggu .retur-langkah-ket { color: #b8bec7; }
+        .retur-langkah-sekarang .retur-langkah-judul { color: #1B3A6B; }
+
+        /* ── Giliran pembeli mengirim barang ── */
+        .retur-kirim {
+            margin-top: 18px; padding: 18px;
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;
+        }
+        .retur-kirim-judul {
+            font-size: 12px; font-weight: 900; color: #1B3A6B;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        }
+
+        .retur-alamat {
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+            padding: 14px; font-size: 11.5px; color: #4b5563; line-height: 1.7;
+        }
+        .retur-alamat-nama { font-weight: 800; color: #1f2937; }
+
+        .retur-ongkir {
+            display: flex; gap: 9px; align-items: flex-start;
+            background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px;
+            padding: 12px 14px; margin-top: 12px;
+            font-size: 11px; color: #92400e; line-height: 1.6;
+        }
+        .retur-ongkir i { margin-top: 2px; flex-shrink: 0; }
+
+        .retur-syarat {
+            background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
+            padding: 12px 14px; margin-top: 12px;
+        }
+        .retur-syarat-judul { font-size: 11.5px; font-weight: 800; color: #991b1b; }
+        .retur-syarat-ket { font-size: 11px; color: #b91c1c; line-height: 1.6; margin-top: 4px; }
+        .retur-syarat-daftar { list-style: none; margin: 9px 0 0; padding: 0; }
+        .retur-syarat-daftar li {
+            display: flex; gap: 7px; align-items: flex-start;
+            font-size: 10.5px; color: #7f1d1d; line-height: 1.6; margin-bottom: 4px;
+        }
+        .retur-syarat-daftar i { margin-top: 3px; font-size: 8px; flex-shrink: 0; }
+
+        .retur-tenggat {
+            font-size: 11px; color: #4b5563; margin-top: 12px; line-height: 1.6;
+        }
+
+        .retur-resi-form {
+            margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1;
+        }
+        .retur-resi-judul { font-size: 11.5px; font-weight: 800; color: #374151; }
+        .retur-resi-baris { display: grid; gap: 12px; margin-top: 10px; }
+        @media (min-width: 560px) { .retur-resi-baris { grid-template-columns: 1fr 1.4fr; } }
+        .retur-resi-label {
+            display: block; font-size: 10px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: .05em; color: #6b7280;
+        }
+        .retur-resi-tombol { margin-top: 14px; width: 100%; }
+        @media (min-width: 560px) { .retur-resi-tombol { width: auto; } }
+
+        /* ── Resi yang sudah dicatat ── */
+        .retur-resi-tercatat {
+            margin-top: 16px; padding: 14px;
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+        }
+        .retur-resi-tercatat-judul {
+            font-size: 11px; font-weight: 800; color: #1d4ed8;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .retur-resi-tercatat-isi { font-size: 12px; color: #1e3a8a; margin-top: 5px; }
+        .retur-resi-nomor {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-weight: 800; letter-spacing: .02em;
+        }
+        .retur-resi-tercatat-waktu { font-size: 10px; color: #3b82f6; margin-top: 3px; }
+
+        /* ── Hasil akhir ── */
+        .retur-selesai-kotak {
+            margin-top: 16px; padding: 18px;
+            background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px;
+        }
+        .retur-selesai-judul {
+            font-size: 12px; font-weight: 900; color: #065f46;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .retur-selesai-nominal {
+            font-size: 24px; font-weight: 900; color: #047857; margin-top: 6px;
+        }
+        .retur-selesai-ket { font-size: 11.5px; color: #047857; line-height: 1.6; margin-top: 3px; }
+
+        /* ── Ditolak ── */
+        .retur-tolak {
+            padding: 18px; background: #fef2f2;
+            border: 1px solid #fecaca; border-radius: 12px;
+        }
+        .retur-tolak-judul {
+            font-size: 12px; font-weight: 900; color: #991b1b;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .retur-tolak-isi {
+            font-size: 11.5px; color: #b91c1c; line-height: 1.7; margin-top: 8px;
+        }
+        .retur-tolak-bantu {
+            font-size: 10.5px; color: #ef4444; line-height: 1.6;
+            margin-top: 12px; padding-top: 12px; border-top: 1px solid #fecaca;
+        }
+
+        .retur-status-catatan {
+            margin-top: 14px; padding: 12px 14px;
+            background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+            font-size: 11.5px; color: #4b5563; line-height: 1.6;
+        }
+        .retur-status-tautan {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 12px; font-size: 11.5px; font-weight: 800;
+            color: #047857; text-decoration: underline;
+        }
+    </style>
+        </head>
+    <body class="font-sans antialiased text-text bg-bg">
+        <div class="min-h-screen flex flex-col justify-between">
+            <div>
+                
+                <div class="bg-primary text-white text-xs py-2 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div class="font-medium tracking-wide">
+            Record - Setiap Langkah Bernilai
+        </div>
+        <div class="flex items-center gap-4">
+                            <span class="text-gray-300">Halo, Diag Html</span>
+                                    <a href="http://localhost/dashboard" class="hover:text-gray-200 transition font-medium">Dashboard Saya</a>
+                                <form method="POST" action="http://localhost/logout" class="inline">
+                    <input type="hidden" name="_token" value="tf5E6vnLXUEUghh8JeTRZBNED83OpPweTemOz9E5" autocomplete="off">                    <button type="submit" class="hover:text-gray-200 transition font-medium">Logout</button>
+                </form>
+                        
+            <div class="hidden md:flex items-center gap-3 border-l border-white/30 pl-4">
+                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-tiktok"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+                
+                ﻿<nav class="bg-white border-b border-border sticky top-0 z-50 shadow-sm"
+    x-data="{ mobileMenuOpen: false, cartCount: 0, cartBump: false }"
+    @cart-count-updated.window="cartCount = $event.detail.count"
+    @cart-bump.window="cartBump = true; setTimeout(() => cartBump = false, 400)">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20">
+            <div class="flex items-center">
+                <a href="http://localhost" class="flex items-center">
+                    <span class="text-3xl font-black tracking-tight uppercase shimmer-logo-primary">
+                        Record
+                    </span>
+                </a>
+            </div>
+
+            
+            <div class="hidden lg:flex items-center space-x-6 xl:space-x-8">
+                <a href="http://localhost"
+                    class="text-sm font-semibold text-gray-700 hover:text-primary transition">Beranda</a>
+                <a href="http://localhost/about"
+                    class="text-sm font-semibold text-gray-700 hover:text-primary transition">About</a>
+                <a href="http://localhost/products"
+                    class="text-sm font-semibold text-gray-700 hover:text-primary transition">Catalog</a>
+                <a href="http://localhost/faq"
+                    class="text-sm font-semibold text-gray-700 hover:text-primary transition">FAQ</a>
+                <a href="http://localhost/kontak"
+                    class="text-sm font-semibold text-gray-700 hover:text-primary transition">Kontak</a>
+            </div>
+
+            
+            <div class="hidden md:flex items-center gap-4">
+                
+                <form action="http://localhost/products" method="GET" class="relative">
+                    <input type="text" name="search" placeholder="Cari sepatu..." value=""
+                        class="bg-bg-secondary text-sm rounded-full pl-4 pr-10 py-2 border-none focus:ring-2 focus:ring-primary w-48 xl:w-60 transition-all duration-300">
+                    <button type="submit" class="absolute right-3 top-2.5 text-gray-400 hover:text-primary">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </form>
+
+                
+                                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center text-gray-600 hover:text-primary transition">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false"
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-border"
+                            x-transition>
+                            <a href="http://localhost/dashboard"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Dashboard Saya</a>
+                            <a href="http://localhost/profile"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Profil</a>
+                            <form method="POST" action="http://localhost/logout">
+                                <input type="hidden" name="_token" value="tf5E6vnLXUEUghh8JeTRZBNED83OpPweTemOz9E5" autocomplete="off">                                <button type="submit"
+                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                
+                
+                <a href="http://localhost/cart" data-cart-icon class="relative text-gray-600 hover:text-primary transition">
+                    <svg class="h-6 w-6 transition-transform" :class="cartBump ? 'scale-125' : 'scale-100'"
+                        style="transition-duration: 300ms; transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span x-cloak x-show="cartCount > 0" x-transition.scale
+                        :class="cartBump ? 'scale-125' : 'scale-100'"
+                        style="transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);"
+                        class="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white"
+                        x-text="cartCount">
+                    </span>
+                </a>
+
+                
+                <a href="http://localhost/products"
+                    class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-4 py-2.5 rounded-sm transition uppercase shadow-sm">
+                    BUY ONLINE
+                </a>
+                <a href="https://wa.me/6281323065554?text=Halo%20Record,%20saya%20ingin%20bertanya%20tentang%20sepatu..."
+                    target="_blank"
+                    class="bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold px-4 py-2.5 rounded-sm transition uppercase shadow-sm flex items-center gap-1.5">
+                    <i class="fab fa-whatsapp text-sm"></i> WHATSAPP SHOPPING
+                </a>
+            </div>
+
+            
+            <div class="flex items-center lg:hidden gap-4">
+                
+                <a href="http://localhost/cart" data-cart-icon class="relative text-gray-600 hover:text-primary transition">
+                    <svg class="h-6 w-6 transition-transform" :class="cartBump ? 'scale-125' : 'scale-100'"
+                        style="transition-duration: 300ms; transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span x-cloak x-show="cartCount > 0" x-transition.scale
+                        :class="cartBump ? 'scale-125' : 'scale-100'"
+                        style="transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);"
+                        class="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white"
+                        x-text="cartCount">
+                    </span>
+                </a>
+
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                    class="text-gray-600 hover:text-primary focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                        <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div x-show="mobileMenuOpen" class="lg:hidden bg-white border-t border-border px-4 py-4 space-y-3" x-transition>
+        
+        <form action="http://localhost/products" method="GET" class="relative">
+            <input type="text" name="search" placeholder="Cari sepatu..." value=""
+                class="bg-bg-secondary text-sm rounded-full pl-4 pr-10 py-2 border-none focus:ring-2 focus:ring-primary w-full">
+            <button type="submit" class="absolute right-3 top-2.5 text-gray-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </button>
+        </form>
+
+        <div class="space-y-1 py-2">
+            <a href="http://localhost"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-bg-secondary hover:text-primary">Beranda</a>
+            <a href="http://localhost/about"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-bg-secondary hover:text-primary">About</a>
+            <a href="http://localhost/products"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-bg-secondary hover:text-primary">Catalog</a>
+            <a href="http://localhost/faq"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-bg-secondary hover:text-primary">FAQ</a>
+            <a href="http://localhost/kontak"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-bg-secondary hover:text-primary">Kontak</a>
+        </div>
+
+        <div class="pt-4 pb-2 border-t border-border space-y-2">
+                            <a href="http://localhost/dashboard"
+                    class="block text-center text-sm font-semibold text-gray-700 py-2 hover:bg-bg-secondary rounded">Dashboard
+                    Saya</a>
+                <form method="POST" action="http://localhost/logout">
+                    <input type="hidden" name="_token" value="tf5E6vnLXUEUghh8JeTRZBNED83OpPweTemOz9E5" autocomplete="off">                    <button type="submit"
+                        class="block w-full text-center text-sm font-semibold text-gray-700 py-2 hover:bg-bg-secondary rounded">Logout</button>
+                </form>
+                    </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2">
+            <a href="http://localhost/products"
+                class="bg-primary hover:bg-primary-light text-white text-center text-xs font-bold py-3 rounded-sm transition">
+                BUY ONLINE
+            </a>
+            <a href="https://wa.me/6281234567890" target="_blank"
+                class="bg-[#25D366] hover:bg-[#20ba59] text-white text-center text-xs font-bold py-3 rounded-sm transition flex items-center justify-center gap-1.5">
+                <i class="fab fa-whatsapp text-base"></i> WHATSAPP
+            </a>
+        </div>
+    </div>
+</nav>
+
+                
+                
+                
+                
+                
+                <main class="py-4">
+                    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 text-text">
+
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <a href="http://localhost/orders" class="text-xs font-bold text-text-light hover:text-primary transition inline-flex items-center gap-1.5 mb-2">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Riwayat Pesanan
+                </a>
+                <h1 class="text-2xl font-black text-primary uppercase tracking-wide">
+                    Pesanan <span class="text-accent font-mono">#DIAG-HTML-1</span>
+                </h1>
+                <p class="text-xs text-text-light mt-1">Dipesan pada 08 Aug 2026, 11:24 WIB</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="px-3.5 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider
+                     bg-indigo-50 text-indigo-800 border border-indigo-200
+                    ">
+                    <i class="fa-solid fa-circle text-[8px] mr-1.5"></i> Dikirim
+                </span>
+            </div>
+        </div>
+
+        
+        
+        
+        
+        <div class="bg-white border border-border rounded-sm p-6 sm:p-8 shadow-sm space-y-6">
+            <h2 class="text-xs font-black text-primary uppercase tracking-wider border-b border-border pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-route text-accent"></i>
+                <span>Status & Pelacakan Pengiriman</span>
+            </h2>
+
+                            
+                <div class="relative py-4">
+                    
+                    <div class="hidden sm:block absolute top-1/2 left-8 right-8 h-1 bg-gray-100 -translate-y-1/2 rounded-full">
+                        <div class="h-full bg-primary transition-all duration-500 rounded-full"
+                             style="width: 66.666666666667%"></div>
+                    </div>
+
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 relative z-10">
+                                                                                <div class="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-2">
+                                <div class="h-12 w-12 rounded-sm flex items-center justify-center font-bold text-base transition-all shadow-sm shrink-0
+                                     bg-primary text-white                                     ">
+                                    <i class="fa-solid fa-file-invoice"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold  text-primary ">
+                                        Pesanan Dibuat
+                                    </h4>
+                                    <p class="text-[10px] text-text-light mt-0.5">Menunggu Pembayaran</p>
+                                </div>
+                            </div>
+                                                                                <div class="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-2">
+                                <div class="h-12 w-12 rounded-sm flex items-center justify-center font-bold text-base transition-all shadow-sm shrink-0
+                                     bg-primary text-white                                     ">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold  text-primary ">
+                                        Diproses
+                                    </h4>
+                                    <p class="text-[10px] text-text-light mt-0.5">Penjual menyiapkan barang</p>
+                                </div>
+                            </div>
+                                                                                <div class="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-2">
+                                <div class="h-12 w-12 rounded-sm flex items-center justify-center font-bold text-base transition-all shadow-sm shrink-0
+                                     bg-primary text-white                                      ring-4 ring-primary/20 scale-105 ">
+                                    <i class="fa-solid fa-truck-fast"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold  text-primary ">
+                                        Dikirim
+                                    </h4>
+                                    <p class="text-[10px] text-text-light mt-0.5">Paket dalam perjalanan</p>
+                                </div>
+                            </div>
+                                                                                <div class="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-2">
+                                <div class="h-12 w-12 rounded-sm flex items-center justify-center font-bold text-base transition-all shadow-sm shrink-0
+                                     bg-gray-100 text-text-light                                     ">
+                                    <i class="fa-solid fa-house-circle-check"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold  text-text-light ">
+                                        Selesai
+                                    </h4>
+                                    <p class="text-[10px] text-text-light mt-0.5">Pesanan diterima pembeli</p>
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+
+                
+                                    <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-sm p-4 text-xs flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-truck-ramp-box text-indigo-600 text-lg"></i>
+                            <span>Paket Anda sedang dalam perjalanan oleh kurir <strong>JNE</strong>. Nomor resi akan disinkronkan oleh penjual.</span>
+                        </div>
+                    </div>
+                
+                
+                
+                
+                
+                
+                                    <div class="pt-2 space-y-2.5">
+                        <form action="http://localhost/orders/DIAG-HTML-1/confirm" method="POST">
+                            <input type="hidden" name="_token" value="tf5E6vnLXUEUghh8JeTRZBNED83OpPweTemOz9E5" autocomplete="off">                            <button type="submit" onclick="return confirm('Apakah Anda yakin sudah menerima paket ini dengan kondisi baik?');"
+                                    class="w-full bg-success hover:bg-emerald-700 text-white font-bold text-xs py-3.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Konfirmasi Pesanan Selesai</span>
+                            </button>
+                        </form>
+
+                                                <button type="button"
+                                onclick="window.dispatchEvent(new CustomEvent('buka-retur'))"
+                                class="w-full bg-white border border-border hover:border-primary text-primary font-bold text-xs py-3.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Ajukan Pengembalian</span>
+                        </button>
+                        <p class="text-[10px] text-text-light text-center leading-relaxed">
+                            Ada masalah dengan barangnya? Ajukan pengembalian sebelum menyelesaikan pesanan.
+                        </p>
+                                            </div>
+                
+                
+                                    </div>
+
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+
+            <div class="md:col-span-2 space-y-6">
+
+                
+                <div class="bg-white border border-border rounded-sm p-6 shadow-sm space-y-4">
+                    <h3 class="text-xs font-bold text-primary uppercase tracking-wider border-b border-border pb-3">
+                        Daftar Barang Belanja
+                    </h3>
+
+                    <div class="divide-y divide-border">
+                                                    <div class="py-4 flex gap-4 items-center">
+                                <div class="h-16 w-16 bg-gray-50 border border-border rounded-sm flex-shrink-0 flex items-center justify-center p-1">
+                                    <img src="http://backend-ecommerce-record.test/storage/products/zZ97lsBv06TfHR5uJAQzBjgacjb5o91gMc3mjRgf.jpg"
+                                         alt="RECORD CONFERO SEPATU SEKOLAH ANAK TK SD SMP LAKI PEREMPUAN BLACK HITAM PUTIH  PEREKAT 30-37 4-13THN"
+                                         class="object-contain max-h-full max-w-full"
+                                         onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80';">
+                                </div>
+                                <div class="min-w-0 flex-grow text-xs">
+                                    <h4 class="font-bold text-text truncate text-sm">RECORD CONFERO SEPATU SEKOLAH ANAK TK SD SMP LAKI PEREMPUAN BLACK HITAM PUTIH  PEREKAT 30-37 4-13THN</h4>
+                                                                            <span class="inline-block bg-gray-100 text-text-light text-[10px] font-semibold px-2 py-0.5 rounded-sm mt-1">
+                                            Size 42
+                                        </span>
+                                                                        <p class="text-xs text-text-light mt-1">
+                                        1 × Rp 200.000
+                                    </p>
+                                </div>
+                                <div class="text-xs font-bold text-text text-right flex-shrink-0">
+                                    Rp 200.000
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+
+                
+                <div class="bg-white border border-border rounded-sm p-6 shadow-sm space-y-3 text-xs">
+                    <h3 class="text-xs font-bold text-primary uppercase tracking-wider border-b border-border pb-3">
+                        Informasi Pengiriman
+                    </h3>
+
+                    <div class="space-y-2 text-text">
+                        <p class="font-bold text-text text-sm">
+                            x 
+                            <span class="text-xs font-normal text-text-light">()</span>
+                        </p>
+                        <p class="leading-relaxed text-text-light">
+                            <br>
+                            ,  
+                        </p>
+                        <div class="pt-2 border-t border-dashed border-border flex items-center gap-2 text-text-light">
+                            <i class="fa-solid fa-truck text-primary"></i>
+                            <span>Kurir Pilihan: <strong class="text-primary font-bold">JNE</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="space-y-6">
+                <div class="bg-white border border-border rounded-sm p-6 shadow-sm space-y-4 text-xs">
+                    <h3 class="text-xs font-bold text-primary uppercase tracking-wider border-b border-border pb-3">
+                        Ringkasan Pembayaran
+                    </h3>
+
+                    <div class="space-y-2.5 text-text-light">
+                        <div class="flex justify-between">
+                            <span>Subtotal Barang</span>
+                            <span class="text-text font-semibold">Rp 200.000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Ongkos Kirim</span>
+                            <span class="text-text font-semibold">Rp 15.000</span>
+                        </div>
+                        <div class="border-t border-border pt-3 flex justify-between font-black text-sm text-primary uppercase">
+                            <span>Grand Total</span>
+                            <span class="text-accent text-base">Rp 215.000</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-border pt-4 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] uppercase font-bold text-text-light">Metode Bayar:</span>
+                            <span class="font-bold text-primary uppercase">BCA</span>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] uppercase font-bold text-text-light">Status Bayar:</span>
+                            <span class="px-2.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider
+                                 bg-emerald-100 text-emerald-900 border border-emerald-300
+                                ">
+                                Sudah Dibayar
+                            </span>
+                        </div>
+                    </div>
+
+                    
+                                    </div>
+
+                
+                                    <a href="http://localhost/orders/DIAG-HTML-1/invoice"
+                       class="block w-full mb-3 border border-primary text-primary hover:bg-primary hover:text-white text-center font-bold text-xs py-3 rounded-sm transition uppercase tracking-wider">
+                        <i class="fa-solid fa-file-invoice mr-1.5"></i>
+                        Lihat Invoice
+                    </a>
+                
+                <a href="http://localhost/products"
+                   class="block w-full bg-primary hover:bg-primary-light text-white text-center font-bold text-xs py-3 rounded-sm transition uppercase tracking-wider">
+                    Belanja Lagi
+                </a>
+            </div>
+        </div>
+    </div>
+
+    
+    
+    
+    
+    
+    
+        
+        
+                <div x-data="{
+                buka: false,
+                alasan: '',
+                penyelesaian: '',
+                pilihan: JSON.parse('{\u0022ukuran_tidak_pas\u0022:{\u0022kode\u0022:\u0022ukuran_tidak_pas\u0022,\u0022label\u0022:\u0022Ukuran tidak pas\u0022,\u0022keterangan\u0022:\u0022Sepatu kekecilan atau kebesaran saat dicoba.\u0022,\u0022penyelesaian\u0022:[\u0022exchange\u0022,\u0022refund\u0022]},\u0022barang_rusak\u0022:{\u0022kode\u0022:\u0022barang_rusak\u0022,\u0022label\u0022:\u0022Barang rusak atau cacat\u0022,\u0022keterangan\u0022:\u0022Ada sobek, lem terbuka, jahitan lepas, atau cacat produksi.\u0022,\u0022penyelesaian\u0022:[\u0022refund\u0022,\u0022exchange\u0022]},\u0022salah_kirim\u0022:{\u0022kode\u0022:\u0022salah_kirim\u0022,\u0022label\u0022:\u0022Barang yang dikirim tidak sesuai pesanan\u0022,\u0022keterangan\u0022:\u0022Warna, model, atau ukurannya berbeda dari yang dipesan.\u0022,\u0022penyelesaian\u0022:[\u0022exchange\u0022,\u0022refund\u0022]},\u0022tidak_sesuai_deskripsi\u0022:{\u0022kode\u0022:\u0022tidak_sesuai_deskripsi\u0022,\u0022label\u0022:\u0022Tidak sesuai deskripsi di web\u0022,\u0022keterangan\u0022:\u0022Bahan, warna, atau bentuknya berbeda dari foto dan keterangan.\u0022,\u0022penyelesaian\u0022:[\u0022refund\u0022,\u0022exchange\u0022]},\u0022kurang_lengkap\u0022:{\u0022kode\u0022:\u0022kurang_lengkap\u0022,\u0022label\u0022:\u0022Barang kurang atau tidak lengkap\u0022,\u0022keterangan\u0022:\u0022Jumlahnya kurang, atau kelengkapan seperti tali sepatu tidak ada.\u0022,\u0022penyelesaian\u0022:[\u0022refund\u0022,\u0022exchange\u0022]},\u0022berubah_pikiran\u0022:{\u0022kode\u0022:\u0022berubah_pikiran\u0022,\u0022label\u0022:\u0022Berubah pikiran\u0022,\u0022keterangan\u0022:\u0022Barang sesuai, tetapi tidak jadi dipakai.\u0022,\u0022penyelesaian\u0022:[\u0022refund\u0022]},\u0022lainnya\u0022:{\u0022kode\u0022:\u0022lainnya\u0022,\u0022label\u0022:\u0022Alasan lain\u0022,\u0022keterangan\u0022:\u0022Tuliskan alasannya pada kolom penjelasan.\u0022,\u0022penyelesaian\u0022:[\u0022refund\u0022,\u0022exchange\u0022]}}'),
+
+                get penyelesaianTersedia() {
+                    return this.alasan ? (this.pilihan[this.alasan]?.penyelesaian ?? []) : [];
+                },
+
+                pilihAlasan(kode) {
+                    this.alasan = kode;
+                    // Penyelesaian yang tidak berlaku untuk alasan baru dilepas,
+                    // supaya tidak terkirim diam-diam lalu ditolak server.
+                    if (!this.penyelesaianTersedia.includes(this.penyelesaian)) {
+                        this.penyelesaian = '';
+                    }
+                },
+
+                tutup() { this.buka = false; },
+
+                init() {
+                    this.$watch('buka', (nilai) => {
+                        document.body.style.overflow = nilai ? 'hidden' : '';
+                    });
+                },
+                destroy() { document.body.style.overflow = ''; }
+             }"
+             @buka-retur.window="buka = true"
+             @keydown.escape.window="tutup()"
+             x-show="buka"
+             x-cloak
+             class="batal-lapis">
+
+            <div class="batal-kotak" @click.outside="tutup()">
+
+                <div class="batal-kepala">
+                    <div>
+                        <h3 class="batal-judul">Ajukan Pengembalian</h3>
+                        <p class="batal-nomor">DIAG-HTML-1</p>
+                    </div>
+                    <button type="button" @click="tutup()" class="batal-tutup" aria-label="Tutup">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <form action="http://localhost/orders/DIAG-HTML-1/pengembalian" method="POST" class="batal-form">
+                    <input type="hidden" name="_token" value="tf5E6vnLXUEUghh8JeTRZBNED83OpPweTemOz9E5" autocomplete="off">
+                    <div class="batal-isi">
+                        <p class="batal-tanya">Apa yang bermasalah dengan pesanannya?</p>
+
+                        <div class="space-y-2">
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'ukuran_tidak_pas' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="ukuran_tidak_pas"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('ukuran_tidak_pas')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'ukuran_tidak_pas'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Ukuran tidak pas</span>
+                                    <span class="retur-pilihan-ket">Sepatu kekecilan atau kebesaran saat dicoba.</span>
+                                </span>
+                            </label>
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'barang_rusak' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="barang_rusak"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('barang_rusak')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'barang_rusak'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Barang rusak atau cacat</span>
+                                    <span class="retur-pilihan-ket">Ada sobek, lem terbuka, jahitan lepas, atau cacat produksi.</span>
+                                </span>
+                            </label>
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'salah_kirim' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="salah_kirim"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('salah_kirim')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'salah_kirim'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Barang yang dikirim tidak sesuai pesanan</span>
+                                    <span class="retur-pilihan-ket">Warna, model, atau ukurannya berbeda dari yang dipesan.</span>
+                                </span>
+                            </label>
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'tidak_sesuai_deskripsi' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="tidak_sesuai_deskripsi"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('tidak_sesuai_deskripsi')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'tidak_sesuai_deskripsi'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Tidak sesuai deskripsi di web</span>
+                                    <span class="retur-pilihan-ket">Bahan, warna, atau bentuknya berbeda dari foto dan keterangan.</span>
+                                </span>
+                            </label>
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'kurang_lengkap' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="kurang_lengkap"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('kurang_lengkap')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'kurang_lengkap'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Barang kurang atau tidak lengkap</span>
+                                    <span class="retur-pilihan-ket">Jumlahnya kurang, atau kelengkapan seperti tali sepatu tidak ada.</span>
+                                </span>
+                            </label>
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'berubah_pikiran' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="berubah_pikiran"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('berubah_pikiran')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'berubah_pikiran'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Berubah pikiran</span>
+                                    <span class="retur-pilihan-ket">Barang sesuai, tetapi tidak jadi dipakai.</span>
+                                </span>
+                            </label>
+                                                        <label class="retur-pilihan"
+                                   :class="alasan === 'lainnya' && 'retur-pilihan-aktif'">
+                                <input type="radio" name="reason_code" value="lainnya"
+                                       class="sr-only" x-model="alasan"
+                                       @change="pilihAlasan('lainnya')">
+                                <span class="retur-radio">
+                                    <span class="retur-radio-titik" x-show="alasan === 'lainnya'" x-cloak></span>
+                                </span>
+                                <span class="retur-pilihan-teks">
+                                    <span class="retur-pilihan-label">Alasan lain</span>
+                                    <span class="retur-pilihan-ket">Tuliskan alasannya pada kolom penjelasan.</span>
+                                </span>
+                            </label>
+                                                    </div>
+                        
+                        
+                        <div x-show="alasan" x-cloak class="retur-blok">
+                            <p class="batal-tanya">Mau diselesaikan bagaimana?</p>
+
+                            <div class="retur-selesai-baris">
+                                <template x-if="penyelesaianTersedia.includes('exchange')">
+                                    <label class="retur-selesai" :class="penyelesaian === 'exchange' && 'retur-selesai-aktif'">
+                                        <input type="radio" name="resolution" value="exchange" class="sr-only" x-model="penyelesaian">
+                                        <i class="fa-solid fa-right-left"></i>
+                                        <span class="retur-selesai-label">Tukar Barang / Ukuran</span>
+                                        <span class="retur-selesai-ket">Ditukar dengan ukuran lain, warna lain, atau barang pengganti</span>
+                                    </label>
+                                </template>
+
+                                <template x-if="penyelesaianTersedia.includes('refund')">
+                                    <label class="retur-selesai" :class="penyelesaian === 'refund' && 'retur-selesai-aktif'">
+                                        <input type="radio" name="resolution" value="refund" class="sr-only" x-model="penyelesaian">
+                                        <i class="fa-solid fa-wallet"></i>
+                                        <span class="retur-selesai-label">Pengembalian Dana</span>
+                                        <span class="retur-selesai-ket">Dana masuk ke R_Pay, bisa dipakai belanja atau dicairkan ke bank</span>
+                                    </label>
+                                </template>
+                            </div>
+                                                    </div>
+
+                        
+                        <div x-show="penyelesaian === 'exchange'" x-cloak class="retur-blok">
+                            <label class="batal-tanya">Barang atau ukuran pengganti yang kamu inginkan</label>
+                            <input type="text" name="exchange_request" value=""
+                                   maxlength="255"
+                                   placeholder="Contoh: ukuran 43, atau warna hitam ukuran 42"
+                                   class="retur-input">
+                            <p class="retur-bantu">
+                                Boleh menukar ukuran, warna, atau model lain selama harganya sama.
+                                Barang yang kamu pesan: Size 42
+                            </p>
+                                                    </div>
+
+                        
+                        <div class="retur-blok">
+                            <label class="batal-tanya">Ceritakan lebih jelas</label>
+                            <textarea name="reason" rows="4"
+                                      placeholder="Contoh: Sepatu ukuran 42 yang saya terima terasa kekecilan, panjang kaki saya 26,5 cm."
+                                      class="retur-input"></textarea>
+                            <p class="retur-bantu">
+                                Minimal 15 karakter.
+                                Semakin jelas ceritanya, semakin cepat kami memprosesnya.
+                            </p>
+                                                    </div>
+
+                        <div class="retur-catatan">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <p>
+                                Pengajuan akan ditinjau admin. Kalau disetujui dan kamu memilih pengembalian dana,
+                                saldonya langsung masuk ke R_Pay dan bisa dipakai belanja atau dicairkan ke rekening bankmu.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="retur-kaki">
+                        
+                        <p class="retur-kaki-sisa" x-show="!alasan || !penyelesaian" x-cloak>
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span x-text="!alasan ? 'Pilih dulu alasannya di atas' : 'Pilih dulu cara penyelesaiannya'"></span>
+                        </p>
+
+                        <p class="retur-kaki-siap" x-show="alasan && penyelesaian" x-cloak>
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Siap dikirim untuk ditinjau admin</span>
+                        </p>
+
+                        <div class="retur-kaki-tombol">
+                            <button type="button" @click="tutup()" class="retur-tombol retur-tombol-nanti">
+                                Nanti Saja
+                            </button>
+
+                            <button type="submit" class="retur-tombol retur-tombol-kirim"
+                                    :disabled="!alasan || !penyelesaian">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Kirim Pengajuan</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+                </main>
+            </div>
+
+            
+            <footer id="footer" class="bg-primary text-white pt-16 pb-8 border-t-4 border-accent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            
+            <div>
+                <h3 class="text-lg font-bold tracking-wider mb-6 text-white border-b-2 border-accent pb-2 inline-block">
+                    JAYA MANDIRI</h3>
+                <div class="space-y-4 text-sm text-gray-300">
+                    <div>
+                        <p class="font-semibold text-white">Head Office</p>
+                        <p class="mt-1 text-xs">Jl. Kyai tambak deres No.30,</p>
+                        <p class="text-xs">Kedung Cowek, Kec. Bulak, Surabaya,</p>
+                        <p class="text-xs">Jawa Timur, Indonesia</p>
+                    </div>
+                    <div>
+                        <p class="text-xs"><span class="font-semibold text-white">Phone:</span> (031) 869 1888</p>
+                        <p class="text-xs"><span class="font-semibold text-white">WA:</span> +62 813-2306-5554</p>
+                        <p class="text-[10px] text-gray-400 mt-1">(Office Hour)</p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div>
+                <h3 class="text-sm font-bold uppercase tracking-wider mb-6 text-white border-b border-white/20 pb-2">
+                    Company</h3>
+                <ul class="space-y-3 text-sm text-gray-300">
+                    <li><a href="http://localhost/about" class="hover:text-white hover:underline transition">About us</a>
+                    </li>
+                    <li><a href="http://localhost/kontak" class="hover:text-white hover:underline transition">Contact us</a></li>
+                    <li><a href="http://localhost/faq" class="hover:text-white hover:underline transition">FAQ</a></li>
+                </ul>
+            </div>
+
+            
+            <div>
+                <h3 class="text-sm font-bold uppercase tracking-wider mb-6 text-white border-b border-white/20 pb-2">
+                    Customer Care</h3>
+                <ul class="space-y-3 text-sm text-gray-300">
+                    <li><a href="http://localhost/dashboard" class="hover:text-white hover:underline transition">My
+                            Account</a></li>
+                    <li><a href="http://localhost/tracking" class="hover:text-white hover:underline transition">Tracking Order</a></li>
+                    <li><a href="http://localhost/pengiriman-retur" class="hover:text-white hover:underline transition">Pengiriman &amp; Retur</a></li>
+                </ul>
+            </div>
+
+            
+            <div>
+                <div class="mb-6">
+                    <span class="text-2xl font-black tracking-tight uppercase shimmer-logo-white">
+                        Record
+                    </span>
+                    <p class="text-xs text-gray-400 italic mt-1">Setiap Langkah Bernilai</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <a href="#"
+                        class="bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center"><i
+                            class="fab fa-facebook-f text-sm"></i></a>
+                    <a href="#"
+                        class="bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center"><i
+                            class="fab fa-instagram text-sm"></i></a>
+                    <a href="#"
+                        class="bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center"><i
+                            class="fab fa-youtube text-sm"></i></a>
+                </div>
+            </div>
+        </div>
+
+        
+        <div
+            class="border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-400">
+            <div class="flex gap-4">
+                <a href="http://localhost/pengiriman-retur" class="hover:text-white transition">SHIPPING &amp; RETURNS</a>
+                <a href="http://localhost/kebijakan-privasi" class="hover:text-white transition">PRIVACY POLICY</a>
+                <a href="http://localhost/syarat-ketentuan" class="hover:text-white transition">PERSYARATAN &amp; KETENTUAN</a>
+            </div>
+            <p>Copyright 2026 © PT JAYA MANDIRI</p>
+        </div>
+    </div>
+</footer>        </div>
+    </body>
+</html>
