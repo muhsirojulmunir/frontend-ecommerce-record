@@ -4,24 +4,16 @@ namespace App\Services;
 
 /**
  * Kalkulasi biaya transaksi Midtrans (sudah termasuk PPN 11%).
- *
- * Sumber tarif resmi: https://midtrans.com/id/pricing
- * PPN Indonesia: 11% (berlaku sejak April 2022)
- *
- * Rumus:
- *   - Flat fee  : biaya_dasar + (biaya_dasar × 11%)
- *   - Persen fee: grand_total × rate_dasar × 1.11
  */
 class TransactionFeeService
 {
     /**
-     * Hitung biaya Midtrans berdasarkan metode pembayaran.
-     * Nilai yang dikembalikan sudah TERMASUK PPN 11%.
-     *
-     * @param  string $paymentMethod  Nilai dari kolom payment_method di tabel orders
-     * @param  int    $grandTotal     Grand total pesanan dalam Rupiah (integer)
-     * @return int    Biaya dalam Rupiah (dibulatkan ke bawah)
-     */
+ * Hitung biaya Midtrans berdasarkan metode pembayaran.
+ *
+ * @param  string $paymentMethod  Nilai dari kolom payment_method di tabel orders
+ * @param  int    $grandTotal     Grand total pesanan dalam Rupiah (integer)
+ * @return int    Biaya dalam Rupiah (dibulatkan ke bawah)
+ */
     public function hitungBiayaMidtrans(string $paymentMethod, int $grandTotal): int
     {
         $method = strtolower(trim($paymentMethod));
@@ -65,49 +57,32 @@ class TransactionFeeService
     }
 
     /**
-     * Hitung markup profit ongkir.
-     *
-     * @param  int $shippingCostCharged  Ongkir yang dibayar customer
-     * @param  int $shippingActualCost   Tarif aktual dari Biteship API
-     * @return int Keuntungan markup (bisa 0 jika tidak ada markup)
-     */
+ * Hitung markup profit ongkir.
+ *
+ * @param  int $shippingCostCharged  Ongkir yang dibayar customer
+ * @param  int $shippingActualCost   Tarif aktual dari Biteship API
+ * @return int Keuntungan markup (bisa 0 jika tidak ada markup)
+ */
     public function hitungMarkupOngkir(int $shippingCostCharged, int $shippingActualCost): int
     {
         return max(0, $shippingCostCharged - $shippingActualCost);
     }
 
     /**
-     * Hitung estimasi pendapatan bersih.
-     *
-     * Net Revenue = Grand Total - Biaya Midtrans
-     * (Markup ongkir sudah termasuk dalam Grand Total sehingga otomatis masuk ke net)
-     *
-     * @param  int $grandTotal    Grand total pesanan
-     * @param  int $midtransFee   Biaya Midtrans (sudah termasuk PPN)
-     * @return int
-     */
+ * Hitung estimasi pendapatan bersih.
+ *
+ * @param  int $grandTotal    Grand total pesanan
+ * @param  int $midtransFee   Biaya Midtrans (sudah termasuk PPN)
+ * @return int
+ */
     public function hitungNetRevenue(int $grandTotal, int $midtransFee): int
     {
         return max(0, $grandTotal - $midtransFee);
     }
 
     /**
-     * Uang yang benar-benar tinggal di toko dari satu pesanan.
-     *
-     *   yang diterima  = grand_total  (dibayar pembeli)
-     *   dikurangi      = biaya Midtrans        -> ke penyedia pembayaran
-     *                    ongkir asli Biteship  -> ke kurir
-     *                    komisi referal        -> ke pemilik kode
-     *
-     * Berbeda dari hitungNetRevenue() di atas yang hanya memotong biaya
-     * Midtrans. Ongkir yang ditagihkan ke pembeli memang masuk ke rekening
-     * toko, tetapi sebagian besar harus diteruskan ke kurir — yang benar-benar
-     * menjadi milik toko hanyalah markupnya. Karena itu ongkir aslinya ikut
-     * dipotong di sini.
-     *
-     * Angka ini BELUM memotong harga pokok barang; sistem ini tidak menyimpan
-     * modal per produk. Jadi sebutannya "diterima bersih", bukan "laba".
-     */
+ * Uang yang benar-benar tinggal di toko dari satu pesanan.
+ */
     public function hitungDiterimaBersih(
         int $grandTotal,
         int $midtransFee,
@@ -118,13 +93,8 @@ class TransactionFeeService
     }
 
     /**
-     * Mengisi kolom biaya pada satu pesanan.
-     *
-     * Dipanggil dari kait model saat pesanan berubah menjadi lunas, sehingga
-     * berlaku untuk SEMUA jalur pembayaran — notifikasi Midtrans, pemeriksaan
-     * status, R_Pay, maupun konfirmasi manual admin — tanpa perlu menambal
-     * satu per satu tempat yang menandai pesanan lunas.
-     */
+ * Mengisi kolom biaya pada satu pesanan.
+ */
     public function terapkanKe($order): void
     {
         $grandTotal = (int) round((float) $order->grand_total);
@@ -157,11 +127,11 @@ class TransactionFeeService
     }
 
     /**
-     * Label deskriptif biaya Midtrans untuk ditampilkan di UI admin.
-     *
-     * @param  string $paymentMethod
-     * @return string
-     */
+ * Label deskriptif biaya Midtrans untuk ditampilkan di UI admin.
+ *
+ * @param  string $paymentMethod
+ * @return string
+ */
     public function labelBiaya(string $paymentMethod): string
     {
         $method = strtolower(trim($paymentMethod));

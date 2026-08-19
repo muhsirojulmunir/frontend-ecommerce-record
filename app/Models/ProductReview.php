@@ -8,9 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Ulasan produk dari pembeli.
- *
- * Setiap ulasan terikat pada satu baris pesanan, jadi selalu bisa ditelusuri
- * ke pembelian yang benar-benar terjadi. Lihat migrasinya untuk alasannya.
  */
 class ProductReview extends Model
 {
@@ -70,13 +67,8 @@ class ProductReview extends Model
     }
 
     /**
-     * Nama penulis yang disamarkan, misalnya "Muhammad" menjadi "M******d".
-     *
-     * Ulasan tampil di halaman yang bisa dibaca siapa saja, sedangkan nama
-     * lengkap pembeli bukan sesuatu yang perlu terpampang di sana. Huruf
-     * pertama dan terakhir disisakan supaya pembeli masih bisa mengenali
-     * ulasannya sendiri.
-     */
+ * Nama penulis yang disamarkan, misalnya "Muhammad" menjadi "M******d".
+ */
     public function getNamaSamaranAttribute(): string
     {
         $nama = trim((string) ($this->user->name ?? ''));
@@ -102,12 +94,8 @@ class ProductReview extends Model
     }
 
     /**
-     * Foto ulasan yang selalu berupa larik.
-     *
-     * Kolomnya boleh kosong, dan "photos" mentah akan bernilai null untuk
-     * ulasan tanpa foto. Dipakai lewat sini supaya setiap pemakainya tidak
-     * perlu mengingat kemungkinan itu satu per satu.
-     */
+ * Foto ulasan yang selalu berupa larik.
+ */
     public function getDaftarFotoAttribute(): array
     {
         return $this->photos ?? [];

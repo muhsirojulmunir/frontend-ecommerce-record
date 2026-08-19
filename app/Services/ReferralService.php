@@ -8,27 +8,12 @@ use Illuminate\Support\Str;
 
 /**
  * Kode referal RECORD-NAMAPENGGUNA.
- *
- * Aturan keabsahan sengaja TIDAK disimpan sebagai penanda menyala/mati,
- * melainkan diturunkan dari keadaan pesanan pemiliknya:
- *
- *   Kode sah  ⇔  pemiliknya punya minimal satu pesanan yang lunas
- *                dan tidak dibatalkan.
- *
- * Dengan begitu tidak ada penanda yang bisa ketinggalan diperbarui. Pesanan
- * yang sudah dibayar lalu dibatalkan otomatis membuat kodenya hangus, dan
- * kalau kelak ia berbelanja lagi kodenya hidup kembali dengan sendirinya —
- * tanpa satu baris pun kode tambahan.
  */
 class ReferralService
 {
     /**
-     * Menerbitkan kode untuk pemilik akun, sekali seumur akun.
-     *
-     * Dipanggil saat pesanan pertamanya dinyatakan lunas. Pemanggilan
-     * berikutnya tidak mengubah apa pun — kode yang sudah beredar tidak boleh
-     * berganti, karena bisa jadi sudah dibagikan ke orang lain.
-     */
+ * Menerbitkan kode untuk pemilik akun, sekali seumur akun.
+ */
     public function terbitkan(User $pemilik): string
     {
         if (filled($pemilik->referral_code)) {
@@ -46,10 +31,10 @@ class ReferralService
     }
 
     /**
-     * Apakah kode ini boleh dipakai oleh $pemakai?
-     *
-     * @return array{sah: bool, alasan: ?string, pemilik: ?User}
-     */
+ * Apakah kode ini boleh dipakai oleh $pemakai?
+ *
+ * @return array{sah: bool, alasan: ?string, pemilik: ?User}
+ */
     public function periksa(?string $kode, ?User $pemakai = null): array
     {
         $kode = $this->rapikan($kode);
@@ -87,11 +72,8 @@ class ReferralService
     }
 
     /**
-     * Pemilik kode punya pesanan yang benar-benar jadi?
-     *
-     * Lunas saja tidak cukup: pesanan yang sudah dibayar lalu dibatalkan
-     * tidak boleh menghidupkan kode. Inilah yang membuat kode "hangus".
-     */
+ * Pemilik kode punya pesanan yang benar-benar jadi?
+ */
     public function punyaPesananSah(User $pemilik): bool
     {
         return Order::where('user_id', $pemilik->id)

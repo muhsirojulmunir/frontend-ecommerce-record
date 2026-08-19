@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Pembelian terbaru untuk notifikasi kecil di pojok halaman.
- *
- * Isinya pesanan yang benar-benar terjadi: sudah lunas dan tidak dibatalkan.
- * Nama pembeli disamarkan supaya tidak ada pelanggan yang transaksinya bisa
- * dikenali orang lain — yang perlu diketahui pengunjung hanya bahwa
- * produknya memang laku, bukan siapa yang membelinya.
  */
 class PembelianTerbaruService
 {
@@ -28,9 +23,10 @@ class PembelianTerbaruService
     private const UMUR_CACHE_DETIK = 120;
 
     /**
-     * @return array<int, array{nama: string, produk: string, gambar: ?string,
-     *                          slug: ?string, nominal: float, waktu: string}>
-     */
+ * slug: ?string, nominal: float, waktu: string}>
+ *
+ * @return array<int, array{nama: string, produk: string, gambar: ?string,
+ */
     public function ambil(): array
     {
         return Cache::remember('pembelian-terbaru', self::UMUR_CACHE_DETIK, function () {

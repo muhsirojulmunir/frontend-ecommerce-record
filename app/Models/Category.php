@@ -76,10 +76,8 @@ class Category extends Model
     }
 
     /**
-     * URL gambar kategori dari storage backend.
-     * Mengembalikan null kalau belum ada gambar, supaya tampilan bisa
-     * memakai latar gradasi sebagai gantinya.
-     */
+ * URL gambar kategori dari storage backend.
+ */
     public function getImageUrlAttribute(): ?string
     {
         return $this->image ? Product::storageUrl($this->image) : null;

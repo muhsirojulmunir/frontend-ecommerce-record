@@ -8,14 +8,6 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Pencarian kode pos wilayah Indonesia.
- *
- * Sumbernya Biteship — kurir yang sudah dipakai toko ini — lewat endpoint
- * pencarian wilayahnya. Dipilih karena data kode pos Indonesia di peta terbuka
- * tidak lengkap: Kecamatan Dlanggu, misalnya, tidak punya kode pos sama sekali
- * di OpenStreetMap, sedangkan Biteship mengembalikannya dengan benar (61371).
- *
- * Satu kecamatan bisa punya beberapa kode pos. Semuanya dikembalikan sebagai
- * pilihan, bukan ditebak salah satu — pembeli yang paling tahu alamatnya.
  */
 class KodePosService
 {
@@ -25,8 +17,8 @@ class KodePosService
     private const UMUR_CACHE_HARI = 30;
 
     /**
-     * @return array<int, array{kode: string, label: string, wilayah: string}>
-     */
+ * @return array<int, array{kode: string, label: string, wilayah: string}>
+ */
     public function cari(string $kueri): array
     {
         $kueri = trim(preg_replace('/\s+/u', ' ', $kueri));
@@ -56,8 +48,8 @@ class KodePosService
     }
 
     /**
-     * @return array<int, array>|false  false bila gagal dihubungi.
-     */
+ * @return array<int, array>|false  false bila gagal dihubungi.
+ */
     private function ambil(string $kueri): array|false
     {
         $kunci = env('BITESHIP_API_KEY');

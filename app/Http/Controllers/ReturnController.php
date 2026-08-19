@@ -36,24 +36,8 @@ class ReturnController extends Controller
         $batasVideo = $megaVideo * 1024;
         $batasDetik = (int) config('alasan-retur.bukti.maks_durasi_detik', 120);
 
-        /*
-         * Penjelasan bebas hanya wajib untuk "Alasan lain".
-         *
-         * Alasan yang dipilih dari daftar sudah menjelaskan duduk perkaranya;
-         * memaksa mengetik untuk "Ukuran tidak pas" cuma menghasilkan isian
-         * asal-asalan yang tidak membantu siapa pun. Batas panjang minimal
-         * tetap berlaku, tetapi hanya bila penjelasannya memang diisi.
-         */
-        /*
-         * Kegagalan unggah di tingkat PHP diperiksa lebih dulu.
-         *
-         * Aturan "file" milik Laravel memang menangkapnya, tetapi hanya
-         * menghasilkan "failed to upload" — kalimat yang tidak memberi tahu
-         * pembeli maupun kita apa yang sebenarnya terjadi. Kode galat PHP
-         * membedakan berkas kebesaran, unggahan terputus, sampai folder
-         * sementara yang tidak bisa ditulis, dan ketiganya menuntut tindakan
-         * yang berbeda.
-         */
+        // Penjelasan bebas hanya wajib untuk "Alasan lain".
+        // Kegagalan unggah di tingkat PHP diperiksa lebih dulu.
         if ($galat = $this->galatUnggah($request)) {
             return back()->withInput()->withErrors($galat);
         }
@@ -65,12 +49,7 @@ class ReturnController extends Controller
             'resolution'    => ['required', Rule::in(['refund', 'exchange'])],
             'exchange_request' => ['required_if:resolution,exchange', 'nullable', 'string', 'max:255'],
 
-            /*
-             * Tiga bukti wajib. Batas ukurannya dalam kilobita (aturan Laravel),
-             * jadi angkanya diambil dari config dalam megabita lalu dikali 1024
-             * di satu tempat saja — supaya yang mengatur belakangan tidak perlu
-             * menghitung sendiri dan salah nol.
-             */
+            // Tiga bukti wajib.
             'receipt_photo'  => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:' . $batasFoto],
             'package_photo'  => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:' . $batasFoto],
             'unboxing_video' => ['required', 'file', 'mimes:mp4,mov,webm,m4v', 'max:' . $batasVideo],
@@ -110,20 +89,7 @@ class ReturnController extends Controller
                 ->with('error', 'Untuk alasan "' . $pilihan['label'] . '", penyelesaian itu tidak tersedia.');
         }
 
-        /*
-         * Berkas ditulis ke cakram "bersama", yaitu folder storage panel admin
-         * — bukan storage toko ini. Keduanya aplikasi terpisah, jadi berkas
-         * yang disimpan di sini tidak akan bisa dibuka admin di sana.
-         *
-         * Nama berkasnya dibiarkan diacak oleh Laravel: nama asli dari
-         * perangkat pembeli kerap mengandung spasi dan huruf yang menyulitkan
-         * di URL.
-         *
-         * Ukurannya sudah dikecilkan di peramban sebelum sampai ke sini
-         * (public/js/pemampat-bukti.js), jadi yang tiba biasanya jauh di bawah
-         * batas. Aturan "max" di atas tetap ada sebagai penjaga terakhir —
-         * pemeriksaan di peramban gampang dilewati.
-         */
+        // Berkas ditulis ke cakram "bersama", yaitu folder storage panel admin — bukan storage toko ini.
         $folder = 'retur/' . $order->order_number;
 
         $berkas = [
@@ -171,12 +137,8 @@ class ReturnController extends Controller
     }
 
     /**
-     * Memeriksa kegagalan unggah di tingkat PHP, sebelum validasi biasa.
-     *
-     * Mengembalikan larik galat siap pakai, atau null bila ketiga berkasnya
-     * sampai dengan selamat. Berkas yang memang tidak dikirim sama sekali
-     * dibiarkan lewat — itu urusan aturan "required", bukan urusan di sini.
-     */
+ * Memeriksa kegagalan unggah di tingkat PHP, sebelum validasi biasa.
+ */
     private function galatUnggah(Request $request): ?array
     {
         $medan = [
@@ -234,12 +196,8 @@ class ReturnController extends Controller
     }
 
     /**
-     * Pembeli mencatatkan nomor resi pengiriman balik.
-     *
-     * Resi wajib supaya paketnya bisa ditelusuri kalau tidak kunjung sampai —
-     * tanpa itu, sengketa "sudah dikirim" versus "belum diterima" tidak punya
-     * bukti apa pun untuk dirujuk.
-     */
+ * Pembeli mencatatkan nomor resi pengiriman balik.
+ */
     public function kirimBalik(Request $request, string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)

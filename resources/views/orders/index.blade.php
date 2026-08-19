@@ -76,10 +76,7 @@
                             </div>
 
                             <div class="flex items-center gap-2">
-                                {{-- Tanda yang menetap sampai semua barangnya dinilai.
-                                     Inilah pengingat yang menggantikan paksaan: pesanan
-                                     tetap terlihat "belum tuntas" di riwayat, tanpa
-                                     mengunci apa pun dari pembeli. --}}
+                                {{-- Tanda yang menetap sampai semua barangnya dinilai. --}}
                                 @php
                                     $belumNilai = $order->status === 'completed'
                                         ? $order->items->filter(fn ($i) => $i->review === null)->count()
@@ -182,9 +179,7 @@
     </div>
 @push('styles')
 <style>
-    /* ── Tanda "Belum Dinilai" ──
-       Ditulis tangan seperti blok lain, sebab hasil build Tailwind yang
-       terpasang tidak memuat sebagian kelas yang dipakai di sini. */
+    // ── Tanda "Belum Dinilai" ── Ditulis tangan seperti blok lain, sebab hasil build Tailwind yang ter...
 
     .belum-nilai {
         display: inline-flex; align-items: center; gap: 5px;
@@ -199,8 +194,7 @@
     }
     .belum-nilai:hover { background: #FEF3C7; border-color: #F59E0B; }
 
-    /* Bintangnya berdenyut pelan — cukup untuk menarik pandangan sekali,
-       tidak cukup untuk mengganggu orang yang sedang membaca daftarnya. */
+    // Bintangnya berdenyut pelan — cukup untuk menarik pandangan sekali, tidak cukup untuk mengganggu o...
     .belum-nilai i {
         font-size: 9px; color: #F59E0B;
         animation: belum-nilai-denyut 2.8s ease-in-out infinite;

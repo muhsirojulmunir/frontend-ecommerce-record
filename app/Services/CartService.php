@@ -85,10 +85,10 @@ class CartService
     }
 
     /**
-     * Menandai baris mana saja yang ikut dibayar.
-     *
-     * @param  array<int>  $idTerpilih  id baris keranjang yang dicentang
-     */
+ * Menandai baris mana saja yang ikut dibayar.
+ *
+ * @param  array<int>  $idTerpilih  id baris keranjang yang dicentang
+ */
     public function pilih(array $idTerpilih): void
     {
         $cart = $this->getCart();
@@ -111,11 +111,8 @@ class CartService
     }
 
     /**
-     * Menyisakan satu baris saja sebagai yang dibayar.
-     *
-     * Dipakai tombol "Beli Sekarang": barang lain tetap tersimpan di keranjang,
-     * hanya saja tidak ikut terbawa ke checkout kali ini.
-     */
+ * Menyisakan satu baris saja sebagai yang dibayar.
+ */
     public function pilihSatu(int $cartItemId): void
     {
         $this->pilih([$cartItemId]);

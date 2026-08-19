@@ -36,13 +36,8 @@ class RpayController extends Controller
     }
 
     /**
-     * Mengajukan pencairan ke rekening bank.
-     *
-     * Saldo dipotong SEKARANG, bukan nanti saat admin memprosesnya. Kalau
-     * dipotong belakangan, dana yang sedang antre bisa dipakai belanja lebih
-     * dulu — dan pencairannya jadi tidak bisa dibayar. Bila admin menolak,
-     * saldo itu dikembalikan.
-     */
+ * Mengajukan pencairan ke rekening bank.
+ */
     public function withdraw(Request $request)
     {
         $minimum = (int) config('rpay.pencairan.minimum', 50000);

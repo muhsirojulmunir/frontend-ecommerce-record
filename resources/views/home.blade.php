@@ -3,10 +3,7 @@
     @if($heroBanners->isNotEmpty())
         <div class="relative mb-12 shadow-sm group select-none"
             x-data="{
-                {{-- slideAktif boleh mencapai totalSlide, yaitu posisi slide kembar
-                     dari banner pertama yang dipasang di ujung. Setelah animasi
-                     ke sana selesai, posisi dipindahkan diam-diam ke 0 tanpa
-                     animasi — jadi gesernya selalu satu arah, seolah berputar. --}}
+                {{-- slideAktif boleh mencapai totalSlide, yaitu posisi slide kembar --}}
                 slideAktif: 0,
                 totalSlide: {{ $heroBanners->count() }},
                 autoplayMs: 12000,
@@ -28,30 +25,12 @@
                 diamSejak: 0,
 
                 init() {
-                    /*
-                     * Pewaktu berdetak tiap 80 milidetik, bukan 40.
-                     *
-                     * Cincinnya terisi selama 12 detik, jadi 80 milidetik masih
-                     * memberi 150 langkah — jauh lebih halus daripada yang bisa
-                     * dibedakan mata, dan transisi CSS di cincinnya menghaluskan
-                     * sisanya. Yang berkurang separuh adalah kerja yang harus
-                     * dilakukan peramban terus-menerus selama halaman terbuka,
-                     * dan itu terasa terutama di ponsel kelas bawah.
-                     *
-                     * Rumus di bawah memakai tickMs, jadi kecepatan bannernya
-                     * tetap 12 detik meski selangnya diubah.
-                     */
+                    // Pewaktu berdetak tiap 80 milidetik, bukan 40.
                     const tickMs = 80;
                     this.timer = setInterval(() => {
                         if (this.isPaused || this.isDragging || this.totalSlide <= 1) return;
 
-                        {{-- Slide video tidak dihitung mundur oleh pewaktu.
-                             Videonya sendiri yang menentukan kapan berpindah,
-                             lewat peristiwa "ended" — jadi banner video selalu
-                             tayang utuh sampai habis, berapa pun durasinya.
-                             Cincin indikatornya ikut mengisi mengikuti jalannya
-                             video, bukan mengikuti 12 detik yang tidak ada
-                             hubungannya. --}}
+                        {{-- Slide video tidak dihitung mundur oleh pewaktu. --}}
                         if (this.slideVideo) {
                             const v = this.videoSlide(this.slideAktif);
 
@@ -59,25 +38,8 @@
                                 this.progress = Math.min(100, (v.currentTime / v.duration) * 100);
                             }
 
-                            /*
-                             * Penjaga kemacetan.
-                             *
-                             * Video yang sedang menyangga data masih dianggap
-                             * berjalan, dan itu memang harus ditunggu — inti
-                             * permintaannya videonya tayang utuh. Yang tidak
-                             * boleh dibiarkan adalah video yang BERHENTI dan
-                             * tidak maju sama sekali: tanpa penjaga ini,
-                             * bannernya akan diam di situ selamanya.
-                             *
-                             * Delapan detik dipilih supaya jeda menyangga yang
-                             * wajar di jaringan lambat tidak ikut terpotong.
-                             */
-                            {{-- Lamanya diam diukur dengan jam sungguhan, bukan
-                                 dengan menghitung detak pewaktu. Peramban
-                                 memperlambat pewaktu drastis pada tab yang
-                                 tidak sedang dilihat; kalau detak yang
-                                 dihitung, ambang 8 detik bisa baru tercapai
-                                 setelah beberapa menit. --}}
+                            // Penjaga kemacetan.
+                            {{-- Lamanya diam diukur dengan jam sungguhan, bukan --}}
                             if (v && v.paused && v.currentTime === this.waktuTerakhir) {
                                 if (this.diamSejak === 0) this.diamSejak = Date.now();
 
@@ -101,21 +63,14 @@
                         }
                     }, tickMs);
 
-                    {{-- Setiap pergantian slide menyiapkan videonya. $watch
-                         dipakai supaya berlaku untuk semua cara berpindah:
-                         otomatis, panah, titik indikator, maupun geser jari. --}}
+                    {{-- Setiap pergantian slide menyiapkan videonya. --}}
                     this.$watch('slideAktif', () => this.siapkanSlide());
                     this.$nextTick(() => this.siapkanSlide());
                 },
 
                 {{-- Video di dalam slide ke-i, bila ada. --}}
                 videoSlide(i) {
-                    {{-- Slidenya dicari dengan membandingkan atributnya, bukan
-                         dengan merangkai pemilih CSS. Merangkai pemilih di sini
-                         menuntut tanda kutip bersarang, padahal seluruh isi
-                         x-data ini berada di dalam atribut HTML berkutip ganda —
-                         satu kutip saja salah tempat, komponennya mati tanpa
-                         galat apa pun. Cara ini tidak punya masalah itu. --}}
+                    {{-- Slidenya dicari dengan membandingkan atributnya, bukan --}}
                     const slides = this.$el.querySelectorAll('[data-slide]');
 
                     for (const s of slides) {
@@ -127,15 +82,7 @@
                     return null;
                 },
 
-                /*
-                 * Menyiapkan slide yang baru tampil.
-                 *
-                 * Semua video dihentikan dan dikembalikan ke awal, lalu video
-                 * milik slide aktif diputar dari detik nol. Tanpa mengulang ke
-                 * awal, banner yang dikunjungi untuk kedua kalinya akan
-                 * melanjutkan dari tempatnya berhenti — dan pengunjung tidak
-                 * pernah melihat bagian awalnya.
-                 */
+                // Menyiapkan slide yang baru tampil.
                 siapkanSlide() {
                     this.$el.querySelectorAll('[data-banner-video]').forEach((v) => {
                         v.pause();
@@ -151,27 +98,14 @@
                     this.waktuTerakhir = -1;
                     this.diamSejak = 0;
 
-                    {{-- Sedang dijeda pembaca: videonya disiapkan di detik nol
-                         tetapi tidak diputar. Tanpa penjagaan ini, berpindah
-                         banner dengan geseran saat terjeda akan menghidupkan
-                         videonya lagi — jedanya seolah diabaikan. --}}
+                    {{-- Sedang dijeda pembaca: videonya disiapkan di detik nol --}}
                     if (this.isPaused) return;
 
-                    /*
-                     * Videonya harus benar-benar diputar sampai habis, jadi
-                     * penolakan pemutaran otomatis dicoba lagi dalam keadaan
-                     * bisu. Peramban memblokir video bersuara yang berjalan
-                     * sendiri, tetapi hampir selalu mengizinkan yang bisu —
-                     * dan banner ini memang tidak bersuara.
-                     */
+                    // Videonya harus benar-benar diputar sampai habis, jadi penolakan pemutaran otomatis dicoba lagi da...
                     const putar = () => v.play();
 
                     putar().then(() => {
-                        {{-- Pembaca bisa menekan Jeda sebelum play() di atas
-                             selesai diproses. Tanpa penegasan ini, play() yang
-                             datang belakangan menghidupkan videonya lagi dan
-                             jedanya tampak diabaikan — cincinnya berhenti,
-                             videonya jalan terus. --}}
+                        {{-- Pembaca bisa menekan Jeda sebelum play() di atas --}}
                         if (this.isPaused) v.pause();
                     }).catch(() => {
                         v.muted = true;
@@ -180,11 +114,7 @@
                             if (this.isPaused) v.pause();
                         });
                     }).catch(() => {
-                        {{-- Benar-benar tidak bisa diputar: berkasnya rusak,
-                             formatnya tidak didukung, atau peramban menolak
-                             sama sekali. Barulah slide ini boleh diperlakukan
-                             seperti banner gambar, supaya banner tidak berhenti
-                             di satu slide selamanya. --}}
+                        {{-- Benar-benar tidak bisa diputar: berkasnya rusak, --}}
                         this.slideVideo = false;
                     });
 
@@ -196,9 +126,7 @@
                     return this.slideAktif % this.totalSlide;
                 },
 
-                {{-- Matikan transisi, pindahkan posisi, lalu nyalakan lagi.
-                     Butuh dua frame agar browser sempat menerapkan posisi baru
-                     tanpa ikut menganimasikannya. --}}
+                {{-- Matikan transisi, pindahkan posisi, lalu nyalakan lagi. --}}
                 lompatDiam(keIndeks, lanjut = null) {
                     this.pakaiTransisi = false;
                     this.slideAktif = keIndeks;
@@ -245,17 +173,7 @@
                     this.progress = 0;
                 },
 
-                /*
-                 * Menekan cincin waktu: satu tombol, dua kelakuan.
-                 *
-                 *   - Cincin banner yang SEDANG tampil  -> jeda / lanjutkan.
-                 *   - Titik banner lain                 -> pindah ke sana.
-                 *
-                 * Dipisah begini supaya titik-titik itu tetap berfungsi
-                 * sebagai navigasi seperti sebelumnya. Menjadikan semuanya
-                 * tombol jeda akan menghilangkan satu-satunya cara berpindah
-                 * langsung ke banner tertentu.
-                 */
+                // Menekan cincin waktu: satu tombol, dua kelakuan.
                 tekanTitik(i) {
                     if (this.indeksTampil !== i) {
                         // Berpindah banner selalu melanjutkan jalannya kembali;
@@ -271,13 +189,7 @@
                     this.aturVideo(this.isPaused);
                 },
 
-                /*
-                 * Menahan atau melanjutkan video di slide yang sedang tampil.
-                 *
-                 * Tanpa ini, menjeda banner video hanya menghentikan cincinnya
-                 * sementara videonya terus berjalan — dan tetap berpindah
-                 * begitu videonya habis, seolah jedanya diabaikan.
-                 */
+                // Menahan atau melanjutkan video di slide yang sedang tampil.
                 aturVideo(jeda) {
                     const v = this.videoSlide(this.slideAktif);
                     if (! v) return;
@@ -309,17 +221,12 @@
                 }
             }"
             x-init="init()"
-            {{-- Kursor yang lewat di atas banner TIDAK lagi menghentikannya.
-                 Jeda karena tersenggol kursor terasa seperti banner yang macet,
-                 dan pengunjung tidak punya cara tahu kenapa. Sekarang jedanya
-                 disengaja: ditekan pada cincin waktunya. --}}
+            {{-- Kursor yang lewat di atas banner TIDAK lagi menghentikannya. --}}
             @mousedown="dragStart($event)" @mousemove.window="dragMove($event)" @mouseup.window="dragEnd()"
             @touchstart="dragStart($event)" @touchmove="dragMove($event)" @touchend="dragEnd()">
 
             {{-- Container: overflow:hidden mengkliping track yang meluap --}}
-            {{-- Rasio 16:9 = ukuran HD 1920 x 1080 px, sama seperti video YouTube.
-                 Berlaku untuk gambar maupun video supaya keduanya terpotong
-                 dengan cara yang sama dan tidak ada yang tampak lebih penuh. --}}
+            {{-- Rasio 16:9 = ukuran HD 1920 x 1080 px, sama seperti video YouTube. --}}
             <div class="w-full overflow-hidden bg-gray-950 cursor-grab active:cursor-grabbing" style="aspect-ratio: 16/9;">
 
                 {{-- Track: width 100% dari container, flex, geser dengan translateX. Saat drag, mengikuti jari/kursor langsung tanpa transisi --}}
@@ -358,9 +265,7 @@
                         </div>
                     @endforeach
 
-                    {{-- Slide kembar dari banner pertama, dipasang di ujung.
-                         Inilah yang membuat perpindahan dari banner terakhir ke
-                         banner pertama tetap bergeser ke arah yang sama. --}}
+                    {{-- Slide kembar dari banner pertama, dipasang di ujung. --}}
                     @if($heroBanners->count() > 1)
                         @php $awal = $heroBanners->first(); @endphp
                         <div style="flex: 0 0 100%; width: 100%; height: 100%;" class="overflow-hidden"
@@ -394,23 +299,11 @@
                 </svg>
             </button>
 
-            {{-- Indikator bulat: lingkaran banner aktif terisi searah jarum jam
-                 selama 12 detik, lalu otomatis bergulir ke banner berikutnya.
-                 Memakai indeksTampil agar saat berada di slide kembar, titik
-                 yang menyala tetap milik banner pertama. --}}
+            {{-- Indikator bulat: lingkaran banner aktif terisi searah jarum jam --}}
             <div class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-3 z-20 px-4">
                 @foreach($heroBanners as $index => $banner)
-                    {{-- Ukuran tombolnya tetap 36 piksel untuk semua titik,
-                         besar maupun kecil. Yang berubah hanya isinya. Dengan
-                         begitu daerah yang bisa ditekan selalu cukup luas untuk
-                         ujung jari, tanpa membuat titik yang tidak aktif ikut
-                         terlihat besar. --}}
-                    {{-- $data, bukan sekadar tekanTitik(...). Ekspresi Alpine memanggil
-                         metode sebagai fungsi lepas, sehingga "this" di dalamnya BUKAN
-                         objek reaktif komponen — dan $el yang dipakai videoSlide()
-                         tidak ada di sana. Akibatnya jedanya menghentikan cincin
-                         tetapi videonya jalan terus. $data memaksa metodenya
-                         dipanggil pada objek yang benar. --}}
+                    {{-- Ukuran tombolnya tetap 36 piksel untuk semua titik, --}}
+                    {{-- $data, bukan sekadar tekanTitik(...). --}}
                     <button @click="$data.tekanTitik({{ $index }})"
                         class="relative flex items-center justify-center w-9 h-9 transition-transform duration-300 hover:scale-110"
                         :aria-label="indeksTampil === {{ $index }}
@@ -434,10 +327,7 @@
                                 :stroke-dashoffset="69.12 - (69.12 * progress / 100)"
                                 :style="isDragging || isPaused ? 'transition: none' : 'transition: stroke-dashoffset 90ms linear'" />
 
-                            {{-- Tengahnya: titik saat berjalan, dua palang saat
-                                 terjeda. Perlu ada tanda yang terlihat, sebab
-                                 cincin yang berhenti saja tidak bisa dibedakan
-                                 dari cincin yang sedang lambat. --}}
+                            {{-- Tengahnya: titik saat berjalan, dua palang saat --}}
                             <circle cx="14" cy="14" r="3.5" fill="#ffffff" x-show="!isPaused" />
 
                             <g x-show="isPaused" x-cloak class="rotate-90" style="transform-origin: 14px 14px;">
@@ -463,10 +353,7 @@
     @endif
 
     {{-- ===== BARISAN KATEGORI BERJALAN (selebar layar penuh) ===== --}}
-    {{-- Diambil langsung dari kategori aktif di database, jadi kategori yang
-         dibuat/dihapus admin di Seller Center langsung terlihat di sini.
-         Sengaja diletakkan di luar kontainer max-w-7xl supaya benar-benar
-         selebar layar tanpa perlu trik margin negatif. --}}
+    {{-- Diambil langsung dari kategori aktif di database, jadi kategori yang --}}
     @if($categories->isNotEmpty())
         @php
             // Satu grup diulang secukupnya supaya layar lebar tidak berlubang
@@ -488,26 +375,18 @@
             {{-- Pembungkus: menyembunyikan bagian yang meluap + memudar di tepi --}}
             <div class="relative w-full overflow-hidden py-1 group/marquee">
 
-                {{-- Sengaja TIDAK memakai gap-6. Dengan gap, jarak hanya muncul
-                     di antara kartu (n-1 kali), sehingga separuh lebar track
-                     tidak sama persis dengan lebar satu grup dan perulangannya
-                     melompat. Jarak dipasang sebagai margin kanan tiap kartu
-                     supaya tiap kartu menyumbang lebar yang sama persis. --}}
+                {{-- Sengaja TIDAK memakai gap-6. --}}
                 <div class="marquee-track"
                     style="--durasi: {{ $durasi }}s;">
 
-                    {{-- Dua grup identik. Saat grup pertama bergeser penuh,
-                         grup kedua sudah menempati posisi yang sama persis,
-                         sehingga perulangannya tidak terlihat. --}}
+                    {{-- Dua grup identik. --}}
                     @for ($grup = 0; $grup < 2; $grup++)
                         @for ($k = 0; $k < $ulang; $k++)
                             @foreach($categories as $category)
                                 <a href="{{ route('categories.show', $category->slug) }}"
                                     aria-hidden="{{ $grup === 1 ? 'true' : 'false' }}"
                                     tabindex="{{ $grup === 1 ? '-1' : '0' }}"
-                                    {{-- Ukuran & jarak ditulis lewat CSS sendiri (lihat blok <style>),
-                                         bukan kelas Tailwind bernilai kustom, supaya tetap bekerja
-                                         tanpa harus menjalankan ulang build aset. --}}
+                                    {{-- Ukuran & jarak ditulis lewat CSS sendiri (lihat blok <style>), --}}
                                     class="kartu-kategori group">
 
                                     {{-- Lapisan gambar. Efek hover dipisah agar tidak bentrok
@@ -533,9 +412,7 @@
                                          di atas foto seramai apa pun --}}
                                     <div class="kategori-peneduh"></div>
 
-                                    {{-- Isi kartu. Strukturnya sama persis di semua kartu, dan
-                                         tidak memakai deskripsi yang panjangnya berbeda-beda,
-                                         supaya seluruh kartu terlihat seragam. --}}
+                                    {{-- Isi kartu. --}}
                                     <div class="kategori-isi">
                                         {{-- Garis aksen tipis, memanjang saat kursor lewat --}}
                                         <span class="kategori-garis"></span>
@@ -578,10 +455,7 @@
         @once
             @push('styles')
                 <style>
-                    /* ── Kartu kategori ──────────────────────────────────────
-                       Ditulis sebagai CSS biasa, bukan kelas Tailwind bernilai
-                       kustom (w-[260px], h-[3px], dsb), supaya tampilannya tetap
-                       benar tanpa perlu menjalankan `npm run build` lebih dulu. */
+                    // ── Kartu kategori ────────────────────────────────────── Ditulis sebagai CSS biasa, bukan kelas T...
                     .kartu-kategori {
                         position: relative;
                         flex: 0 0 auto;
@@ -698,10 +572,7 @@
                         transform: translateX(0);
                     }
 
-                    /* ── Barisan berjalan ────────────────────────────────────
-                       Bergulir dari kanan ke kiri tanpa henti. Dua grup identik,
-                       digeser sejauh separuh lebar track — saat mencapai -50%
-                       posisinya identik dengan 0, jadi perulangannya tidak terlihat. */
+                    // ── Barisan berjalan ──────────────────────────────────── Bergulir dari kanan ke kiri tanpa henti.
                     @keyframes marquee-ke-kiri {
                         from { transform: translate3d(0, 0, 0); }
                         to   { transform: translate3d(-50%, 0, 0); }
@@ -709,8 +580,7 @@
 
                     .marquee-track {
                         display: flex;
-                        /* max-content wajib: lebar track harus mengikuti isinya,
-                           karena animasi menggeser tepat 50% dari lebar track. */
+                        // max-content wajib: lebar track harus mengikuti isinya, karena animasi menggeser tepat 50% dari le...
                         width: max-content;
                         animation: marquee-ke-kiri var(--durasi, 40s) linear infinite;
                         will-change: transform;
@@ -735,11 +605,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 pb-16">
 
-        {{-- ===== KOLEKSI UNGGULAN =====
-             Seluruh bagian disembunyikan bila belum ada produk yang ditandai.
-             Menampilkan "Belum ada produk unggulan" ke pembeli hanya
-             membocorkan urusan dalam toko dan membuat halaman terlihat rusak;
-             pengingat untuk mengisinya sudah ada di panel admin. --}}
+        {{-- ===== KOLEKSI UNGGULAN ===== --}}
         @if($featuredProducts->isNotEmpty())
             <section>
                 <div class="text-center mb-8">
@@ -747,9 +613,7 @@
                     <div class="h-1 w-20 bg-accent mx-auto mt-2"></div>
                 </div>
 
-                {{-- Kolom mengikuti jumlah produknya. Dua produk pada grid
-                     empat kolom menyisakan dua lubang kosong di kanan; dengan
-                     ini barisnya selalu terisi penuh berapa pun jumlahnya. --}}
+                {{-- Kolom mengikuti jumlah produknya. --}}
                 @php
                     $jumlahKoleksi = $featuredProducts->count();
                     $kolomKoleksi  = match (true) {
@@ -768,11 +632,7 @@
             </section>
         @endif
 
-        {{-- ═══════════ PROGRAM AFFILIATE ═══════════
-             Susunannya dibuat bertingkat: ajakan di atas, lalu tiga langkah
-             cara gabung, lalu dua kotak keuntungan. Banner lama menaruh
-             semuanya dalam satu baris sehingga teksnya menyempit di tengah
-             dan cara ikutannya tidak pernah terjelaskan. --}}
+        {{-- ═══════════ PROGRAM AFFILIATE ═══════════ --}}
         @php
             $persenDiskon = (int) config('referal.persen_diskon', 3);
             $persenKomisi = (int) config('referal.persen_komisi', 3);
@@ -870,9 +730,7 @@
 
     @push('styles')
     <style>
-        /* ══════════ Program Affiliate ══════════
-           Ditulis sebagai CSS sendiri, bukan kelas Tailwind arbitrary, agar
-           tidak bergantung pada hasil build yang belum tentu memuatnya. */
+        // ══════════ Program Affiliate ══════════ Ditulis sebagai CSS sendiri, bukan kelas Tailwind arbitra...
         .afil {
             position: relative;
             overflow: hidden;
@@ -883,8 +741,7 @@
         }
         @media (min-width: 768px) { .afil { padding: 52px 48px; } }
 
-        /* Dua bola cahaya yang bergerak pelan — memberi kesan hidup tanpa
-           mengganggu keterbacaan teks di atasnya. */
+        // Dua bola cahaya yang bergerak pelan — memberi kesan hidup tanpa mengganggu keterbacaan teks di at...
         .afil-cahaya {
             position: absolute;
             border-radius: 50%;
@@ -1087,8 +944,7 @@
             color: rgb(255 255 255 / .45);
         }
 
-        /* Hormati pengguna yang mematikan animasi di pengaturan sistemnya —
-           gerakan terus-menerus bisa memicu pusing bagi sebagian orang. */
+        // Hormati pengguna yang mematikan animasi di pengaturan sistemnya — gerakan terus-menerus bisa memi...
         @media (prefers-reduced-motion: reduce) {
             .afil-cahaya, .afil-kilau, .afil-titik, .afil-panah, .afil-plus {
                 animation: none;

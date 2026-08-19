@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Penyedia gratis berbasis OpenStreetMap.
- *
- * Cakupan nomor rumah di Indonesia terbatas, sehingga titik lokasi kerap
- * berhenti di tingkat jalan atau kecamatan. Untuk ketepatan sampai nomor
- * rumah, ganti GEOCODING_DRIVER menjadi "google".
  */
 class NominatimGeocoder implements Geocoder
 {

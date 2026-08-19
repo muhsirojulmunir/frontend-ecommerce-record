@@ -12,21 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Pengelola saldo R_Pay.
- *
- * Seluruh perubahan saldo WAJIB lewat kelas ini. Menulis langsung ke
- * users.rpay_balance akan membuat kolom itu berbeda dengan buku besar, dan
- * selisih saldo uang adalah jenis kesalahan yang paling sulit ditelusuri
- * belakangan.
- *
- * Dua pengaman yang dipakai:
- *
- * 1. Kunci baris (lockForUpdate) di dalam transaksi database. Tanpa ini, dua
- *    permintaan yang datang bersamaan bisa sama-sama membaca saldo lama lalu
- *    saling menimpa — misalnya pembeli menekan "Bayar" dua kali dan saldonya
- *    hanya terpotong sekali.
- *
- * 2. Penjagaan ganda lewat referensi. Satu sumber dana yang sama (mis. satu
- *    pengajuan pengembalian) tidak bisa dibukukan dua kali.
  */
 class RpayService
 {
@@ -43,10 +28,10 @@ class RpayService
     }
 
     /**
-     * Mengurangi saldo.
-     *
-     * @throws SaldoTidakCukup bila saldo kurang dari nominal yang diminta.
-     */
+ * Mengurangi saldo.
+ *
+ * @throws SaldoTidakCukup bila saldo kurang dari nominal yang diminta.
+ */
     public function debit(
         User|int $pengguna,
         float $nominal,
@@ -71,11 +56,8 @@ class RpayService
     }
 
     /**
-     * Apakah sumber dana ini sudah pernah dibukukan?
-     *
-     * Dipakai agar satu pengajuan pengembalian yang disetujui dua kali —
-     * misalnya admin menekan tombol dua kali — tidak menambah saldo dua kali.
-     */
+ * Apakah sumber dana ini sudah pernah dibukukan?
+ */
     public function sudahDibukukan(Model $referensi, string $sumber): bool
     {
         return RpayTransaction::where('reference_type', $referensi::class)
@@ -85,11 +67,8 @@ class RpayService
     }
 
     /**
-     * Menghitung ulang kolom cache dari buku besar.
-     *
-     * Disediakan sebagai alat pemulihan bila kolom rpay_balance pernah
-     * tersentuh dari luar kelas ini.
-     */
+ * Menghitung ulang kolom cache dari buku besar.
+ */
     public function selaraskanSaldo(User|int $pengguna): float
     {
         $userId = $pengguna instanceof User ? $pengguna->id : $pengguna;
@@ -157,11 +136,8 @@ class RpayService
     }
 
     /**
-     * Perkiraan tanggal dana sampai di rekening.
-     *
-     * Hari Minggu dan tanggal merah tidak dihitung sebagai hari kerja. Sabtu
-     * mengikuti pengaturan config('rpay.sabtu_libur').
-     */
+ * Perkiraan tanggal dana sampai di rekening.
+ */
     public function perkiraanCair(?CarbonImmutable $mulai = null, ?int $hariKerja = null): CarbonImmutable
     {
         return KalenderKerja::setelah(

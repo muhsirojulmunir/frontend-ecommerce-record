@@ -3,10 +3,7 @@
     @cart-count-updated.window="cartCount = $event.detail.count"
     @cart-bump.window="cartBump = true; setTimeout(() => cartBump = false, 400)">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {{-- Jarak navbar ditulis sebagai CSS sendiri, bukan kelas Tailwind.
-             CSS hasil build di proyek ini tidak memuat breakpoint xl: maupun
-             gap-5/gap-7, jadi kelas seperti itu tidak berpengaruh sama sekali
-             dan menunya menempel tanpa jarak. --}}
+        {{-- Jarak navbar ditulis sebagai CSS sendiri, bukan kelas Tailwind. --}}
         <div class="bar-utama">
             <a href="{{ route('home') }}" class="bar-logo" aria-label="Beranda Record">
                 <x-logo-brand ukuran="sedang" varian="terang" />
@@ -121,16 +118,7 @@
                     </span>
                 </a>
 
-                {{-- ── Dua ajakan utama, tampil langsung di layar sempit ──
-
-                     Sebelumnya keduanya bersembunyi di dalam menu lipat, dan
-                     tombol yang harus dicari dulu praktis tidak pernah
-                     ditekan. Keduanya dipindah ke bar utama; yang tinggal di
-                     menu lipat hanya tautan navigasi biasa.
-
-                     Labelnya menghilang di layar paling sempit dan menyisakan
-                     ikonnya saja — lebih baik ikon yang muat daripada tulisan
-                     yang mendesak logo sampai terpotong. --}}
+                {{-- ── Dua ajakan utama, tampil langsung di layar sempit ── --}}
                 <a href="{{ route('products.index') }}"
                    class="bar-aksi bar-aksi-beli"
                    aria-label="Buy Online">
@@ -205,17 +193,12 @@
             @endauth
         </div>
 
-        {{-- "Buy Online" dan "WhatsApp" TIDAK lagi di sini: keduanya sudah
-             tampil langsung di bar utama. Menu lipat ini dibiarkan berisi
-             tautan navigasi saja supaya isinya jelas dan tidak berulang. --}}
+        {{-- "Buy Online" dan "WhatsApp" TIDAK lagi di sini: keduanya sudah --}}
     </div>
 </nav>
 
 @once
-{{-- Tata letak navbar ditulis sendiri, tidak memakai kelas jarak Tailwind.
-     CSS hasil build proyek ini tidak memuat breakpoint xl: maupun kelas
-     gap-5/gap-7/w-40, sehingga kelas semacam itu tidak berpengaruh apa pun —
-     itulah sebabnya menu sempat menempel tanpa jarak sama sekali. --}}
+{{-- Tata letak navbar ditulis sendiri, tidak memakai kelas jarak Tailwind. --}}
 <style>
     .bar-utama {
         display: flex;
@@ -276,21 +259,12 @@
     /* Kata kedua disembunyikan sampai layarnya benar-benar lega. */
     .bar-tombol-tambahan { display: none; }
 
-    /*
-     * Jaraknya diatur di sini, bukan lewat kelas gap-4 Tailwind.
-     * Sebelumnya jaraknya tetap 16px pada lebar berapa pun; dengan dua tombol
-     * tambahan di baris ini, jarak sebesar itu di layar 320px membuat isinya
-     * mendesak logo. Sekarang merapat di layar sempit dan melonggar begitu
-     * ruangnya ada.
-     */
+    // Jaraknya diatur di sini, bukan lewat kelas gap-4 Tailwind.
     .bar-mobile { gap: 8px; }
     @media (min-width: 400px) { .bar-mobile { gap: 10px; } }
     @media (min-width: 640px) { .bar-mobile { gap: 14px; } }
 
-    /* ══════════ Ajakan di layar sempit ══════════
-       Kembaran ringkas dari .bar-tombol, khusus untuk bar mobile. Hanya ada
-       di bawah 1024px; di atas itu tempatnya diambil alih .bar-tombol yang
-       berukuran penuh di .bar-kanan. */
+    // ══════════ Ajakan di layar sempit ══════════ Kembaran ringkas dari .bar-tombol, khusus untuk bar ...
     .bar-aksi {
         display: inline-flex;
         align-items: center;
@@ -312,16 +286,7 @@
     .bar-aksi-wa      { background: #25D366; }
     .bar-aksi-wa:hover    { background: #20ba59; }
 
-    /*
-     * Tulisannya baru muncul kalau barisnya memang muat.
-     *
-     * Ini diukur, bukan dikira-kira: logo memakan 134px, keranjang dan tombol
-     * menu 24px masing-masing, sedangkan tiap tombol berlabel selebar ~108px.
-     * Dijumlahkan dengan jaraknya, dua label penuh baru muat mulai sekitar
-     * 520px. Di bawah itu labelnya dilepas dan menyisakan ikon — ikon tas dan
-     * ikon WhatsApp cukup dikenali untuk berdiri sendiri, dan aria-label
-     * menjaga keduanya tetap terbaca pembaca layar.
-     */
+    // Tulisannya baru muncul kalau barisnya memang muat.
     .bar-aksi-label { display: none; }
 
     @media (min-width: 520px) {
@@ -335,12 +300,7 @@
         .bar-aksi i { font-size: 15px; }
     }
 
-    /*
-     * Mulai 768px, .bar-kanan tampil dan sudah memuat "Buy Online" serta
-     * "WhatsApp" versi lebarnya. Tombol ringkas di sini harus mundur di titik
-     * yang sama persis — kalau tidak, keduanya tampil berbarengan dan barisnya
-     * meluber keluar layar.
-     */
+    // Mulai 768px, .bar-kanan tampil dan sudah memuat "Buy Online" serta "WhatsApp" versi lebarnya.
     @media (min-width: 768px) {
         .bar-aksi { display: none; }
     }

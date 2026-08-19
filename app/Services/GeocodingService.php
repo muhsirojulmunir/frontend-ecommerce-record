@@ -7,16 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Pencarian koordinat alamat untuk halaman checkout.
- *
- * Sebelumnya halaman checkout memanggil Nominatim langsung dari browser.
- * Cara itu bermasalah: OpenStreetMap membatasi satu permintaan per detik per
- * alamat IP dan menolak permintaan tanpa User-Agent yang jelas, sehingga
- * pembeli kerap menerima 403/429 — pencarian alamat gagal tanpa penjelasan,
- * kolom wilayah tidak terisi, dan pin peta tidak bergerak.
- *
- * Kelas ini menangani hal yang berlaku untuk semua penyedia — penyimpanan
- * hasil di cache dan penahanan laju — sedangkan cara menghubungi layanannya
- * diserahkan ke penyedia yang dipilih lewat config/geocoding.php.
  */
 class GeocodingService
 {

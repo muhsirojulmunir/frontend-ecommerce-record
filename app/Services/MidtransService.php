@@ -217,16 +217,10 @@ class MidtransService
     }
 
     /**
-     * Menerjemahkan notifikasi Midtrans menjadi nama metode pembayaran
-     * seperti yang dipakai toko (BCA, QRIS, Indomaret, ...).
-     *
-     * Ini jaring pengaman terakhir: seandainya pembeli tetap berhasil
-     * membayar lewat saluran lain, catatan pesanan diselaraskan dengan cara
-     * bayar yang benar-benar dipakai — bukan dengan yang dipilih di checkout.
-     *
-     * @return string|null null bila salurannya tidak dikenali; catatan lama
-     *                     dibiarkan apa adanya daripada ditimpa tebakan.
-     */
+ * Menerjemahkan notifikasi Midtrans menjadi nama metode pembayaran seperti yang dipakai toko (BCA, ...
+ *
+ * @return string|null null bila salurannya tidak dikenali; catatan lama
+ */
     public function metodeDariNotifikasi(array $notification): ?string
     {
         $jenis = strtolower((string) ($notification['payment_type'] ?? ''));

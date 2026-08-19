@@ -41,10 +41,8 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Apakah data kontak pembeli sudah lengkap?
-     * Nama dan nomor HP wajib ada sebelum tahap berikutnya bisa diisi.
-     * Tamu yang belum punya akun otomatis dianggap belum lengkap.
-     */
+ * Apakah data kontak pembeli sudah lengkap?
+ */
     private function kontakLengkap(): bool
     {
         $user = Auth::user();
@@ -72,11 +70,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
 
-        /*
-         * Hanya barang yang dicentang yang dibawa ke checkout. Barang lain
-         * tetap tersimpan di keranjang — bukan hilang, hanya tidak ikut dibayar
-         * kali ini.
-         */
+        // Hanya barang yang dicentang yang dibawa ke checkout.
         $cartItems = $this->cartService->itemTerpilih();
 
         if ($cartItems->isEmpty()) {
@@ -122,14 +116,8 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Langkah "Kontak" pada halaman checkout.
-     *
-     * Untuk tamu: sekaligus membuat akun (nama, HP, email, kata sandi) lalu
-     * langsung memasukkannya, supaya pembeli baru tidak dilempar ke halaman
-     * login di tengah proses belanja.
-     *
-     * Untuk yang sudah login: hanya memperbarui nama dan nomor HP.
-     */
+ * Langkah "Kontak" pada halaman checkout.
+ */
     public function simpanKontak(Request $request)
     {
         $aturan = [
@@ -200,16 +188,8 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Masuk ke akun langsung dari halaman checkout.
-     *
-     * Sebelum ini, tautan "Sudah punya akun?" melempar pembeli ke halaman login
-     * biasa, yang selalu berakhir di dashboard. Pembeli lalu harus mencari
-     * barangnya lagi dari awal — belanjaannya seolah lenyap. Di sini pembeli
-     * tidak pernah meninggalkan halaman checkout sama sekali.
-     *
-     * Keranjang tamunya ikut dipindahkan, sehingga barang yang sudah dipilih
-     * sebelum masuk tetap ada sesudahnya.
-     */
+ * Masuk ke akun langsung dari halaman checkout.
+ */
     public function masuk(Request $request)
     {
         $data = $request->validate([
@@ -221,11 +201,7 @@ class CheckoutController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
-        /*
-         * Percobaan masuk dibatasi. Tanpa ini, halaman checkout — yang sengaja
-         * terbuka untuk tamu — menjadi pintu menebak kata sandi yang tidak
-         * terjaga, sementara halaman login biasa punya pembatas.
-         */
+        // Percobaan masuk dibatasi.
         $kunci = 'checkout-masuk|' . $request->ip() . '|' . strtolower($data['email']);
 
         if (RateLimiter::tooManyAttempts($kunci, 5)) {
@@ -378,13 +354,7 @@ class CheckoutController extends Controller
         $courierCost     = $selectedCourier ? $selectedCourier['cost'] : ($request->input('courier_cost', 15000));
         $courierName     = $selectedCourier ? $selectedCourier['name'] : strtoupper($request->courier_code);
 
-        /*
-         * Kode referal diperiksa ULANG di sini.
-         *
-         * Nilai apa pun yang datang dari halaman bisa diubah orang, termasuk
-         * besaran diskonnya. Yang dipercaya hanya kodenya; potongan dan
-         * komisinya dihitung lagi dari harga barang di sisi server.
-         */
+        // Kode referal diperiksa ULANG di sini.
         $referral = app(ReferralService::class);
         $cekKode  = $referral->periksa($request->input('referral_code'), Auth::user());
 
@@ -418,13 +388,7 @@ class CheckoutController extends Controller
                 'shipping_address' => $address->toSnapshot(),
                 'courier'          => $courierName,
 
-                /*
-                 * Kode resmi dari Biteship disimpan apa adanya, misalnya
-                 * "jne:reg" atau "gojek:instant". Nama tampilan di atas untuk
-                 * dibaca manusia; kode inilah yang dipakai saat memesan ke
-                 * Biteship, supaya kurir yang dipilih pembeli benar-benar itu
-                 * yang berangkat — bukan hasil menebak ulang dari teksnya.
-                 */
+                // Kode resmi dari Biteship disimpan apa adanya, misalnya "jne:reg" atau "gojek:instant".
                 'courier_code'     => $selectedCourier['code'] ?? $request->courier_code,
                 'payment_method'   => $request->payment_method,
                 'payment_status'   => $request->payment_method === 'COD' ? 'unpaid' : 'unpaid',
@@ -451,14 +415,7 @@ class CheckoutController extends Controller
                 $item->product->decrement('stock', $item->quantity);
             }
 
-            /*
-             * Pembayaran memakai saldo R_Pay.
-             *
-             * Pemotongan saldo berada di dalam transaksi yang sama dengan
-             * pembuatan pesanan. Kalau saldonya ternyata tidak cukup,
-             * seluruhnya dibatalkan — tidak ada pesanan yang terlanjur dibuat
-             * tanpa pembayaran, dan stok pun kembali seperti semula.
-             */
+            // Pembayaran memakai saldo R_Pay.
             if ($order->payment_method === 'R_Pay') {
                 app(RpayService::class)->debit(
                     Auth::id(),
@@ -484,11 +441,7 @@ class CheckoutController extends Controller
                 );
             }
 
-            /*
-             * Yang dibuang dari keranjang hanya barang yang benar-benar dibayar.
-             * Mengosongkan seluruh keranjang akan menghapus barang yang sengaja
-             * ditinggalkan pembeli untuk dibeli lain kali.
-             */
+            // Yang dibuang dari keranjang hanya barang yang benar-benar dibayar.
             $cart->items()->whereIn('id', $itemDibayar->pluck('id'))->delete();
 
             DB::commit();
@@ -628,13 +581,7 @@ class CheckoutController extends Controller
             $order->status = $verified['order_status'];
         }
 
-        /*
-         * Selaraskan metode pembayaran dengan kenyataan.
-         *
-         * Saluran di Snap sudah dibatasi sesuai pilihan pembeli, tetapi
-         * catatan toko tetap mengikuti apa yang benar-benar dipakai — kalau
-         * keduanya berbeda, yang dipercaya adalah notifikasi dari Midtrans.
-         */
+        // Selaraskan metode pembayaran dengan kenyataan.
         if (! empty($verified['metode']) && $verified['metode'] !== $order->payment_method) {
             Log::info('Metode pembayaran diselaraskan dengan notifikasi Midtrans', [
                 'pesanan'   => $order->order_number,

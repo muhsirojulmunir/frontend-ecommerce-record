@@ -7,13 +7,6 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Penyedia Google Maps Geocoding API.
- *
- * Jauh lebih lengkap untuk alamat Indonesia — termasuk nomor rumah, yang
- * tidak dimiliki OpenStreetMap. Butuh kunci API dari Google Cloud dengan
- * penagihan aktif; isikan GOOGLE_MAPS_API_KEY pada berkas .env.
- *
- * Hasilnya diterjemahkan ke bentuk yang sama dengan Nominatim agar halaman
- * checkout tidak perlu diubah saat penyedianya berganti.
  */
 class GoogleGeocoder implements Geocoder
 {

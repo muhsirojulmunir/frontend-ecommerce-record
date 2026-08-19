@@ -29,10 +29,8 @@ class OrderController extends Controller
     }
 
     /**
-     * Halaman lacak pesanan: menampilkan pesanan milik customer yang sedang
-     * login beserta nomor resinya. Hanya bisa diakses setelah masuk, sebab
-     * nomor resi termasuk data pribadi pemesan.
-     */
+ * Halaman lacak pesanan: menampilkan pesanan milik customer yang sedang login beserta nomor resinya.
+ */
     public function tracking()
     {
         $orders = Auth::user()->orders()
@@ -66,24 +64,12 @@ class OrderController extends Controller
 
         $order->load('returns');
 
-        /*
-         * Barang yang masih menunggu dinilai.
-         *
-         * Hanya berlaku untuk pesanan yang sudah selesai — sebelum barangnya
-         * diterima, pembeli belum punya dasar apa pun untuk menilai.
-         */
+        // Barang yang masih menunggu dinilai.
         $belumDinilai = $order->status === 'completed'
             ? $order->items->filter(fn ($item) => $item->review === null)
             : collect();
 
-        /*
-         * Kode referal ditampilkan pada pesanan yang sudah selesai.
-         *
-         * Keabsahannya dihitung ulang di sini, bukan sekadar melihat apakah
-         * kolomnya terisi — kode yang pesanannya dibatalkan harus terlihat
-         * hangus oleh pemiliknya sendiri, bukan hanya oleh orang lain yang
-         * mencoba memakainya.
-         */
+        // Kode referal ditampilkan pada pesanan yang sudah selesai.
         $referral = app(\App\Services\ReferralService::class);
         $pemilik  = Auth::user();
 
@@ -271,11 +257,7 @@ class OrderController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        /*
-         * Jalurnya ditentukan oleh sudah atau belumnya pengiriman diatur —
-         * bukan oleh sudah atau belumnya dibayar. Lihat alasannya di
-         * App\Services\PembatalanPesananService.
-         */
+        // Jalurnya ditentukan oleh sudah atau belumnya pengiriman diatur — bukan oleh sudah atau belumnya d...
         $pembatalan = app(PembatalanPesananService::class);
         $alasan     = $pilihan[$data['alasan']];
         $penjelasan = $data['penjelasan'] ?? null;

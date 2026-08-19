@@ -72,12 +72,8 @@ class Product extends Model
     }
 
     /**
-     * Hanya ulasan yang boleh dilihat pengunjung.
-     *
-     * Dipisahkan sebagai relasi tersendiri supaya halaman produk bisa
-     * memakai withAvg/withCount terhadapnya tanpa perlu menyalin syarat
-     * "tidak disembunyikan" ke setiap tempat yang memanggilnya.
-     */
+ * Hanya ulasan yang boleh dilihat pengunjung.
+ */
     public function reviewsTampil(): HasMany
     {
         return $this->hasMany(ProductReview::class)->where('is_hidden', false);
@@ -219,19 +215,7 @@ class Product extends Model
 
         $kata = trim($search);
 
-        /*
-         * Dicari pada nama produk ATAU kode SKU variannya.
-         *
-         * SKU melekat pada varian, bukan pada produk — satu produk punya
-         * banyak SKU, satu per ukuran dan warna. Karena itu pencariannya
-         * lewat whereHas, dan yang dikembalikan tetap produknya: pembeli
-         * yang mengetik SKU ingin sampai ke halaman produk, bukan ke satu
-         * baris varian.
-         *
-         * Seluruhnya dibungkus satu where() supaya tidak bertabrakan dengan
-         * saringan lain seperti kategori — tanpa pembungkus itu, "atau" di
-         * sini akan membatalkan syarat kategori yang sudah dipasang.
-         */
+        // Dicari pada nama produk ATAU kode SKU variannya.
         return $query->where(function ($q) use ($kata) {
             $q->where('name', 'like', "%{$kata}%")
               ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', "%{$kata}%"));

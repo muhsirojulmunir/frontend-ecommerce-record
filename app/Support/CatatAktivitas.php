@@ -9,16 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Pencatat aktivitas untuk aplikasi toko.
- *
- * Panel admin memakai paket Spatie Activitylog, tetapi aplikasi toko tidak
- * memasang paket itu. Karena keduanya memakai satu database yang sama, baris
- * log cukup ditulis langsung ke tabel activity_log dengan bentuk kolom yang
- * sama — sehingga tindakan pembeli (mengajukan pengembalian, memakai R_Pay,
- * meminta pencairan) ikut muncul di menu Log Aktivitas tanpa perlu menambah
- * dependensi baru.
- *
- * Pencatatan tidak boleh menggagalkan tindakan utamanya: kalau menulis log
- * gagal, kegagalannya dicatat ke berkas log biasa dan alurnya diteruskan.
  */
 class CatatAktivitas
 {

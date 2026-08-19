@@ -1,9 +1,6 @@
 @props(['pembelian' => []])
 
-{{-- Notifikasi pembelian terbaru.
-     Isinya pesanan yang benar-benar terjadi (lihat PembelianTerbaruService).
-     Bila belum ada satu pun, seluruh komponen tidak ikut dirender — lebih
-     baik diam daripada menampilkan contoh yang tidak pernah terjadi. --}}
+{{-- Notifikasi pembelian terbaru. --}}
 @if(! empty($pembelian))
 <div x-data="pembelianTerbaru({{ Js::from($pembelian) }})"
      x-show="tampil"
@@ -101,8 +98,7 @@
                 clearInterval(this.pewaktuBilah);
             },
 
-            /* Urutan diacak sekali, lalu dijalani berurutan. Memilih acak tiap
-               kali membuat entri yang sama bisa muncul dua kali beruntun. */
+            // Urutan diacak sekali, lalu dijalani berurutan.
             acakUrutan() {
                 this.urutan = [...this.daftar.keys()];
 
@@ -141,9 +137,7 @@
                 this.pewaktu = setTimeout(() => this.sembunyikan(), this.DURASI_TAYANG);
             },
 
-            /* Ditutup sendiri: jadwalkan yang berikutnya.
-               Ditutup pembeli: berhenti sampai halaman dimuat ulang —
-               menutup notifikasi berarti tidak mau diganggu. */
+            // Ditutup sendiri: jadwalkan yang berikutnya.
             sembunyikan(olehPengunjung = false) {
                 this.tampil = false;
                 clearInterval(this.pewaktuBilah);
@@ -158,8 +152,7 @@
                 this.pewaktu = setTimeout(() => this.tayangkan(), jeda);
             },
 
-            /* Dihitung di browser dari waktu asli pesanan, jadi halaman yang
-               lama dibiarkan terbuka tidak menampilkan keterangan basi. */
+            // Dihitung di browser dari waktu asli pesanan, jadi halaman yang lama dibiarkan terbuka tidak menam...
             hitungLamaBerlalu(waktu) {
                 const menit = Math.floor((Date.now() - new Date(waktu).getTime()) / 60000);
 

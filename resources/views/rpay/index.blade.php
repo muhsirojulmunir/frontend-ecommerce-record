@@ -66,10 +66,7 @@
                     <form method="POST" action="{{ route('rpay.withdraw') }}" class="space-y-3.5">
                         @csrf
 
-                        {{-- Kolom rupiah berpemisah ribuan.
-                             Kolom angka bawaan browser menjebak di sini: mengetik
-                             "150.000" seperti kebiasaan menulis rupiah dibaca sebagai
-                             150, lalu ditolak dengan pesan yang membingungkan. --}}
+                        {{-- Kolom rupiah berpemisah ribuan. --}}
                         <div x-data="{
                                 nominal: {{ (int) old('amount', (int) $saldo) }},
                                 batas: {{ (int) $saldo }},
@@ -202,8 +199,7 @@
 
     @push('styles')
     <style>
-        /* Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind arbitrary
-           yang belum tentu ikut ter-build. */
+        // Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind arbitrary yang belum tentu ikut ter-build.
         .kartu-rpay {
             position: relative;
             overflow: hidden;

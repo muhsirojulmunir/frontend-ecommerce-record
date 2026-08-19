@@ -159,9 +159,7 @@
                     </div>
 
                     <div class="pt-2">
-                        {{-- Dimatikan kalau belum ada yang dicentang. Membiarkannya
-                             hidup hanya mengantar pembeli ke checkout yang langsung
-                             memantulkannya kembali ke sini. --}}
+                        {{-- Dimatikan kalau belum ada yang dicentang. --}}
                         <a href="{{ route('checkout.index') }}"
                             x-show="adaYangDipilih"
                             class="block w-full bg-accent hover:bg-accent-light text-white text-center text-xs font-bold py-3.5 rounded-sm transition uppercase tracking-wider shadow-sm">
@@ -181,16 +179,11 @@
         @endif
     </div>
 
-    {{-- Keadaan halaman keranjang. Ditulis sebagai fungsi di dalam <script>,
-         bukan di atribut x-data, supaya tanda kutip di dalamnya tidak memutus
-         atributnya di tengah jalan. --}}
+    {{-- Keadaan halaman keranjang. --}}
     <script>
         function keranjang() {
             return {
-                /* Baris yang dicentang. Nilai awalnya dari peladen, sehingga
-                   pilihan pembeli tetap sama setelah halaman dimuat ulang.
-                   Disimpan sebagai teks karena begitulah x-model membaca nilai
-                   kotak centang. */
+                // Baris yang dicentang.
                 terpilih: @json($cartItems->where('dipilih', true)->pluck('id')->map(fn ($id) => (string) $id)->values()),
 
                 hargaBaris: @json($cartItems->mapWithKeys(fn ($i) => [(string) $i->id => (float) $i->subtotal])),
@@ -214,10 +207,7 @@
                     this.simpan();
                 },
 
-                /* Pilihan disimpan ke peladen supaya checkout membaca hal yang
-                   sama dengan yang terlihat di layar. Dikirim sebagai daftar
-                   utuh, bukan satu id per panggilan, agar penekanan beruntun
-                   tidak saling mendahului. */
+                // Pilihan disimpan ke peladen supaya checkout membaca hal yang sama dengan yang terlihat di layar.
                 simpan() {
                     fetch('{{ route('cart.pilih') }}', {
                         method: 'POST',

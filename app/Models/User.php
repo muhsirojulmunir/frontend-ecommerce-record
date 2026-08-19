@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    /**
+ * @use HasFactory<UserFactory>
+ */
     use HasFactory, Notifiable;
 
     /**
@@ -49,11 +51,7 @@ class User extends Authenticatable
         ];
     }
 
-    /*
-     * Saldo R_Pay sengaja TIDAK dimasukkan ke $fillable. Satu-satunya jalan
-     * mengubahnya adalah lewat App\Services\RpayService, supaya setiap
-     * pergerakan dana selalu punya baris buku besarnya.
-     */
+    // Saldo R_Pay sengaja TIDAK dimasukkan ke $fillable.
 
     public function rpayTransactions(): HasMany
     {

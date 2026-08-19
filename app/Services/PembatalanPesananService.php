@@ -7,20 +7,6 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Pembatalan pesanan oleh pembeli.
- *
- * Ada tiga jalur, dan yang menentukan adalah SUDAH ATAU BELUM pesanan itu
- * diatur pengirimannya oleh admin:
- *
- *   1. Belum dibayar              → batal seketika, tidak ada uang berpindah.
- *   2. Sudah dibayar, belum diatur pengiriman
- *                                 → batal seketika, dana kembali ke R_Pay.
- *   3. Sudah diatur pengiriman    → tidak bisa dibatalkan; pakai alur
- *                                   pengembalian barang.
- *
- * Batasnya diletakkan di "sudah diatur pengiriman", bukan di "sudah dibayar",
- * karena sejak resi terbit barangnya sudah berada di tangan kurir. Pada tahap
- * itu yang berlaku bukan lagi pembatalan melainkan pengembalian: barangnya
- * harus benar-benar kembali dan diperiksa dulu sebelum dananya cair.
  */
 class PembatalanPesananService
 {
@@ -52,27 +38,16 @@ class PembatalanPesananService
     }
 
     /**
-     * Pengiriman dianggap sudah diatur bila statusnya sudah "dikirim" ATAU
-     * nomor resinya sudah terisi.
-     *
-     * Keduanya diperiksa karena admin kerap mencatat resi lebih dulu sebelum
-     * mengubah statusnya; kalau hanya status yang dilihat, ada celah waktu
-     * ketika barang sudah diserahkan ke kurir tetapi pembeli masih bisa
-     * membatalkan sendiri.
-     */
+ * Pengiriman dianggap sudah diatur bila statusnya sudah "dikirim" ATAU nomor resinya sudah terisi.
+ */
     public function sudahDiaturPengiriman(Order $order): bool
     {
         return $order->status === 'shipped' || filled($order->tracking_number);
     }
 
     /**
-     * Membatalkan pesanan seketika.
-     *
-     * Stok dikembalikan, dan bila pesanannya sudah lunas, dananya dikreditkan
-     * ke R_Pay pembeli. Seluruhnya dalam satu transaksi database: kalau salah
-     * satu gagal, tidak ada yang berubah — jangan sampai stok kembali tetapi
-     * uangnya tidak.
-     */
+ * Membatalkan pesanan seketika.
+ */
     public function batalkan(Order $order, string $alasan, ?string $penjelasan = null): void
     {
         DB::transaction(function () use ($order, $alasan, $penjelasan) {

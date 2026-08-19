@@ -6,11 +6,6 @@ use Carbon\CarbonImmutable;
 
 /**
  * Perhitungan hari kerja.
- *
- * Dipakai bersama oleh pencairan R_Pay dan tenggat peninjauan pengembalian,
- * supaya keduanya memakai daftar tanggal merah yang sama. Kalau logikanya
- * disalin ke dua tempat, cepat atau lambat salah satunya akan ketinggalan
- * saat daftar liburnya diperbarui.
  */
 class KalenderKerja
 {

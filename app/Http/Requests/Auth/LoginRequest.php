@@ -21,10 +21,10 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+ * Get the validation rules that apply to the request.
+ *
+ * @return array<string, ValidationRule|array<mixed>|string>
+ */
     public function rules(): array
     {
         return [
@@ -34,10 +34,10 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
-     *
-     * @throws ValidationException
-     */
+ * Attempt to authenticate the request's credentials.
+ *
+ * @throws ValidationException
+ */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
@@ -63,10 +63,10 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
-     *
-     * @throws ValidationException
-     */
+ * Ensure the login request is not rate limited.
+ *
+ * @throws ValidationException
+ */
     public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {

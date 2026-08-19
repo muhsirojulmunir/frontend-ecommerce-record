@@ -7,11 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Pengajuan pengembalian barang atau pembatalan pesanan.
- *
- * Kolom "reason" menyimpan penjelasan yang ditulis sendiri oleh pembeli,
- * sedangkan "reason_code" menyimpan alasan yang dipilih dari daftar. Keduanya
- * dipisah supaya alasan bisa dihitung untuk laporan tanpa harus menebak dari
- * teks bebas.
  */
 class OrderReturn extends Model
 {
@@ -42,13 +37,8 @@ class OrderReturn extends Model
     ];
 
     /**
-     * Nomor pengembalian berurutan per hari, contoh: RET-20260814-0001.
-     *
-     * Formatnya sengaja meniru nomor pesanan supaya polanya seragam dan
-     * langsung dikenali admin sekilas. Dibuat lewat kait model, bukan di
-     * controller, agar pengajuan dari jalur mana pun — pembeli, admin,
-     * maupun pengisian data — selalu punya nomor.
-     */
+ * Nomor pengembalian berurutan per hari, contoh: RET-20260814-0001.
+ */
     public static function buatNomor(): string
     {
         $tanggal = now()->format('Ymd');
@@ -152,12 +142,8 @@ class OrderReturn extends Model
     }
 
     /**
-     * Langkah-langkah yang ditampilkan sebagai timeline ke pembeli.
-     *
-     * Setiap langkah membawa keterangan yang menjelaskan apa yang sedang
-     * terjadi dan apa yang perlu pembeli lakukan — bukan sekadar nama tahap,
-     * supaya pembeli tidak perlu menebak giliran siapa sekarang.
-     */
+ * Langkah-langkah yang ditampilkan sebagai timeline ke pembeli.
+ */
     public function timeline(): array
     {
         $tahap = $this->tahap_ke;

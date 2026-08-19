@@ -59,11 +59,8 @@ class Cart extends Model
     }
 
     /**
-     * Nilai barang yang dicentang saja — inilah yang dibayar saat checkout.
-     *
-     * Dibedakan dari total di atas, yang tetap memakai seluruh isi keranjang
-     * karena masih dipakai di tempat lain (mis. ringkasan keranjang).
-     */
+ * Nilai barang yang dicentang saja — inilah yang dibayar saat checkout.
+ */
     public function getTotalTerpilihAttribute(): float
     {
         return (float) $this->items

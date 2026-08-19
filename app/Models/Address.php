@@ -60,18 +60,7 @@ class Address extends Model
             'province' => $this->province,
             'postal_code' => $this->postal_code,
 
-            /*
-             * Koordinat ikut disalin ke dalam pesanan.
-             *
-             * Alamat pembeli bisa diubah atau dihapus kapan saja, sedangkan
-             * pesanan adalah catatan yang harus tetap menggambarkan keadaan
-             * SAAT ITU. Tanpa salinan ini, peta tujuan pada pesanan lama akan
-             * bergeser mengikuti alamat yang sekarang — atau hilang sama
-             * sekali bila alamatnya dihapus.
-             *
-             * Nilainya boleh kosong: pesanan lama dan alamat yang belum pernah
-             * ditandai di peta memang tidak punya koordinat.
-             */
+            // Koordinat ikut disalin ke dalam pesanan.
             'latitude'  => $this->latitude,
             'longitude' => $this->longitude,
         ];

@@ -80,9 +80,7 @@
                         </div>
                     </div>
                 @else
-                    {{-- Kode belum terbit, atau hangus karena pesanannya dibatalkan.
-                         Keduanya diberi keterangan yang sama agar jelas apa yang
-                         perlu dilakukan, bukan sekadar kotak kosong. --}}
+                    {{-- Kode belum terbit, atau hangus karena pesanannya dibatalkan. --}}
                     <div class="kartu-referal-belum">
                         <i class="fa-solid fa-lock"></i>
                         <div>
@@ -208,8 +206,7 @@
 
     @push('styles')
     <style>
-        /* Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind yang
-           belum tentu ikut ter-build. */
+        // Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind yang belum tentu ikut ter-build.
         .baris-dompet {
             display: grid; gap: 20px; margin-bottom: 32px;
         }

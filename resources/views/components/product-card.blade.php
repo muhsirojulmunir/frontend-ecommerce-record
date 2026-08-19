@@ -84,9 +84,7 @@
                 </h4>
             </a>
 
-            {{-- Bintang rata-rata. Hanya tampil bila kartunya memang dimuat
-                 dengan hitungan ulasan — sebagian tempat memakai komponen ini
-                 tanpa itu, dan kartu tidak boleh ikut mati karenanya. --}}
+            {{-- Bintang rata-rata. --}}
             @isset($product->jumlah_ulasan)
                 @if($product->jumlah_ulasan > 0)
                     <a href="{{ route('products.show', $product->slug) }}#ulasan" class="kartu-bintang">
@@ -132,10 +130,7 @@
 </div>
 
 @once
-{{-- Gaya ditanam di sini, bukan lewat @push('styles').
-     Kartu produk dirender di dalam <main>, yaitu SETELAH <head> selesai —
-     dorongan ke stack di head tidak akan pernah sampai. @once menjaga blok
-     ini hanya keluar sekali per halaman meski kartunya puluhan. --}}
+{{-- Gaya ditanam di sini, bukan lewat @push('styles'). --}}
 <style>
     .kartu-bintang {
         display: inline-flex; align-items: center; gap: 2px;

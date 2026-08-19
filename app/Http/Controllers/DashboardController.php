@@ -21,13 +21,7 @@ class DashboardController extends Controller
         $totalSpent     = Order::where('user_id', $user->id)->where('payment_status', 'paid')->sum('grand_total');
         $pendingOrders  = Order::where('user_id', $user->id)->where('status', 'pending')->count();
 
-        /*
-         * Kode referal & R_Pay.
-         *
-         * Keabsahan kode dihitung ulang di sini, bukan sekadar melihat apakah
-         * kolomnya terisi: kode yang pesanannya batal harus terlihat hangus
-         * oleh pemiliknya sendiri, bukan cuma oleh orang yang memakainya.
-         */
+        // Kode referal & R_Pay.
         $referral = app(\App\Services\ReferralService::class);
 
         $kodeReferal   = $user->referral_code;

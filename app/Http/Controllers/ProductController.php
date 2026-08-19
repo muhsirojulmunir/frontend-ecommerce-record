@@ -63,17 +63,8 @@ class ProductController extends Controller
             ->take(4)
             ->get();
 
-        /*
-         * Ulasan produk.
-         *
-         * Sebarannya dihitung dengan satu kueri pengelompokan, bukan dengan
-         * mengambil semua ulasan lalu menghitungnya di PHP — produk yang laku
-         * bisa punya ribuan ulasan, dan yang ditampilkan hanya sehalaman.
-         */
-        /*
-         * Saringan bintang. Nilai di luar 1-5 dianggap "semua" — termasuk
-         * bila alamatnya diutak-atik sendiri oleh pengunjung.
-         */
+        // Ulasan produk.
+        // Saringan bintang.
         $saringBintang = (int) request()->query('bintang', 0);
         if ($saringBintang < 1 || $saringBintang > 5) {
             $saringBintang = 0;

@@ -31,11 +31,7 @@
             </div>
         </div>
 
-        {{-- Galat validasi.
-             Pesan per kolom ditulis di dalam modal, sedangkan modal itu
-             tertutup lagi setelah halaman dimuat ulang — akibatnya pembeli
-             melihat halaman berkedip tanpa keterangan apa pun dan mengira
-             tombolnya rusak. Ringkasan ini selalu tampil di luar modal. --}}
+        {{-- Galat validasi. --}}
         @if($errors->any())
             <div class="galat-ringkas">
                 <i class="fa-solid fa-circle-exclamation"></i>
@@ -284,9 +280,7 @@
                     </div>
                 @endif
 
-                {{-- ══ Pembatalan ══
-                     Jalurnya ditentukan sudah atau belumnya pengiriman diatur,
-                     bukan sudah atau belumnya dibayar. --}}
+                {{-- ══ Pembatalan ══ --}}
                 @php
                     $pembatalan = app(\App\Services\PembatalanPesananService::class);
                     $jalurBatal = $pembatalan->jalur($order);
@@ -360,10 +354,7 @@
                             </button>
                         </form>
 
-                        {{-- Modal konfirmasi penerimaan.
-                             Syarat video unboxing ditaruh di sini — bukan di
-                             halaman bantuan — karena inilah saat terakhir
-                             pembeli bisa bertindak sebelum garansinya gugur. --}}
+                        {{-- Modal konfirmasi penerimaan. --}}
                         <div id="modal-confirm-{{ $order->order_number }}"
                              class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-6">
                             <div class="terima-kotak">
@@ -449,10 +440,7 @@
                     @endphp
 
                     <div class="pt-2 space-y-4" id="nilai">
-                        {{-- Ajakan menilai, menetap selama masih ada barang yang
-                             belum dinilai. Modalnya memang terbuka sendiri saat
-                             halaman dibuka, tetapi pembeli yang menutupnya harus
-                             tetap punya jalan untuk kembali ke sana. --}}
+                        {{-- Ajakan menilai, menetap selama masih ada barang yang --}}
                         @if($belumDinilai->isNotEmpty())
                             <div class="nilai-ajakan">
                                 <div class="nilai-ajakan-teks">
@@ -475,9 +463,7 @@
                             </div>
                         @endif
 
-                        {{-- Pengembalian TETAP terbuka setelah barang diterima,
-                             selama masih dalam tenggat. Tombolnya sengaja tidak
-                             dihilangkan begitu pesanan selesai. --}}
+                        {{-- Pengembalian TETAP terbuka setelah barang diterima, --}}
                         @if(! $pengembalian && $bolehRetur)
                             <div class="selesai-retur">
                                 <button type="button"
@@ -503,9 +489,7 @@
                             </div>
                         @endif
 
-                        {{-- ══ Kode referal ══
-                             Baru muncul setelah pesanan selesai — inilah bukti
-                             transaksinya benar-benar tuntas. --}}
+                        {{-- ══ Kode referal ══ --}}
                         @if($referalAktif)
                             <div class="referal-pesanan" x-data="{ tersalin: false }">
                                 <div class="referal-pesanan-kepala">
@@ -555,10 +539,7 @@
                     </div>
                 @endif
 
-                {{-- ══ Timeline pengembalian ══
-                     Menggantikan kartu status datar. Pembeli perlu tahu tahap
-                     mana yang sudah lewat, mana yang sedang berjalan, dan apa
-                     yang jadi gilirannya sekarang. --}}
+                {{-- ══ Timeline pengembalian ══ --}}
                 @if($pengembalian)
                     @php $alamatRetur = config('alasan-retur.alamat_pengembalian'); @endphp
 
@@ -566,10 +547,7 @@
                         <div class="retur-jalur-kepala">
                             <div>
                                 <h3 class="retur-jalur-judul">Pengajuan Pengembalian</h3>
-                                {{-- Nomor pengajuan ditampilkan supaya pembeli punya
-                                     satu rujukan yang bisa disebut saat menghubungi
-                                     kami — satu pesanan bisa punya lebih dari satu
-                                     pengajuan, jadi nomor pesanan saja tidak cukup. --}}
+                                {{-- Nomor pengajuan ditampilkan supaya pembeli punya --}}
                                 @if($pengembalian->return_number)
                                     <p class="retur-jalur-nomor">{{ $pengembalian->return_number }}</p>
                                 @endif
@@ -875,11 +853,7 @@
             </div>
         </div>
 
-        {{-- ── Ajakan gabung program afiliasi ──
-             Melintang selebar halaman, di bawah rincian pesanan. Ditaruh di
-             sini, bukan diselipkan di kolom samping: sebagai kartu sempit
-             isinya bertumpuk ke bawah dan terlihat sesak, sedangkan
-             melintang begini judul dan ajakannya bisa berdampingan. --}}
+        {{-- ── Ajakan gabung program afiliasi ── --}}
         <a href="{{ route('affiliate') }}" class="promo-saldo">
             <span class="promo-saldo-kilau" aria-hidden="true"></span>
 
@@ -922,11 +896,7 @@
         @endphp
 
         <div x-data="{
-                {{-- Terbuka sendiri begitu pesanan selesai dan masih ada
-                     barang yang belum dinilai. Inilah 'wajib'-nya: pembeli
-                     tidak perlu mencari tombolnya, penilaian yang datang
-                     menghampiri. Tetap bisa ditutup — memaksa orang mengetik
-                     hanya menghasilkan penilaian asal-asalan. --}}
+                {{-- Terbuka sendiri begitu pesanan selesai dan masih ada --}}
                 buka: true,
                 maksFoto: {{ $maksFotoUlasan }},
                 maksFotoMb: {{ (int) config('ulasan.maks_foto_mb', 2) }},
@@ -952,9 +922,7 @@
 
                 beriBintang(id, n) { this.nilai[id] = n; },
 
-                {{-- Bintang yang tampil: yang disorot tetikus lebih dulu,
-                     baru yang benar-benar dipilih. Tanpa ini, bintang tidak
-                     memberi umpan balik apa pun sebelum diklik. --}}
+                {{-- Bintang yang tampil: yang disorot tetikus lebih dulu, --}}
                 bintangTampil(id) { return this.sorot[id] || this.nilai[id] || 0; },
 
                 async pilihFoto(e, id) {
@@ -996,10 +964,7 @@
                         hasil.forEach((b) => dt.items.add(b));
                         masukan.files = dt.files;
 
-                        {{-- Alamat sementara dibuat supaya fotonya benar-benar
-                             terlihat, bukan sekadar disebut jumlahnya. Pembeli
-                             perlu memastikan yang terpasang memang foto yang
-                             dia maksud sebelum mengirim. --}}
+                        {{-- Alamat sementara dibuat supaya fotonya benar-benar --}}
                         this.bebaskanAlamat(id);
 
                         this.foto[id] = hasil.map((b) => ({
@@ -1017,19 +982,9 @@
                     }
                 },
 
-                /*
-                 * Membuang satu foto dari pilihan.
-                 *
-                 * Berkasnya juga dilepas dari <input>, bukan hanya dari daftar
-                 * di layar — kalau tidak, foto yang tampak sudah dihapus tetap
-                 * ikut terkirim.
-                 */
+                // Membuang satu foto dari pilihan.
                 buangFoto(id, urutan) {
-                    {{-- Pemilihnya memakai kutip TUNGGAL di dalam kurung siku.
-                         Seluruh isi x-data ini berada di dalam atribut HTML
-                         yang dibatasi kutip ganda; satu kutip ganda saja di
-                         sini akan menutup atributnya lebih awal dan mematikan
-                         seluruh komponen tanpa galat apa pun. --}}
+                    {{-- Pemilihnya memakai kutip TUNGGAL di dalam kurung siku. --}}
                     const masukan = document.querySelector(
                         'input[name=\'penilaian[' + id + '][photos][]\']');
 
@@ -1043,17 +998,14 @@
                     this.foto[id] = this.foto[id].filter((_, i) => i !== urutan);
                 },
 
-                /* Foto hasil pemampatan kerap jauh di bawah 1 MB. Menuliskannya
-                   sebagai 0.0 MB terbaca seperti berkas kosong, jadi di bawah
-                   satu megabita disebut dalam kilobita saja. */
+                // Foto hasil pemampatan kerap jauh di bawah 1 MB.
                 ukuranBerkas(byte) {
                     return byte < 1048576
                         ? Math.max(1, Math.round(byte / 1024)) + ' KB'
                         : (byte / 1048576).toFixed(1) + ' MB';
                 },
 
-                /* Alamat sementara dilepas begitu tidak dipakai; kalau tidak,
-                   berkasnya tetap dipegang peramban sampai halaman ditutup. */
+                // Alamat sementara dilepas begitu tidak dipakai; kalau tidak, berkasnya tetap dipegang peramban sam...
                 bebaskanAlamat(id) {
                     (this.foto[id] || []).forEach((f) => URL.revokeObjectURL(f.alamat));
                 },
@@ -1131,9 +1083,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Bintang. Radio sungguhan di baliknya supaya
-                                     tetap terkirim dan tetap bisa dijangkau
-                                     papan ketik, bukan sekadar ikon yang diklik. --}}
+                                {{-- Bintang. --}}
                                 <div class="nilai-bintang-baris">
                                     <div class="nilai-bintang" @mouseleave="sorot[{{ $item->id }}] = 0">
                                         @for($b = 1; $b <= 5; $b++)
@@ -1191,9 +1141,7 @@
                                         <div class="nilai-foto-item">
                                             <img :src="f.alamat" :alt="'Foto ulasan: ' + f.nama">
 
-                                            {{-- Tombol buang berada di dalam kotak
-                                                 fotonya, bukan di daftar terpisah,
-                                                 supaya jelas foto mana yang dibuang. --}}
+                                            {{-- Tombol buang berada di dalam kotak --}}
                                             <button type="button"
                                                     @click="buangFoto({{ $item->id }}, i)"
                                                     class="nilai-foto-buang"
@@ -1374,14 +1322,10 @@
 
     @endif
 
-    {{-- Gaya kerangka modal dipakai bersama oleh modal pembatalan dan
-         modal pengembalian, jadi harus selalu dimuat — bukan hanya saat
-         pesanan masih bisa dibatalkan. --}}
+    {{-- Gaya kerangka modal dipakai bersama oleh modal pembatalan dan --}}
     @push('styles')
         <style>
-            /* ══════════ Modal penilaian produk ══════════
-               Memakai kembali kerangka .batal-* yang sudah terbukti bisa
-               digulir; di sini hanya bagian khas penilaian. */
+            // ══════════ Modal penilaian produk ══════════ Memakai kembali kerangka .batal-* yang sudah terbukt...
 
             .nilai-kotak { max-width: 560px; }
 
@@ -1446,8 +1390,7 @@
 
             .nilai-produk-teks { min-width: 0; }
 
-            /* Nama produk di toko ini panjang-panjang; dibatasi dua baris
-               agar tidak mendorong bintangnya jauh ke bawah. */
+            // Nama produk di toko ini panjang-panjang; dibatasi dua baris agar tidak mendorong bintangnya jauh ...
             .nilai-produk-nama {
                 font-size: 12.5px; font-weight: 700; color: #111827; line-height: 1.4;
                 display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
@@ -1473,9 +1416,7 @@
                 font-size: 23px; line-height: 1;
             }
 
-            /* Radio aslinya disembunyikan tetapi tetap ada: itu yang membuat
-               bintangnya terkirim bersama borang dan tetap bisa dipilih
-               dengan papan ketik. Cincin fokusnya sengaja dipertahankan. */
+            // Radio aslinya disembunyikan tetapi tetap ada: itu yang membuat bintangnya terkirim bersama borang...
             .nilai-radio {
                 position: absolute; opacity: 0;
                 width: 100%; height: 100%; left: 0; top: 0;
@@ -1533,8 +1474,7 @@
             }
             .nilai-foto-buang:hover { background: #DC2626; }
 
-            /* Ukuran hasil pemampatan disebutkan, supaya pembeli tahu fotonya
-               memang sudah dikecilkan dan tidak mengulang sendiri. */
+            // Ukuran hasil pemampatan disebutkan, supaya pembeli tahu fotonya memang sudah dikecilkan dan tidak...
             .nilai-foto-ukuran {
                 position: absolute; left: 0; right: 0; bottom: 0;
                 padding: 2px 4px;
@@ -1549,11 +1489,7 @@
                 clip: rect(0,0,0,0); white-space: nowrap; border: 0;
             }
 
-            /* ══════════ Ajakan program afiliasi ══════════
-               Ditulis tangan seperti blok lain di halaman ini: hasil build
-               Tailwind yang terpasang tidak memuat sebagian kelas yang
-               diperlukan, jadi menulisnya di sini jauh lebih bisa diandalkan
-               daripada berharap kelasnya ada. */
+            // ══════════ Ajakan program afiliasi ══════════ Ditulis tangan seperti blok lain di halaman ini: ha...
 
             .promo-saldo {
                 position: relative;
@@ -1564,9 +1500,7 @@
                 border-radius: 10px;
                 overflow: hidden;
 
-                /* Biru tua ke ungu-tua: cukup berbeda dari kartu putih di
-                   sekitarnya agar tertangkap mata, tanpa berteriak seperti
-                   spanduk diskon. */
+                // Biru tua ke ungu-tua: cukup berbeda dari kartu putih di sekitarnya agar tertangkap mata, tanpa be...
                 background:
                     radial-gradient(90% 200% at 100% 0%, #2C5AA0 0%, transparent 60%),
                     linear-gradient(115deg, #16294B 0%, #1E3A6B 60%, #24305E 100%);
@@ -1583,8 +1517,7 @@
                 box-shadow: 0 8px 22px rgb(16 32 62 / .30);
             }
 
-            /* Tepi tipis di dalam, supaya kartunya punya batas yang jelas
-               tanpa garis tegas yang membuatnya terlihat seperti kotak dialog. */
+            // Tepi tipis di dalam, supaya kartunya punya batas yang jelas tanpa garis tegas yang membuatnya ter...
             .promo-saldo::after {
                 content: '';
                 position: absolute; inset: 0;
@@ -1593,9 +1526,7 @@
                 pointer-events: none;
             }
 
-            /* Kilau menyapu pelan. Satu sapuan tiap 7 detik — cukup untuk
-               menarik pandangan sekilas, tidak cukup untuk mengganggu orang
-               yang sedang membaca rincian pesanannya. */
+            // Kilau menyapu pelan.
             .promo-saldo-kilau {
                 position: absolute; inset: 0;
                 background: linear-gradient(100deg,
@@ -1624,9 +1555,7 @@
                 box-shadow: 0 3px 9px rgb(245 158 11 / .35);
             }
 
-            /* Bagian teks yang memuai mengisi ruang di tengah — inilah yang
-               membuat lencana tetap di kiri dan ajakan tetap di kanan,
-               berapa pun lebar layarnya. */
+            // Bagian teks yang memuai mengisi ruang di tengah — inilah yang membuat lencana tetap di kiri dan a...
             .promo-saldo-teks { flex: 1 1 auto; min-width: 0; }
 
             .promo-saldo-atas {
@@ -1656,8 +1585,7 @@
                 max-width: 62ch;
             }
 
-            /* Pemisah tegak, bukan garis mendatar: di tata letak melintang
-               itulah yang memisahkan bacaan dari ajakannya. */
+            // Pemisah tegak, bukan garis mendatar: di tata letak melintang itulah yang memisahkan bacaan dari a...
             .promo-saldo-kaki {
                 flex: none;
                 display: flex; align-items: center; gap: 14px;
@@ -1678,19 +1606,14 @@
                 color: #FCD34D;
             }
 
-            /* Panah bergeser sedikit saat disentuh — isyarat arah, bukan
-               hiasan yang bergerak sendiri terus-menerus. */
+            // Panah bergeser sedikit saat disentuh — isyarat arah, bukan hiasan yang bergerak sendiri terus-men...
             .promo-saldo-aksi i {
                 font-size: 10px;
                 transition: transform 260ms cubic-bezier(.2,.8,.3,1);
             }
             .promo-saldo:hover .promo-saldo-aksi i { transform: translateX(4px); }
 
-            /*
-             * Di layar sempit, melintang tidak lagi muat: isinya ditumpuk
-             * dan pemisah tegaknya berubah jadi garis mendatar. Ikonnya ikut
-             * mengecil supaya tidak mendesak judulnya.
-             */
+            // Di layar sempit, melintang tidak lagi muat: isinya ditumpuk dan pemisah tegaknya berubah jadi gar...
             @media (max-width: 720px) {
                 .promo-saldo { flex-wrap: wrap; gap: 14px; padding: 16px 18px; }
 
@@ -1713,8 +1636,7 @@
                 .promo-saldo:hover { transform: none; }
             }
 
-            /* Modal alasan pembatalan — CSS sendiri agar tidak bergantung
-               pada hasil build Tailwind. */
+            // Modal alasan pembatalan — CSS sendiri agar tidak bergantung pada hasil build Tailwind.
             [x-cloak] { display: none !important; }
 
             .batal-lapis {
@@ -1732,8 +1654,7 @@
                 width: 100%;
                 max-width: 480px;
                 max-height: 90vh;
-                /* dvh mengikuti tinggi layar sebenarnya di HP, saat bilah
-                   alamat browser muncul-hilang. vh di atas jadi cadangan. */
+                // dvh mengikuti tinggi layar sebenarnya di HP, saat bilah alamat browser muncul-hilang.
                 max-height: 90dvh;
                 display: flex;
                 flex-direction: column;
@@ -1774,8 +1695,7 @@
             }
             .batal-tutup:hover { background: #f3f4f6; color: #374151; }
 
-            /* Form ikut jadi kolom flex, sebab isi & kaki modal berada
-               di dalamnya — bukan langsung di bawah .batal-kotak. */
+            // Form ikut jadi kolom flex, sebab isi & kaki modal berada di dalamnya — bukan langsung di bawah .b...
             .batal-form {
                 flex: 1 1 auto;
                 min-height: 0;
@@ -1784,9 +1704,7 @@
             }
 
             .batal-isi {
-                /* min-height: 0 wajib ada. Tanpa itu, elemen flex memakai
-                   min-height: auto sehingga tidak mau menyusut, modal meluap
-                   melewati 90vh, dan overflow-y tidak pernah aktif. */
+                // min-height: 0 wajib ada.
                 flex: 1 1 auto;
                 min-height: 0;
                 padding: 20px;
@@ -1961,9 +1879,7 @@
         </style>
     @endpush
 
-        {{-- ══════════ MODAL PENGAJUAN PENGEMBALIAN ══════════
-             Memakai kerangka modal pembatalan yang sudah terbukti bisa
-             digulir: badan modal jadi wadah flex, isinya yang menggulir. --}}
+        {{-- ══════════ MODAL PENGAJUAN PENGEMBALIAN ══════════ --}}
         @php
             $pilihanRetur = config('alasan-retur.pilihan', []);
             $ukuranDipesan = $order->items->pluck('variant_info')->filter()->values();
@@ -1984,9 +1900,7 @@
                 buka: {{ $galatRetur ? 'true' : 'false' }},
                 alasan: '{{ old('reason_code', '') }}',
                 penyelesaian: '{{ old('resolution', '') }}',
-                {{-- Js::from, bukan @json. @json memancarkan tanda kutip ganda
-                     apa adanya, dan di dalam atribut x-data="..." kutip itu
-                     langsung menutup atributnya sehingga seluruh komponen mati. --}}
+                {{-- Js::from, bukan @json. --}}
                 penjelasan: {{ Js::from(old('reason', '')) }},
                 pilihan: {{ Js::from(collect($pilihanRetur)->keyBy('kode')) }},
 
@@ -2006,9 +1920,7 @@
                     return this.penjelasan.trim().length >= this.minimalPenjelasan;
                 },
 
-                /* ── Bukti wajib ──
-                   Nama berkas disimpan supaya pembeli bisa melihat mana yang
-                   sudah terpasang tanpa harus membuka jendela berkas lagi. */
+                // ── Bukti wajib ── Nama berkas disimpan supaya pembeli bisa melihat mana yang sudah terpasang tanp...
                 maksFotoMb:  {{ (int) config('alasan-retur.bukti.maks_foto_mb', 5) }},
                 maksVideoMb: {{ (int) config('alasan-retur.bukti.maks_video_mb', 100) }},
                 maksDetik:   {{ (int) config('alasan-retur.bukti.maks_durasi_detik', 120) }},
@@ -2032,21 +1944,7 @@
 
                 get sedangMemampatkan() { return this.sedangProses !== ''; },
 
-                /*
-                 * Pemampat harus benar-benar ada sebelum berkas diterima.
-                 *
-                 * Kalau skripnya gagal termuat — diblokir, salah alamat, atau
-                 * tertahan singgahan lama — tanpa penjagaan ini berkas mentah
-                 * berukuran puluhan megabita akan tetap dikirim, lalu ditolak
-                 * PHP dengan pesan gagal-unggah yang tidak menjelaskan apa pun.
-                 * Lebih baik gagal di sini, dengan sebab yang jelas.
-                 *
-                 * Catatan: seluruh isi x-data ini berada di dalam atribut HTML
-                 * yang dibatasi tanda kutip ganda. Satu tanda kutip ganda saja
-                 * di mana pun di sini — termasuk di dalam komentar seperti ini —
-                 * akan menutup atributnya lebih awal dan mematikan komponennya
-                 * tanpa galat apa pun. Pakai kutip tunggal saja.
-                 */
+                // Pemampat harus benar-benar ada sebelum berkas diterima.
                 pastikanPemampat() {
                     if (! window.PemampatBerkas) {
                         throw new Error('Komponen pengecil berkas belum termuat. '
@@ -2054,13 +1952,7 @@
                     }
                 },
 
-                /*
-                 * Foto di atas batas tidak ditolak, melainkan dikecilkan dulu.
-                 *
-                 * Foto dari ponsel masa kini hampir selalu melewati 2 MB, dan
-                 * menolaknya berarti menyuruh pembeli mengurus sendiri hal yang
-                 * bisa diselesaikan peramban dalam sekejap.
-                 */
+                // Foto di atas batas tidak ditolak, melainkan dikecilkan dulu.
                 async pilihFoto(e, kunci) {
                     const masukan = e.target;
                     const berkas  = masukan.files[0];
@@ -2099,14 +1991,7 @@
                     }
                 },
 
-                /*
-                 * Video: durasi diperiksa dulu, baru ukurannya dikecilkan.
-                 *
-                 * Urutannya penting. Menyandikan ulang video berlangsung dalam
-                 * waktu nyata — video 2 menit memakan sekitar 2 menit — jadi
-                 * video yang toh akan ditolak karena kelamaan harus disingkirkan
-                 * sebelum pembeli menunggu sia-sia.
-                 */
+                // Video: durasi diperiksa dulu, baru ukurannya dikecilkan.
                 async pilihVideo(e) {
                     const masukan = e.target;
                     const berkas  = masukan.files[0];
@@ -2312,12 +2197,7 @@
                             @error('reason') <p class="galat-retur">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- ── Bukti wajib ──
-                             Baru muncul setelah alasannya dipilih. Menampilkan
-                             tiga kotak unggah sejak awal membuat borangnya
-                             terlihat berat padahal pembeli belum tentu jadi
-                             mengajukan; urutannya sengaja: alasan dulu, bukti
-                             belakangan. --}}
+                        {{-- ── Bukti wajib ── --}}
                         <div x-show="alasan" x-cloak class="retur-blok">
                             <label class="batal-tanya">
                                 Lampirkan bukti
@@ -2421,9 +2301,7 @@
                                             Rekaman utuh tanpa potongan, sejak paket masih tersegel sampai barangnya terlihat.
                                         </span>
 
-                                        {{-- Penyandian ulang berjalan dalam waktu nyata, jadi
-                                             kemajuannya harus terlihat. Bilah diam tanpa angka
-                                             akan dikira halaman yang menggantung. --}}
+                                        {{-- Penyandian ulang berjalan dalam waktu nyata, jadi --}}
                                         <span class="bukti-proses" x-show="sedangProses === 'unboxing_video'" x-cloak>
                                             <span x-text="'Mengecilkan videonya… ' + kemajuan + '%'"></span>
                                             <span class="bukti-bilah">
@@ -2458,9 +2336,7 @@
                                 @error('unboxing_video') <p class="galat-retur">{{ $message }}</p> @enderror
                             </div>
 
-                            {{-- Durasi hasil pembacaan di peramban ikut dikirim supaya
-                                 server bisa menolak video kepanjangan tanpa memasang
-                                 pengurai video di sisinya. --}}
+                            {{-- Durasi hasil pembacaan di peramban ikut dikirim supaya --}}
                             <input type="hidden" name="video_duration" :value="durasiVideo ?? ''">
 
                             <p class="retur-bantu">
@@ -2484,9 +2360,7 @@
                     </div>
 
                     <div class="retur-kaki">
-                        {{-- Bila tombol kirim masih mati, sebutkan apa yang kurang.
-                             Tombol abu-abu tanpa penjelasan hanya membuat pembeli
-                             menebak-nebak kenapa tidak bisa ditekan. --}}
+                        {{-- Bila tombol kirim masih mati, sebutkan apa yang kurang. --}}
                         <p class="retur-kaki-sisa" x-show="!siapKirim" x-cloak>
                             <i class="fa-solid fa-circle-info"></i>
                             <span x-text="!alasan
@@ -2525,21 +2399,14 @@
         @endif
 
     @push('scripts')
-    {{-- Pemampat berkas bukti. Disajikan dari public/ langsung, bukan lewat
-         Vite: berkas bundelan di proyek ini dibangun terpisah dan mudah
-         tertinggal, sedangkan yang ini harus berlaku begitu disimpan.
-         filemtime dipakai sebagai penanda versi supaya perubahan tidak
-         tertahan singgahan peramban. --}}
+    {{-- Pemampat berkas bukti. --}}
     <script src="{{ asset('js/pemampat-berkas.js') }}?v={{ filemtime(public_path('js/pemampat-berkas.js')) }}"></script>
     @endpush
 
     @push('styles')
     <style>
-        /* ── Modal pengembalian ─────────────────────────────────────
-           Kerangka modalnya memakai kembali .batal-* yang sudah terbukti
-           bisa digulir; di sini hanya isian khas pengembalian. */
-        /* Selama ada berkas diproses, kotak lain tidak bisa ditekan: dua
-           pemampatan sekaligus akan berebut CPU dan keduanya jadi lamban. */
+        // ── Modal pengembalian ───────────────────────────────────── Kerangka modalnya memakai kembali .ba...
+        // Selama ada berkas diproses, kotak lain tidak bisa ditekan: dua pemampatan sekaligus akan berebut ...
         .bukti-daftar[data-sibuk="1"] .bukti-kotak { pointer-events: none; opacity: .55; }
         .bukti-daftar[data-sibuk="1"] .bukti-kotak-sibuk { pointer-events: none; opacity: 1; }
 
@@ -2571,16 +2438,12 @@
         }
         .bukti-susut i { margin-right: 4px; }
 
-        /* ── Kotak unggah bukti ──
-           Ditulis tangan, sebab CSS bawaan yang sudah dibangun tidak memuat
-           sebagian kelas jarak yang dibutuhkan di sini. */
+        // ── Kotak unggah bukti ── Ditulis tangan, sebab CSS bawaan yang sudah dibangun tidak memuat sebagi...
         .bukti-pengantar { margin-bottom: 12px; }
 
         .bukti-daftar { display: flex; flex-direction: column; gap: 10px; }
 
-        /* Masukan berkas aslinya disembunyikan, bukan dihapus: seluruh kotak
-           berfungsi sebagai <label>-nya, jadi menekan di mana pun di dalam
-           kotak tetap membuka jendela pemilih berkas. */
+        // Masukan berkas aslinya disembunyikan, bukan dihapus: seluruh kotak berfungsi sebagai <label>-nya,...
         .bukti-masukan {
             position: absolute; width: 1px; height: 1px;
             opacity: 0; overflow: hidden; clip: rect(0 0 0 0);
@@ -2623,8 +2486,7 @@
             display: block; margin-top: 2px;
             font-size: 12px; line-height: 1.5; color: #6b7280;
         }
-        /* Nama berkas dari ponsel bisa sangat panjang; dipotong daripada
-           mendorong tombol "Ganti" keluar dari kotaknya. */
+        // Nama berkas dari ponsel bisa sangat panjang; dipotong daripada mendorong tombol "Ganti" keluar da...
         .bukti-nama {
             display: block; margin-top: 2px;
             font-size: 12px; color: #15803d; font-weight: 600;
@@ -2718,9 +2580,7 @@
         }
         .retur-catatan i { margin-top: 2px; }
 
-        /* ══ Modal konfirmasi penerimaan ═══════════════════════════
-           Isinya panjang karena memuat syarat garansi, jadi badannya
-           dibuat menggulir sendiri sementara tombolnya tetap terlihat. */
+        // ══ Modal konfirmasi penerimaan ═══════════════════════════ Isinya panjang karena memuat syarat ga...
         .terima-kotak {
             background: #fff; border-radius: 18px;
             box-shadow: 0 22px 50px rgb(0 0 0 / .28);
@@ -2916,9 +2776,7 @@
             font-size: 10.5px; color: #ef4444; margin-top: 8px; line-height: 1.6;
         }
 
-        /* ── Kaki modal & tombolnya ─────────────────────────────────
-           flex-shrink: 0 menjaga tombol tetap terlihat saat isi modal
-           digulir — bagian ini tidak boleh ikut menciut. */
+        // ── Kaki modal & tombolnya ───────────────────────────────── flex-shrink: 0 menjaga tombol tetap t...
         .retur-kaki {
             flex-shrink: 0;
             display: flex;
@@ -2989,8 +2847,7 @@
             box-shadow: 0 4px 14px rgb(27 58 107 / .3);
         }
 
-        /* Keadaan mati dibuat jelas terbaca sebagai "belum bisa", bukan
-           sekadar tombol pudar yang menyisakan tanda tanya. */
+        // Keadaan mati dibuat jelas terbaca sebagai "belum bisa", bukan sekadar tombol pudar yang menyisaka...
         .retur-tombol-kirim:disabled {
             background: #e5e7eb;
             color: #9ca3af;
@@ -3032,8 +2889,7 @@
         .retur-lencana-success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
         .retur-lencana-danger  { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 
-        /* Garis penghubung digambar dari titik langkah, bukan elemen sendiri,
-           supaya panjangnya selalu pas dengan tinggi isi tiap langkah. */
+        // Garis penghubung digambar dari titik langkah, bukan elemen sendiri, supaya panjangnya selalu pas ...
         .retur-langkah { list-style: none; margin: 0; padding: 0; }
         .retur-langkah-item {
             position: relative;

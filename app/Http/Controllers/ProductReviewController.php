@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Penilaian produk oleh pembeli.
- *
- * Penilaian hanya bisa diberikan untuk barang yang benar-benar dibeli dan
- * pesanannya sudah selesai. Semua pemeriksaan itu dilakukan di sini, bukan
- * hanya disembunyikan di tampilan: tombol yang tidak tampil bukan berarti
- * alamatnya tidak bisa dipanggil langsung.
  */
 class ProductReviewController extends Controller
 {
@@ -35,13 +30,7 @@ class ProductReviewController extends Controller
         $maksFoto  = (int) config('ulasan.maks_foto', 3);
         $batasFoto = $megaFoto * 1024;
 
-        /*
-         * Bentuk kiriman: penilaian[<id baris pesanan>][rating|comment|photos]
-         *
-         * Dikelompokkan per baris pesanan, bukan per produk, karena satu
-         * pesanan bisa memuat produk yang sama dalam dua ukuran berbeda —
-         * dan keduanya berhak dinilai sendiri-sendiri.
-         */
+        // Bentuk kiriman: penilaian[<id baris pesanan>][rating|comment|photos] Dikelompokkan per baris pesa...
         $data = $request->validate([
             'penilaian'                => ['required', 'array', 'min:1'],
             'penilaian.*.rating'       => ['required', 'integer', 'min:1', 'max:5'],

@@ -18,21 +18,7 @@
         {{-- CSS & JS dikompilasi oleh Vite --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        {{-- ══════════ Kenyamanan di layar sentuh ══════════
-
-             Struktur halaman toko ini sudah menyesuaikan lebar layar dengan
-             benar — sudah diperiksa di lebar ponsel, tablet, dan laptop, dan
-             tidak ada isi yang meluber ke samping di mana pun.
-
-             Yang belum beres justru hal lain: banyak tautannya hanya setinggi
-             15-17 piksel. Di tetikus itu tidak masalah karena penunjuknya
-             setajam satu piksel, tetapi ujung jari menutupi sekitar 40 piksel.
-             Tautan setinggi 16 piksel praktis mustahil ditekan tanpa meleset,
-             dan yang meleset akan menekan tautan di sebelahnya.
-
-             Karena itu yang ditambahkan di sini BUKAN pengaturan tata letak
-             baru, melainkan ruang sentuh — dan hanya di layar sentuh yang
-             sempit. Tampilan di laptop sama sekali tidak berubah. --}}
+        {{-- ══════════ Kenyamanan di layar sentuh ══════════ --}}
         <style>
             @media (max-width: 640px) {
                 /* Bar atas: dua tautan kecil yang berdempetan. */
@@ -41,33 +27,17 @@
                     min-height: 34px; padding: 0 4px;
                 }
 
-                /*
-                 * Tautan footer disusun menurun dalam daftar, jadi yang
-                 * ditambah cukup ruang atas-bawahnya. Dibuat "block" supaya
-                 * seluruh lebar barisnya bisa ditekan, bukan hanya persis di
-                 * atas hurufnya.
-                 */
+                // Tautan footer disusun menurun dalam daftar, jadi yang ditambah cukup ruang atas-bawahnya.
                 footer li > a {
                     display: block;
                     padding: 7px 0;
                     min-height: 34px;
                 }
 
-                /* Ikon media sosial di footer: lingkarannya sudah cukup besar,
-                   tetapi jarak antar ikon dirapatkan oleh induknya. */
+                // Ikon media sosial di footer: lingkarannya sudah cukup besar, tetapi jarak antar ikon dirapatkan o...
                 footer .rounded-full { min-width: 38px; min-height: 38px; }
 
-                /*
-                 * Tautan teks kecil yang bertebaran di kepala kartu dan
-                 * kepala halaman: "Dashboard Saya", "Lihat Semua", "Detail".
-                 *
-                 * Yang ditambahkan padding, BUKAN display atau tinggi.
-                 * Padding tegak pada elemen sebaris memperbesar daerah yang
-                 * bisa ditekan tanpa mendorong apa pun di sekitarnya — jadi
-                 * tata letak yang sudah rapi tidak bergeser sedikit pun.
-                 * Tautan-tautan ini berjajar mendatar, bukan bertumpuk, jadi
-                 * daerah sentuh yang melebar tidak akan saling tindih.
-                 */
+                // Tautan teks kecil yang bertebaran di kepala kartu dan kepala halaman: "Dashboard Saya", "Lihat Se...
                 a.text-xs.font-bold,
                 button.text-xs.font-bold,
                 a.text-\[11px\].font-bold,
@@ -147,11 +117,7 @@
         {{-- Toast Notifikasi Pembelian Otomatis (Fake Purchase Toast) --}}
         <x-pembelian-terbaru :pembelian="$pembelianTerbaru ?? []" />
 
-        {{-- Skrip dari masing-masing halaman.
-             Tanpa @stack ini, seluruh @push('scripts') di halaman mana pun
-             tidak pernah ikut terpasang — skripnya tersusun rapi lalu dibuang
-             diam-diam, tanpa galat apa pun yang menunjukkannya. Letaknya di
-             ujung <body> supaya Alpine dan isi halaman sudah ada saat dijalankan. --}}
+        {{-- Skrip dari masing-masing halaman. --}}
         @stack('scripts')
     </body>
 </html>

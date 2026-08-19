@@ -23,10 +23,10 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset code request.
-     *
-     * @throws ValidationException
-     */
+ * Handle an incoming password reset code request.
+ *
+ * @throws ValidationException
+ */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

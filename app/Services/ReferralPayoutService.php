@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Pergerakan uang yang timbul dari kode referal.
- *
- * Dipisahkan dari ReferralService — yang hanya menghitung dan memeriksa —
- * karena kelas ini menyentuh saldo sungguhan. Semua jalur masuk dibuat aman
- * diulang: menandai satu pesanan lunas dua kali tidak akan mengkreditkan
- * komisinya dua kali.
  */
 class ReferralPayoutService
 {
@@ -25,11 +20,8 @@ class ReferralPayoutService
     }
 
     /**
-     * Dipanggil begitu sebuah pesanan dinyatakan lunas.
-     *
-     * Dua hal terjadi: pemesan mendapat kodenya sendiri (bila belum punya),
-     * dan pemilik kode yang ia pakai menerima komisinya.
-     */
+ * Dipanggil begitu sebuah pesanan dinyatakan lunas.
+ */
     public function saatLunas(Order $order): void
     {
         DB::transaction(function () use ($order) {
@@ -54,13 +46,8 @@ class ReferralPayoutService
     }
 
     /**
-     * Dipanggil saat pesanan dibatalkan.
-     *
-     * Komisi yang terlanjur dibayarkan ditarik kembali. Kode referal pemesan
-     * sendiri tidak perlu disentuh: keabsahannya dihitung dari keadaan
-     * pesanannya, jadi kodenya hangus dengan sendirinya bila ini satu-satunya
-     * pesanan lunasnya — dan hidup lagi kalau kelak ia berbelanja.
-     */
+ * Dipanggil saat pesanan dibatalkan.
+ */
     public function saatDibatalkan(Order $order): void
     {
         if (! $this->punyaKomisi($order)) {
@@ -75,13 +62,7 @@ class ReferralPayoutService
             $komisi = (float) $order->referral_commission;
             $saldo  = $this->rpay->saldo($order->referrer_id);
 
-            /*
-             * Komisi bisa saja sudah terpakai belanja atau dicairkan sebelum
-             * pesanannya dibatalkan. Saldo tidak boleh minus, jadi yang
-             * ditarik adalah sebanyak yang masih ada; kekurangannya dicatat
-             * ke log agar bisa ditagihkan atau diputihkan secara sadar,
-             * bukan hilang tanpa jejak.
-             */
+            // Komisi bisa saja sudah terpakai belanja atau dicairkan sebelum pesanannya dibatalkan.
             $ditarik = min($komisi, $saldo);
 
             if ($ditarik <= 0) {

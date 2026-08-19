@@ -4,20 +4,8 @@
 ])
 
 @php
-    /*
-     * Berkas logo dicari sekali di sini, bukan dirangkai berulang di tiap
-     * tempat pemakaian. Urutannya dari format yang paling tajam: SVG tidak
-     * pecah di layar beresolusi tinggi, WebP paling ringan, PNG paling umum.
-     */
-    /*
-     * Satu berkas logo untuk semua tempat — warnanya tidak pernah diubah.
-     *
-     * Biru tetap biru, merah tetap merah. Di latar gelap, keterbacaannya
-     * diurus dengan memberi alas terang di belakang logonya (lihat
-     * .logo-brand-gelap di bawah), bukan dengan mewarnai ulang logonya.
-     * Mewarnai ulang berarti mengubah lambang mereknya sendiri, dan itu
-     * bukan wewenang halaman yang sekadar menampilkannya.
-     */
+    // Berkas logo dicari sekali di sini, bukan dirangkai berulang di tiap tempat pemakaian.
+    // Satu berkas logo untuk semua tempat — warnanya tidak pernah diubah.
     $kandidat = [
         'logo-brand-rapi.svg',   // hasil pangkas, dipakai lebih dulu
         'logo-brand-rapi.webp',
@@ -41,9 +29,7 @@
 @endphp
 
 @if($berkasLogo)
-    {{-- Alamat gambar diteruskan sebagai peubah CSS supaya kilaunya bisa
-         memakai logo itu sendiri sebagai topeng — cahayanya menyapu persis
-         di atas hurufnya, bukan di atas kotak persegi di sekelilingnya. --}}
+    {{-- Alamat gambar diteruskan sebagai peubah CSS supaya kilaunya bisa --}}
     <span {{ $attributes->merge(['class' => "logo-brand {$kelasUkuran} {$kelasVarian}"]) }}
           style="--berkas-logo: url('{{ asset('images/' . $berkasLogo) }}')">
         <img src="{{ asset('images/' . $berkasLogo) }}"
@@ -59,15 +45,9 @@
 @endif
 
 @once
-{{-- Gaya ditanam langsung di sini, bukan lewat @push('styles').
-     Komponen ini dipakai di dalam layout (navbar & footer), yang dirender
-     SETELAH bagian <head> selesai — dorongan ke stack di head tidak akan
-     pernah sampai. @once menjaga blok ini hanya keluar sekali per halaman. --}}
+{{-- Gaya ditanam langsung di sini, bukan lewat @push('styles'). --}}
 <style>
-    /* ══════════ Logo brand ══════════
-       Ditulis di sini, bukan di resources/css/app.css, supaya cahayanya
-       langsung berlaku tanpa menunggu `npm run build`. Aturan di app.css
-       hanya aktif setelah CSS-nya dibangun ulang, dan itu mudah terlupa. */
+    // ══════════ Logo brand ══════════ Ditulis di sini, bukan di resources/css/app.css, supaya cahayany...
 
     .logo-brand {
         position: relative;
@@ -78,13 +58,7 @@
         padding: 4px;
     }
 
-    /*
-     * Ukurannya ditentukan LEBARNYA, bukan tingginya.
-     *
-     * Logo ini berbentuk tulisan memanjang (rasio sekitar 7,8 : 1). Mengatur
-     * tingginya membuat lebarnya meledak tak terduga dan mendesak menu di
-     * sebelahnya; mengatur lebarnya jauh lebih bisa diramalkan.
-     */
+    // Ukurannya ditentukan LEBARNYA, bukan tingginya.
     .logo-brand-gambar {
         width: var(--lebar-logo, 200px);
         height: auto;
@@ -94,36 +68,14 @@
         will-change: filter, transform;
     }
 
-    /*
-     * clamp() membuat logonya ikut mengecil di layar sempit tanpa perlu
-     * titik henti tambahan — di layar lebar ia besar, di ponsel tidak
-     * sampai mendesak tombol menu.
-     */
+    // clamp() membuat logonya ikut mengecil di layar sempit tanpa perlu titik henti tambahan — di layar...
     .logo-brand-kecil  { --lebar-logo: clamp(112px, 13vw, 140px); }
     .logo-brand-sedang { --lebar-logo: clamp(126px, 14vw, 168px); }
     .logo-brand-besar  { --lebar-logo: clamp(180px, 22vw, 260px); }
 
-    /*
-     * Tidak ada bayangan berwarna di sekeliling logo.
-     *
-     * Cahaya biru sebelumnya membuat logo tampak seperti ditempel di atas
-     * kartu bercahaya dan mengotori latar putih navbar. Kesan hidup cukup
-     * datang dari kilau yang menyapu di bawah ini.
-     */
+    // Tidak ada bayangan berwarna di sekeliling logo.
 
-    /*
-     * ── Logo di latar gelap ──
-     *
-     * Tulisan logonya biru tua, dan footer juga biru tua — tanpa perlakuan
-     * apa pun, logonya nyaris tak terlihat. Yang diberi alas terang di sini
-     * adalah LATARNYA, bukan logonya: warna logo tetap utuh apa adanya,
-     * hanya diberi bidang putih agar terbaca.
-     *
-     * Putihnya sengaja tidak murni (#F7F9FC) supaya tidak menyilaukan di
-     * tengah footer gelap, dan sudutnya dibulatkan sedikit agar terbaca
-     * sebagai bidang yang disengaja, bukan gambar yang latarnya lupa
-     * dihapus.
-     */
+    // ── Logo di latar gelap ── Tulisan logonya biru tua, dan footer juga biru tua — tanpa perlakuan ap...
     .logo-brand-gelap {
         padding: 10px 16px;
         border-radius: 10px;
@@ -131,14 +83,7 @@
         box-shadow: 0 2px 10px rgb(0 0 0 / .18);
     }
 
-    /*
-     * ── Kilau menyapu ──
-     *
-     * Lapisan cahaya digambar di atas logo, lalu DITOPENG memakai berkas logo
-     * itu sendiri. Tanpa topeng, kilaunya akan melintasi kotak persegi di
-     * sekeliling logo dan terlihat seperti kaca yang disorot — bukan huruf
-     * yang berkilau.
-     */
+    // ── Kilau menyapu ── Lapisan cahaya digambar di atas logo, lalu DITOPENG memakai berkas logo itu s...
     .logo-brand-kilau {
         position: absolute;
         inset: 4px;                 /* sama dengan padding wadahnya */
@@ -168,16 +113,7 @@
     /* Kilaunya mengikuti alas, bukan tepi luar kotaknya. */
     .logo-brand-gelap .logo-brand-kilau { inset: 10px 16px; }
 
-    /*
-     * Menyapu sekali, lalu diam agak lama sebelum mengulang.
-     *
-     * Dua hal yang diatur di sini, dan keduanya berbeda:
-     *   - lamanya satu putaran (9 detik) menentukan seberapa SERING menyapu,
-     *   - jarak antara 6% dan 42% menentukan seberapa PELAN sapuannya.
-     *
-     * Sapuannya sendiri berjalan sekitar 3,2 detik — hampir dua kali lebih
-     * pelan daripada sebelumnya — lalu logonya diam sekitar 4,7 detik.
-     */
+    // Menyapu sekali, lalu diam agak lama sebelum mengulang.
     @keyframes logo-sapu {
         0%, 6%    { background-position: 190% 0; opacity: 0; }
         10%       { opacity: 1; }

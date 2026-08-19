@@ -31,9 +31,7 @@
                 selectedPayment: 'QRIS',
                 hasPhone: @json($hasPhone),
 
-                {{-- ── Penguncian bertahap ──────────────────────────────
-                     Tiap langkah baru terbuka setelah langkah sebelumnya
-                     terisi. Nilai awal kontak datang dari server. --}}
+                {{-- ── Penguncian bertahap ────────────────────────────── --}}
                 kontakLengkap: @json($kontakLengkap),
                 showKontakForm: @json(! $kontakLengkap),
 
@@ -223,15 +221,7 @@
                     );
                 },
 
-                /*
-                 * Pengisian kode pos otomatis.
-                 *
-                 * Kode pos tidak ada di data wilayah Indonesia yang dipakai
-                 * dropdown, jadi diambil dari hasil pencarian peta. Sekali
-                 * pembeli mengetik sendiri di kolomnya, isian otomatis berhenti
-                 * menimpanya — kode pos yang ia tahu sendiri lebih dipercaya
-                 * daripada tebakan tingkat kecamatan.
-                 */
+                // Pengisian kode pos otomatis.
                 kodePosDiketikSendiri: false,
                 opsiKodePos: [],
                 memuatKodePos: false,
@@ -243,13 +233,8 @@
                 isiKodePosSendiri: false,
 
                 /**
-                 * Beralih ke isian manual.
-                 *
-                 * Daftar dari data kurir tidak selalu memuat kode pos yang
-                 * dipakai pembeli — pemekaran wilayah dan perumahan baru sering
-                 * belum terdaftar. Tanpa jalan keluar ini, pembeli terjebak
-                 * memilih kode pos yang salah atau tidak bisa lanjut sama sekali.
-                 */
+ * Beralih ke isian manual.
+ */
                 mulaiIsiSendiri() {
                     this.isiKodePosSendiri = true;
                     this.pilihanKodePos = '';
@@ -285,13 +270,8 @@
                 },
 
                 /**
-                 * Mengambil daftar kode pos untuk wilayah yang dipilih.
-                 *
-                 * Satu kecamatan bisa punya beberapa kode pos — Danurejan di
-                 * Yogyakarta punya tiga. Semuanya ditawarkan sebagai pilihan
-                 * daripada ditebak salah satu; hanya bila pilihannya tunggal
-                 * kolomnya diisi sendiri.
-                 */
+ * Mengambil daftar kode pos untuk wilayah yang dipilih.
+ */
                 async cariOpsiKodePos() {
                     const dist = this.districts.find(d => d.id == this.selectedDistrictId);
 
@@ -528,12 +508,8 @@
                 },
 
                 /**
-                 * Upaya kedua mencari kode pos, lewat pembacaan balik peta.
-                 *
-                 * Tidak semua wilayah punya data kode pos di peta terbuka —
-                 * kalau tetap tidak ketemu, kolomnya dibiarkan kosong agar
-                 * pembeli mengisinya sendiri, bukan diisi tebakan yang salah.
-                 */
+ * Upaya kedua mencari kode pos, lewat pembacaan balik peta.
+ */
                 async lengkapiKodePos(lat, lng) {
                     if (this.kodePosDiketikSendiri || this.newAddrPostal) return;
 
@@ -696,21 +672,7 @@
                     }
                 },
 
-                /*
-                 * Mengurai alamat yang ditempel pembeli.
-                 *
-                 * Sebelumnya seluruh teks dilempar mentah-mentah ke Nominatim
-                 * dan hasilnya hanya dipakai untuk mengisi kolom teks — kolom
-                 * Provinsi/Kota/Kecamatan tetap kosong karena dropdown-nya
-                 * terikat pada id wilayah, bukan pada nama. Untuk alamat yang
-                 * nama jalannya tidak terdaftar di peta, pencariannya pun
-                 * gagal total sehingga tidak ada satu pun kolom yang terisi.
-                 *
-                 * Sekarang wilayah ditentukan lebih dulu dari data wilayah
-                 * resmi Indonesia (tidak bergantung pada peta sama sekali),
-                 * baru titik peta dicari memakai nama wilayah yang sudah pasti
-                 * benar itu — dicoba bertahap dari yang paling rinci.
-                 */
+                // Mengurai alamat yang ditempel pembeli.
                 async searchPastedAddress() {
                     const asli = this.pasteAddressText.trim();
                     if (!asli) return;
@@ -889,17 +851,13 @@
                 },
 
                 // ── Ubah jumlah langsung dari checkout ───────────────────
-                /* Nilai barang yang dicentang. Bukan tetapan lagi, karena
-                   jumlahnya bisa diubah di halaman ini. */
+                // Nilai barang yang dicentang.
                 subtotalBarang: {{ (float) $cart->total_terpilih }},
 
-                /* Jumlah per baris keranjang, supaya angkanya berubah seketika
-                   saat ditekan — tidak menunggu jawaban peladen dulu. */
+                // Jumlah per baris keranjang, supaya angkanya berubah seketika saat ditekan — tidak menunggu jawaba...
                 jumlahItem: @json($cartItems->pluck('quantity', 'id')),
 
-                /* Baris yang sedang menunggu jawaban peladen. Tombolnya dikunci
-                   sementara agar penekanan beruntun tidak menimpa satu sama lain
-                   dan menghasilkan jumlah yang salah. */
+                // Baris yang sedang menunggu jawaban peladen.
                 jumlahSibuk: null,
 
                 async ubahJumlah(id, jumlahBaru, stok) {
@@ -926,17 +884,13 @@
 
                         const data = await res.json();
 
-                        /* Peladen bisa memangkas jumlahnya kalau stok berkurang
-                           sejak halaman dibuka. Yang ditampilkan angka dari sana,
-                           bukan angka yang tadi ditekan. */
+                        // Peladen bisa memangkas jumlahnya kalau stok berkurang sejak halaman dibuka.
                         this.jumlahItem[id] = data.jumlah_item || jumlahBaru;
                         this.subtotalBarang = data.total_terpilih;
 
                         window.dispatchEvent(new CustomEvent('cart-count-updated', { detail: { count: data.cart_count } }));
 
-                        /* Ongkir ikut berubah karena beratnya berubah, dan diskon
-                           referal dihitung dari nilai barang — keduanya disegarkan
-                           supaya total yang terlihat tidak menyesatkan. */
+                        // Ongkir ikut berubah karena beratnya berubah, dan diskon referal dihitung dari nilai barang — kedu...
                         this.recalculateShippingCost();
 
                         if (this.referalStatus === 'benar') this.periksaReferal();
@@ -956,12 +910,8 @@
                 memeriksaReferal: false,
 
                 /**
-                 * Keabsahan kode ditentukan server, bukan di sini.
-                 *
-                 * Pemeriksaan di browser hanya untuk memberi tahu pembeli lebih
-                 * cepat; server tetap memeriksa ulang saat pesanan dibuat,
-                 * karena nilai apa pun yang dikirim dari halaman bisa diubah.
-                 */
+ * Keabsahan kode ditentukan server, bukan di sini.
+ */
                 async periksaReferal() {
                     const kode = this.kodeReferal.trim().toUpperCase();
 
@@ -1029,9 +979,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="checkoutData()">
 
-        {{-- Form kontak berdiri sendiri di luar form checkout — HTML tidak
-             mengizinkan form bersarang. Kolom isiannya terhubung ke sini
-             lewat atribut form="form-kontak". --}}
+        {{-- Form kontak berdiri sendiri di luar form checkout — HTML tidak --}}
         <form id="form-kontak" action="{{ route('checkout.kontak') }}" method="POST" class="hidden">
             @csrf
         </form>
@@ -1116,10 +1064,7 @@
                             @endunless
                         </div>
 
-                        {{-- ══════ Masuk di tempat ══════
-                             Terbuka sendiri kalau percobaan masuk sebelumnya gagal,
-                             supaya pesan galatnya tidak tersembunyi di balik panel
-                             yang tertutup. --}}
+                        {{-- ══════ Masuk di tempat ══════ --}}
                         @unless($sudahLogin)
                             <div x-show="bukaMasuk" x-cloak x-transition
                                  class="mb-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
@@ -1412,10 +1357,7 @@
                                 </div>
 
                                 <div class="relative">
-                                    {{-- Tinggi peta ditulis di CSS sendiri, bukan kelas Tailwind.
-                                         Kelas "h-60" tidak ikut ter-build, sehingga kotaknya
-                                         setinggi nol dan petanya sama sekali tidak kelihatan
-                                         meski Leaflet-nya berjalan normal. --}}
+                                    {{-- Tinggi peta ditulis di CSS sendiri, bukan kelas Tailwind. --}}
                                     <div x-ref="mapContainer" class="peta-lokasi"></div>
 
                                     {{-- Toast Notifikasi Koordinat Diperbarui --}}
@@ -1568,10 +1510,7 @@
                                         @endif
                                     </p>
                                 </div>
-                                {{-- Jumlah bisa diubah di sini, tanpa harus balik
-                                     ke halaman keranjang. Batas atasnya stok yang
-                                     tersedia; peladen tetap memangkas sendiri kalau
-                                     stoknya berubah di tengah jalan. --}}
+                                {{-- Jumlah bisa diubah di sini, tanpa harus balik --}}
                                 @php
                                     $stokItem = $item->productVariant
                                         ? (int) $item->productVariant->stock
@@ -1734,10 +1673,7 @@
                                     </p>
                                     <p class="text-gray-400 mt-0.5">Estimasi: <span x-text="item.etd"></span></p>
 
-                                    {{-- Keterangan jadwal jemput untuk pesanan
-                                         instan yang masuk di luar jam kurir.
-                                         Disebutkan di sini, sebelum pembeli
-                                         membayar — bukan setelahnya. --}}
+                                    {{-- Keterangan jadwal jemput untuk pesanan --}}
                                     <template x-if="item.catatan">
                                         <p class="mt-1 text-[10px] leading-snug text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
                                             <i class="fa-solid fa-clock mr-0.5"></i>
@@ -1767,10 +1703,7 @@
                                 <p class="font-bold text-gray-800" x-text="item.name"></p>
                                 <p class="text-gray-400 mt-0.5">Estimasi: <span x-text="item.etd"></span></p>
 
-                                    {{-- Keterangan jadwal jemput untuk pesanan
-                                         instan yang masuk di luar jam kurir.
-                                         Disebutkan di sini, sebelum pembeli
-                                         membayar — bukan setelahnya. --}}
+                                    {{-- Keterangan jadwal jemput untuk pesanan --}}
                                     <template x-if="item.catatan">
                                         <p class="mt-1 text-[10px] leading-snug text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
                                             <i class="fa-solid fa-clock mr-0.5"></i>
@@ -1918,9 +1851,7 @@
             }
             .sisa-langkah i { margin-top: 2px; color: #d97706; }
 
-            /* ── Pilihan kurir ──────────────────────────────────────────
-               Ditulis sebagai CSS sendiri agar tidak bergantung pada kelas
-               Tailwind yang mungkin tidak ikut ter-build. */
+            // ── Pilihan kurir ────────────────────────────────────────── Ditulis sebagai CSS sendiri agar tida...
             .judul-kurir {
                 display: flex;
                 align-items: center;
@@ -1962,15 +1893,12 @@
                 background: rgb(27 58 107 / 0.05);
             }
 
-            /* Garis hijau tipis di tepi kiri: penanda cepat bahwa baris ini
-               adalah layanan instan, terbaca bahkan sebelum lencananya dibaca. */
+            // Garis hijau tipis di tepi kiri: penanda cepat bahwa baris ini adalah layanan instan, terbaca bahk...
             .kartu-kurir-instan {
                 border-left: 3px solid #10b981;
             }
 
-            /* ── Kartu kode referal ─────────────────────────────────────
-               Ditulis sebagai CSS sendiri agar tidak bergantung pada kelas
-               Tailwind yang belum tentu ikut ter-build. */
+            // ── Kartu kode referal ───────────────────────────────────── Ditulis sebagai CSS sendiri agar tida...
             .kartu-referal {
                 background: #eef7fe;
                 border: 1px solid #dbeafe;
@@ -2030,10 +1958,7 @@
                 color: #047857; text-decoration: underline;
             }
 
-            /* ── Peta titik lokasi pengiriman ────────────────────────────
-               Ukurannya wajib eksplisit: Leaflet menghitung ubinnya dari
-               tinggi wadahnya, dan wadah setinggi nol menghasilkan peta yang
-               "berjalan" tetapi tidak tampak sama sekali. */
+            // ── Peta titik lokasi pengiriman ──────────────────────────── Ukurannya wajib eksplisit: Leaflet m...
             .peta-lokasi {
                 width: 100%;
                 height: 280px;
@@ -2076,15 +2001,7 @@
         </style>
     @endpush
 
-    {{--
-        Penyegar token CSRF.
-
-        Halaman checkout kerap dibiarkan terbuka lama sementara pembeli
-        menyiapkan alamat atau menimbang pilihan. Bila sesi keburu habis
-        (SESSION_LIFETIME 120 menit), setiap pengiriman form akan ditolak
-        dengan galat 419. Permintaan berkala di bawah ini menjaga sesi tetap
-        hidup sekaligus memperbarui seluruh input _token di halaman.
-    --}}
+    {{-- Penyegar token CSRF. --}}
     <script>
         (function () {
             const JEDA_MS = 10 * 60 * 1000; // setiap 10 menit

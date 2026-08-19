@@ -29,10 +29,10 @@ class NewPasswordController extends Controller
     }
 
     /**
-     * Handle an incoming new password request.
-     *
-     * @throws ValidationException
-     */
+ * Handle an incoming new password request.
+ *
+ * @throws ValidationException
+ */
     public function store(Request $request): RedirectResponse
     {
         if (! $this->hasVerifiedSession($request)) {

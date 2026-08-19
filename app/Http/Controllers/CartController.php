@@ -45,15 +45,7 @@ class CartController extends Controller
         // Tambah ke keranjang lewat CartService
         $item = $this->cartService->addItem($product, $variant, $quantity);
 
-        /*
-         * "Beli Sekarang" hanya membayar barang ini saja.
-         *
-         * Sebelumnya barang cuma dimasukkan ke keranjang lalu dialihkan ke
-         * checkout, sementara checkout membaca SELURUH isi keranjang — jadi
-         * belanjaan lama ikut terbawa tanpa diminta. Sekarang centangnya
-         * dipindahkan ke baris ini saja; barang lain tetap utuh di keranjang,
-         * tinggal menunggu dibayar lain kali.
-         */
+        // "Beli Sekarang" hanya membayar barang ini saja.
         if ($request->has('buy_now')) {
             $this->cartService->pilihSatu($item->id);
 
@@ -94,12 +86,7 @@ class CartController extends Controller
                 'item_subtotal'  => $item ? $item->formatted_subtotal : 0,
                 'cart_total'     => $cart->formatted_total,
 
-                /*
-                 * Nilai barang yang dicentang saja — dipakai halaman checkout
-                 * untuk memperbarui total tanpa memuat ulang halaman. Jumlah
-                 * yang benar-benar tersimpan ikut dikirim balik, karena stok
-                 * bisa memangkasnya di sisi peladen.
-                 */
+                // Nilai barang yang dicentang saja — dipakai halaman checkout untuk memperbarui total tanpa memuat ...
                 'total_terpilih'  => $cart->total_terpilih,
                 'jumlah_terpilih' => $cart->jumlah_terpilih,
                 'jumlah_item'     => $item ? $item->quantity : 0,
@@ -110,13 +97,8 @@ class CartController extends Controller
     }
 
     /**
-     * Simpan baris mana saja yang ikut dibayar.
-     *
-     * Dipanggil dari kotak centang di halaman keranjang. Sengaja menerima
-     * daftar utuh, bukan satu id per panggilan: kalau pembeli mencentang cepat
-     * berurutan, permintaan yang datang belakangan tetap menggambarkan keadaan
-     * layar apa adanya, tanpa bergantung pada urutan tibanya.
-     */
+ * Simpan baris mana saja yang ikut dibayar.
+ */
     public function pilih(Request $request)
     {
         $request->validate([

@@ -41,20 +41,11 @@ class ShippingCostService
     }
 
     /**
-     * Apakah tujuan cukup dekat untuk dilayani pengiriman instan?
-     *
-     * Kurir instan mengantar memakai motor dalam hitungan jam, jadi hanya
-     * masuk akal untuk tujuan di sekitar toko. Di luar radius ini pilihannya
-     * tidak ditampilkan sama sekali — bukan ditampilkan lalu ditolak saat
-     * pemesanan, yang hanya membuat pembeli kecewa di akhir.
-     */
+ * Apakah tujuan cukup dekat untuk dilayani pengiriman instan?
+ */
     /**
-     * Apakah tujuan cukup dekat untuk dilayani pengiriman instan?
-     *
-     * Kurir instan hanya melayani pengiriman di dalam wilayah Kota Surabaya
-     * dengan radius maksimal 15 KM dari toko. Wilayah luar kota (misal: Mojokerto,
-     * Malang, Gresik, Sidoarjo jauh, dll) ditolak secara tegas (return false).
-     */
+ * Apakah tujuan cukup dekat untuk dilayani pengiriman instan?
+ */
     public function bolehInstan(float $destLat, float $destLng, ?string $destCity = null): bool
     {
         if (! config('pengiriman.instan.aktif', true)) {
@@ -86,17 +77,8 @@ class ShippingCostService
     }
 
     /**
-     * Menaikkan tarif kurir sekian persen sebelum ditagihkan ke pembeli.
-     *
-     * Selisihnya menjadi keuntungan toko dan dicatat per pesanan. Ditaruh di
-     * satu tempat ini supaya semua jalur — tarif Biteship maupun perhitungan
-     * cadangan saat Biteship tak terhubung — memakai aturan yang sama persis.
-     * Kalau markupnya dihitung di beberapa tempat, cepat atau lambat salah
-     * satunya akan tertinggal saat angkanya diubah.
-     *
-     * Hasilnya dibulatkan KE ATAS ke kelipatan yang disetel, jadi markup yang
-     * sebenarnya tidak pernah kurang dari yang diniatkan.
-     */
+ * Menaikkan tarif kurir sekian persen sebelum ditagihkan ke pembeli.
+ */
     public function denganMarkup(int $tarifAsli): int
     {
         $persen = (float) config('biaya.markup_ongkir_persen', 0);
@@ -112,23 +94,8 @@ class ShippingCostService
     }
 
     /**
-     * Kapan paket instan akan dijemput, dan bagaimana menyebutkannya.
-     *
-     * Instan tetap bisa dipesan kapan saja — yang berubah hanya janjinya.
-     * Kurir instan baru bekerja pada jam tertentu, jadi pesanan di luar jam
-     * itu tidak batal, melainkan menunggu jam kerja berikutnya:
-     *
-     *   - Dalam jam kerja        -> dijemput sekarang, sampai hitungan jam.
-     *   - Sebelum jam buka       -> dijemput hari ini juga saat jam buka.
-     *   - Setelah jam tutup      -> dijemput besok saat jam buka.
-     *
-     * Disebutkan apa adanya sejak halaman checkout supaya pembeli tahu persis
-     * yang ia beli. Menjanjikan "1-3 jam" pada pesanan pukul sebelas malam
-     * hanya menunda kekecewaan sampai besok pagi.
-     *
-     * Jamnya WIB, sedangkan aplikasi berjalan pada UTC — selisih 7 jam. Tanpa
-     * konversi, jadwalnya akan bergeser sama sekali.
-     */
+ * Kapan paket instan akan dijemput, dan bagaimana menyebutkannya.
+ */
     public function jadwalInstan(): array
     {
         $mulai   = (int) config('pengiriman.instan.jam_mulai', 8);
@@ -196,15 +163,15 @@ class ShippingCostService
     }
 
     /**
-     * Hitung biaya pengiriman semua kurir berdasarkan jarak + berat + API Biteship.
-     *
-     * @param float       $destLat Latitude tujuan (customer)
-     * @param float       $destLng Longitude tujuan (customer)
-     * @param int         $totalQty Total jumlah item di keranjang
-     * @param string|null $destCity Nama kota tujuan
-     * @param string|null $destPostalCode Kode pos tujuan
-     * @return array Daftar kurir dengan biaya dan estimasi waktu
-     */
+ * Hitung biaya pengiriman semua kurir berdasarkan jarak + berat + API Biteship.
+ *
+ * @param float       $destLat Latitude tujuan (customer)
+ * @param float       $destLng Longitude tujuan (customer)
+ * @param int         $totalQty Total jumlah item di keranjang
+ * @param string|null $destCity Nama kota tujuan
+ * @param string|null $destPostalCode Kode pos tujuan
+ * @return array Daftar kurir dengan biaya dan estimasi waktu
+ */
     public function calculate(
         float $destLat,
         float $destLng,

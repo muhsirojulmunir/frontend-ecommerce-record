@@ -37,9 +37,7 @@
                 return (khusus && khusus.length > 0) ? khusus : [];
             },
 
-            {{-- Daftar foto yang tampil: foto warna terpilih ditaruh paling
-                 depan, lalu disusul foto katalog. Foto katalog tidak
-                 disembunyikan, sebab isinya detail produk yang tetap berguna. --}}
+            {{-- Daftar foto yang tampil: foto warna terpilih ditaruh paling --}}
             get galeri() {
                 return [...this.fotoWarnaTerpilih, ...this.galeriUmum];
             },
@@ -103,19 +101,7 @@
                 return 'Rp ' + Math.round(n).toLocaleString('id-ID');
             },
 
-            /*
-             * Ketersediaan stok per pilihan.
-             *
-             * Stok melekat pada kombinasi ukuran + warna, bukan pada
-             * ukuran atau warna sendiri-sendiri. Maka:
-             *
-             * - Ukuran dinilai terhadap warna yang sedang dipilih, sebab
-             *   ukuran 42 bisa habis untuk Hitam tetapi masih ada untuk Putih.
-             * - Warna dinilai terhadap seluruh ukurannya. Kalau warna ikut
-             *   disaring oleh ukuran terpilih, pembeli bisa terjebak: semua
-             *   warna tampak habis dan tidak ada jalan keluar selain memuat
-             *   ulang halaman.
-             */
+            // Ketersediaan stok per pilihan.
             stokUkuran(ukuran) {
                 return this.variants
                     .filter(v => String(v.size) === String(ukuran)
@@ -430,8 +416,7 @@
 
                     @push('styles')
                         <style>
-                            /* Pemilih warna — CSS sendiri agar tidak bergantung
-                               pada hasil build Tailwind. */
+                            // Pemilih warna — CSS sendiri agar tidak bergantung pada hasil build Tailwind.
                             [x-cloak] { display: none !important; }
 
                             .pilih-warna {
@@ -481,8 +466,7 @@
                                 color: #9ca3af;
                             }
 
-                            /* Centang di atas gambar, dengan lapisan gelap tipis
-                               supaya tetap terlihat di foto terang maupun gelap */
+                            // Centang di atas gambar, dengan lapisan gelap tipis supaya tetap terlihat di foto terang maupun gelap
                             .pilih-warna-centang {
                                 position: absolute;
                                 inset: 0;
@@ -510,10 +494,7 @@
                                 font-weight: 700;
                             }
 
-                            /* ── Pilihan yang stoknya habis ────────────────
-                               Tetap ditampilkan supaya pembeli tahu warna dan
-                               ukuran itu memang ada, hanya sedang kosong —
-                               bukan dihilangkan begitu saja. */
+                            // ── Pilihan yang stoknya habis ──────────────── Tetap ditampilkan supaya pembeli tahu warna dan uk...
                             .pilih-warna-habis,
                             .pilih-ukuran-habis {
                                 cursor: not-allowed;
@@ -592,8 +573,7 @@
                                 text-decoration: line-through;
                             }
 
-                            /* Garis miring tipis, penanda visual yang langsung
-                               terbaca meski tulisannya belum sempat dibaca. */
+                            // Garis miring tipis, penanda visual yang langsung terbaca meski tulisannya belum sempat dibaca.
                             .pilih-ukuran-habis::after {
                                 content: '';
                                 position: absolute;
@@ -784,10 +764,7 @@
                         </p>
                     </div>
 
-                    {{-- Sebaran per bintang, sekaligus penyaringnya.
-                         Tautan sungguhan, bukan tombol JavaScript: hasil
-                         saringan jadi punya alamat sendiri yang bisa dibagikan,
-                         dibuka di tab baru, dan dikenali tombol "kembali". --}}
+                    {{-- Sebaran per bintang, sekaligus penyaringnya. --}}
                     <div class="ulasan-sebaran">
                         @for($b = 5; $b >= 1; $b--)
                             @php
@@ -869,9 +846,7 @@
                                     @endif
                                 </div>
 
-                                {{-- Setiap ulasan di sini terikat pada satu pembelian
-                                     yang sungguh terjadi. Itu perlu terlihat, sebab
-                                     itulah yang membedakannya dari ulasan karangan. --}}
+                                {{-- Setiap ulasan di sini terikat pada satu pembelian --}}
                                 <span class="ulasan-sah" title="Ulasan dari pembelian yang terverifikasi">
                                     <i class="fa-solid fa-circle-check"></i>
                                     Pembelian Terverifikasi
@@ -922,9 +897,7 @@
     </div>
 @push('styles')
 <style>
-    /* ══════════ Ulasan pembeli ══════════
-       Ditulis tangan seperti blok lain di proyek ini: hasil build Tailwind
-       yang terpasang tidak memuat sebagian kelas yang dipakai di sini. */
+    // ══════════ Ulasan pembeli ══════════ Ditulis tangan seperti blok lain di proyek ini: hasil build ...
 
     .ulasan-kepala { text-align: center; margin-bottom: 26px; }
 
@@ -985,9 +958,7 @@
         text-decoration: none;
     }
 
-    /* Baris yang bisa diklik diberi isyarat: kursor berubah dan latarnya
-       menyala saat disentuh. Tanpa itu, tidak ada yang menandakan bahwa
-       angka-angka ini sebenarnya tombol. */
+    // Baris yang bisa diklik diberi isyarat: kursor berubah dan latarnya menyala saat disentuh.
     .ulasan-baris-klik { cursor: pointer; transition: background-color 150ms ease; }
     .ulasan-baris-klik:hover { background: #f4f6fa; }
     .ulasan-baris-klik:hover .ulasan-bilah-isi { background: #D97706; }
@@ -1094,8 +1065,7 @@
     .ulasan-halaman { margin-top: 20px; }
 
     @media (max-width: 560px) {
-        /* Lencana terverifikasi turun ke bawah nama, daripada memaksa
-           namanya terpotong di layar sempit. */
+        // Lencana terverifikasi turun ke bawah nama, daripada memaksa namanya terpotong di layar sempit.
         .ulasan-item-kepala { flex-wrap: wrap; }
         .ulasan-sah { order: 3; margin-left: 50px; }
         .ulasan-angka { font-size: 36px; }

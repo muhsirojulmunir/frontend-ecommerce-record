@@ -155,9 +155,7 @@
 
     @push('styles')
         <style>
-            /* Halaman FAQ.
-               Ditulis sebagai CSS biasa (bukan kelas Tailwind bernilai kustom)
-               supaya tampil benar tanpa perlu menjalankan ulang build aset. */
+            // Halaman FAQ.
 
             [x-cloak] { display: none !important; }
 

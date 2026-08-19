@@ -7,10 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Satu baris buku besar R_Pay.
- *
- * Baris di sini tidak pernah diubah atau dihapus. Pembatalan dana dilakukan
- * dengan membukukan baris lawan arah (source "reversal"), bukan dengan
- * menghapus baris lama — supaya jejak dananya tetap utuh.
  */
 class RpayTransaction extends Model
 {
