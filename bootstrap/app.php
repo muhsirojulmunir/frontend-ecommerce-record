@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // Polyfill untuk server hosting yang belum mengaktifkan ekstensi PHP fileinfo
 if (! class_exists('finfo')) {
@@ -54,23 +54,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Percayai semua reverse proxy cPanel agar HTTPS & CSRF bekerja sempurna
         $middleware->trustProxies(at: '*');
 
-        /*
-         * Webhook Midtrans datang dari peladen mereka, bukan dari peramban
-         * pembeli, jadi tidak mungkin membawa token CSRF. Keasliannya dijaga
-         * oleh tanda tangan SHA-512 yang diperiksa di MidtransService.
-         */
         $middleware->validateCsrfTokens(except: [
             'midtrans/callback',
             'checkout/midtrans/callback',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        /*
-         * Sesi kedaluwarsa (galat 419).
-         */
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
             if ($e->getStatusCode() !== 419) {
                 return null;
