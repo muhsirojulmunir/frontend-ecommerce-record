@@ -1,4 +1,45 @@
-<?php
+﻿<?php
+
+// Polyfill untuk server hosting yang belum mengaktifkan ekstensi PHP fileinfo
+if (! class_exists('finfo')) {
+    if (! defined('FILEINFO_NONE')) {
+        define('FILEINFO_NONE', 0);
+    }
+    if (! defined('FILEINFO_MIME_TYPE')) {
+        define('FILEINFO_MIME_TYPE', 16);
+    }
+    if (! defined('FILEINFO_MIME')) {
+        define('FILEINFO_MIME', 1040);
+    }
+
+    class finfo
+    {
+        public function __construct($flags = null, $magicFile = null)
+        {
+        }
+
+        public function file(string $filename, int $flags = FILEINFO_MIME_TYPE, $context = null): string|false
+        {
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $mimes = [
+                'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
+                'gif' => 'image/gif', 'webp' => 'image/webp', 'svg' => 'image/svg+xml',
+                'pdf' => 'application/pdf', 'zip' => 'application/zip',
+                'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'xls' => 'application/vnd.ms-excel', 'csv' => 'text/csv',
+                'txt' => 'text/plain', 'json' => 'application/json',
+                'mp4' => 'video/mp4', 'mov' => 'video/quicktime',
+            ];
+
+            return $mimes[$ext] ?? 'application/octet-stream';
+        }
+
+        public function buffer(string $string, int $flags = FILEINFO_MIME_TYPE, $context = null): string|false
+        {
+            return 'application/octet-stream';
+        }
+    }
+}
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,15 +54,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Percayai semua reverse proxy cPanel agar HTTPS & CSRF bekerja sempurna
+        $middleware->trustProxies(at: '*');
+
         /*
          * Webhook Midtrans datang dari peladen mereka, bukan dari peramban
          * pembeli, jadi tidak mungkin membawa token CSRF. Keasliannya dijaga
          * oleh tanda tangan SHA-512 yang diperiksa di MidtransService.
-         *
-         * Kedua alamat didaftarkan karena keduanya memang terpasang sebagai
-         * rute. Yang kedua sebelumnya terlewat — kalau alamat itu yang
-         * didaftarkan di dasbor Midtrans, notifikasinya ditolak 419 dan
-         * pesanan tidak pernah tercatat lunas secara otomatis.
          */
         $middleware->validateCsrfTokens(except: [
             'midtrans/callback',
@@ -31,19 +70,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         /*
          * Sesi kedaluwarsa (galat 419).
-         *
-         * Halaman seperti checkout sering dibiarkan terbuka lama sementara
-         * pembeli menyiapkan data. Bila sesinya keburu habis, token CSRF
-         * ditolak dan Laravel menampilkan halaman "419 Page Expired" yang
-         * membingungkan — isian pembeli pun hilang.
-         *
-         * Di sini permintaan dikembalikan ke halaman asal beserta isiannya
-         * (kecuali kata sandi), disertai pesan yang bisa dimengerti, sehingga
-         * pembeli cukup menekan tombolnya sekali lagi.
          */
-        // Laravel sudah menerjemahkan TokenMismatchException menjadi HttpException
-        // berkode 419 sebelum callback ini dijalankan, jadi yang dicocokkan
-        // adalah kode statusnya. Selain 419, biarkan penanganan bawaan berjalan.
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
             if ($e->getStatusCode() !== 419) {
                 return null;
@@ -55,9 +82,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 419);
             }
 
-            // Sesi lama sudah hilang, sehingga url()->previous() belum tentu
-            // benar. Untuk langkah-langkah checkout, kembalikan langsung ke
-            // halaman checkout supaya pembeli tidak terlempar ke beranda.
             $tujuan = $request->is('checkout', 'checkout/*')
                 ? route('checkout.index')
                 : url()->previous();
@@ -65,6 +89,6 @@ return Application::configure(basePath: dirname(__DIR__))
             return redirect($tujuan)
                 ->withInput($request->except(['password', 'password_confirmation', '_token']))
                 ->with('error', 'Sesi halaman sudah kedaluwarsa karena dibiarkan terlalu lama. '
-                    . 'Data yang kamu isi masih tersimpan — silakan tekan tombolnya sekali lagi.');
+                    . 'Data yang kamu isi masih tersimpan - silakan coba lagi.');
         });
     })->create();
