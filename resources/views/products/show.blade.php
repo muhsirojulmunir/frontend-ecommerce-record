@@ -416,7 +416,7 @@
 
                     @push('styles')
                         <style>
-                            // Pemilih warna — CSS sendiri agar tidak bergantung pada hasil build Tailwind.
+                            /* Pemilih warna — CSS sendiri agar tidak bergantung pada hasil build Tailwind. */
                             [x-cloak] { display: none !important; }
 
                             .pilih-warna {
@@ -466,7 +466,7 @@
                                 color: #9ca3af;
                             }
 
-                            // Centang di atas gambar, dengan lapisan gelap tipis supaya tetap terlihat di foto terang maupun gelap
+                            /* Centang di atas gambar, dengan lapisan gelap tipis supaya tetap terlihat di foto terang maupun gelap */
                             .pilih-warna-centang {
                                 position: absolute;
                                 inset: 0;
@@ -494,7 +494,7 @@
                                 font-weight: 700;
                             }
 
-                            // ── Pilihan yang stoknya habis ──────────────── Tetap ditampilkan supaya pembeli tahu warna dan uk...
+                            /* ── Pilihan yang stoknya habis ──────────────── Tetap ditampilkan supaya pembeli tahu warna dan uk... */
                             .pilih-warna-habis,
                             .pilih-ukuran-habis {
                                 cursor: not-allowed;
@@ -573,7 +573,7 @@
                                 text-decoration: line-through;
                             }
 
-                            // Garis miring tipis, penanda visual yang langsung terbaca meski tulisannya belum sempat dibaca.
+                            /* Garis miring tipis, penanda visual yang langsung terbaca meski tulisannya belum sempat dibaca. */
                             .pilih-ukuran-habis::after {
                                 content: '';
                                 position: absolute;
@@ -897,7 +897,7 @@
     </div>
 @push('styles')
 <style>
-    // ══════════ Ulasan pembeli ══════════ Ditulis tangan seperti blok lain di proyek ini: hasil build ...
+    /* ══════════ Ulasan pembeli ══════════ Ditulis tangan seperti blok lain di proyek ini: hasil build ... */
 
     .ulasan-kepala { text-align: center; margin-bottom: 26px; }
 
@@ -958,7 +958,7 @@
         text-decoration: none;
     }
 
-    // Baris yang bisa diklik diberi isyarat: kursor berubah dan latarnya menyala saat disentuh.
+    /* Baris yang bisa diklik diberi isyarat: kursor berubah dan latarnya menyala saat disentuh. */
     .ulasan-baris-klik { cursor: pointer; transition: background-color 150ms ease; }
     .ulasan-baris-klik:hover { background: #f4f6fa; }
     .ulasan-baris-klik:hover .ulasan-bilah-isi { background: #D97706; }
@@ -1065,7 +1065,7 @@
     .ulasan-halaman { margin-top: 20px; }
 
     @media (max-width: 560px) {
-        // Lencana terverifikasi turun ke bawah nama, daripada memaksa namanya terpotong di layar sempit.
+        /* Lencana terverifikasi turun ke bawah nama, daripada memaksa namanya terpotong di layar sempit. */
         .ulasan-item-kepala { flex-wrap: wrap; }
         .ulasan-sah { order: 3; margin-left: 50px; }
         .ulasan-angka { font-size: 36px; }

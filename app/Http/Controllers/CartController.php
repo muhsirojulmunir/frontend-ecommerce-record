@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CartController extends Controller
 {
@@ -33,14 +34,46 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'product_id'         => 'required|exists:products,id',
-            'product_variant_id' => 'nullable|exists:product_variants,id',
-            'quantity'           => 'required|integer|min:1',
+            'product_id' => 'required|exists:products,id',
+
+            /*
+             * Variannya wajib benar-benar milik produk yang diminta.
+             *
+             * Tanpa syarat ini, "ada di tabel varian" saja sudah cukup — dan
+             * harga barang diambil dari VARIAN. Artinya siapa pun bisa memesan
+             * produk mahal sambil menempelkan varian milik produk murah, lalu
+             * membayar harga yang murah. Stok yang berkurang pun jadi milik
+             * produk yang keliru.
+             */
+            'product_variant_id' => [
+                'nullable',
+                Rule::exists('product_variants', 'id')
+                    ->where('product_id', (int) $request->input('product_id')),
+            ],
+
+            'quantity' => 'required|integer|min:1|max:100',
+        ], [
+            'product_variant_id.exists' => 'Pilihan ukuran/warna tidak cocok dengan produknya.',
         ]);
 
         $product  = Product::findOrFail($request->product_id);
         $variant  = $request->product_variant_id ? ProductVariant::find($request->product_variant_id) : null;
         $quantity = (int) $request->quantity;
+
+        /*
+         * Stok diperiksa sejak keranjang, bukan hanya saat checkout. Membiarkan
+         * jumlah melebihi stok masuk ke keranjang hanya menunda kekecewaan
+         * pembeli sampai halaman terakhir.
+         */
+        $stok = $variant ? (int) $variant->stock : (int) $product->stock;
+
+        if ($stok < 1) {
+            return $request->wantsJson()
+                ? response()->json(['success' => false, 'message' => 'Stok produk ini sedang habis.'], 422)
+                : back()->with('error', 'Stok produk ini sedang habis.');
+        }
+
+        $quantity = min($quantity, $stok);
 
         // Tambah ke keranjang lewat CartService
         $item = $this->cartService->addItem($product, $variant, $quantity);

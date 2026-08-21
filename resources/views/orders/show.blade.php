@@ -1325,7 +1325,7 @@
     {{-- Gaya kerangka modal dipakai bersama oleh modal pembatalan dan --}}
     @push('styles')
         <style>
-            // ══════════ Modal penilaian produk ══════════ Memakai kembali kerangka .batal-* yang sudah terbukt...
+            /* ══════════ Modal penilaian produk ══════════ Memakai kembali kerangka .batal-* yang sudah terbukt... */
 
             .nilai-kotak { max-width: 560px; }
 
@@ -1390,7 +1390,7 @@
 
             .nilai-produk-teks { min-width: 0; }
 
-            // Nama produk di toko ini panjang-panjang; dibatasi dua baris agar tidak mendorong bintangnya jauh ...
+            /* Nama produk di toko ini panjang-panjang; dibatasi dua baris agar tidak mendorong bintangnya jauh ... */
             .nilai-produk-nama {
                 font-size: 12.5px; font-weight: 700; color: #111827; line-height: 1.4;
                 display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
@@ -1416,7 +1416,7 @@
                 font-size: 23px; line-height: 1;
             }
 
-            // Radio aslinya disembunyikan tetapi tetap ada: itu yang membuat bintangnya terkirim bersama borang...
+            /* Radio aslinya disembunyikan tetapi tetap ada: itu yang membuat bintangnya terkirim bersama borang... */
             .nilai-radio {
                 position: absolute; opacity: 0;
                 width: 100%; height: 100%; left: 0; top: 0;
@@ -1474,7 +1474,7 @@
             }
             .nilai-foto-buang:hover { background: #DC2626; }
 
-            // Ukuran hasil pemampatan disebutkan, supaya pembeli tahu fotonya memang sudah dikecilkan dan tidak...
+            /* Ukuran hasil pemampatan disebutkan, supaya pembeli tahu fotonya memang sudah dikecilkan dan tidak... */
             .nilai-foto-ukuran {
                 position: absolute; left: 0; right: 0; bottom: 0;
                 padding: 2px 4px;
@@ -1489,7 +1489,7 @@
                 clip: rect(0,0,0,0); white-space: nowrap; border: 0;
             }
 
-            // ══════════ Ajakan program afiliasi ══════════ Ditulis tangan seperti blok lain di halaman ini: ha...
+            /* ══════════ Ajakan program afiliasi ══════════ Ditulis tangan seperti blok lain di halaman ini: ha... */
 
             .promo-saldo {
                 position: relative;
@@ -1500,7 +1500,7 @@
                 border-radius: 10px;
                 overflow: hidden;
 
-                // Biru tua ke ungu-tua: cukup berbeda dari kartu putih di sekitarnya agar tertangkap mata, tanpa be...
+                /* Biru tua ke ungu-tua: cukup berbeda dari kartu putih di sekitarnya agar tertangkap mata, tanpa be... */
                 background:
                     radial-gradient(90% 200% at 100% 0%, #2C5AA0 0%, transparent 60%),
                     linear-gradient(115deg, #16294B 0%, #1E3A6B 60%, #24305E 100%);
@@ -1517,7 +1517,7 @@
                 box-shadow: 0 8px 22px rgb(16 32 62 / .30);
             }
 
-            // Tepi tipis di dalam, supaya kartunya punya batas yang jelas tanpa garis tegas yang membuatnya ter...
+            /* Tepi tipis di dalam, supaya kartunya punya batas yang jelas tanpa garis tegas yang membuatnya ter... */
             .promo-saldo::after {
                 content: '';
                 position: absolute; inset: 0;
@@ -1526,7 +1526,7 @@
                 pointer-events: none;
             }
 
-            // Kilau menyapu pelan.
+            /* Kilau menyapu pelan. */
             .promo-saldo-kilau {
                 position: absolute; inset: 0;
                 background: linear-gradient(100deg,
@@ -1555,7 +1555,7 @@
                 box-shadow: 0 3px 9px rgb(245 158 11 / .35);
             }
 
-            // Bagian teks yang memuai mengisi ruang di tengah — inilah yang membuat lencana tetap di kiri dan a...
+            /* Bagian teks yang memuai mengisi ruang di tengah — inilah yang membuat lencana tetap di kiri dan a... */
             .promo-saldo-teks { flex: 1 1 auto; min-width: 0; }
 
             .promo-saldo-atas {
@@ -1585,7 +1585,7 @@
                 max-width: 62ch;
             }
 
-            // Pemisah tegak, bukan garis mendatar: di tata letak melintang itulah yang memisahkan bacaan dari a...
+            /* Pemisah tegak, bukan garis mendatar: di tata letak melintang itulah yang memisahkan bacaan dari a... */
             .promo-saldo-kaki {
                 flex: none;
                 display: flex; align-items: center; gap: 14px;
@@ -1606,14 +1606,14 @@
                 color: #FCD34D;
             }
 
-            // Panah bergeser sedikit saat disentuh — isyarat arah, bukan hiasan yang bergerak sendiri terus-men...
+            /* Panah bergeser sedikit saat disentuh — isyarat arah, bukan hiasan yang bergerak sendiri terus-men... */
             .promo-saldo-aksi i {
                 font-size: 10px;
                 transition: transform 260ms cubic-bezier(.2,.8,.3,1);
             }
             .promo-saldo:hover .promo-saldo-aksi i { transform: translateX(4px); }
 
-            // Di layar sempit, melintang tidak lagi muat: isinya ditumpuk dan pemisah tegaknya berubah jadi gar...
+            /* Di layar sempit, melintang tidak lagi muat: isinya ditumpuk dan pemisah tegaknya berubah jadi gar... */
             @media (max-width: 720px) {
                 .promo-saldo { flex-wrap: wrap; gap: 14px; padding: 16px 18px; }
 
@@ -1636,7 +1636,7 @@
                 .promo-saldo:hover { transform: none; }
             }
 
-            // Modal alasan pembatalan — CSS sendiri agar tidak bergantung pada hasil build Tailwind.
+            /* Modal alasan pembatalan — CSS sendiri agar tidak bergantung pada hasil build Tailwind. */
             [x-cloak] { display: none !important; }
 
             .batal-lapis {
@@ -1654,7 +1654,7 @@
                 width: 100%;
                 max-width: 480px;
                 max-height: 90vh;
-                // dvh mengikuti tinggi layar sebenarnya di HP, saat bilah alamat browser muncul-hilang.
+                /* dvh mengikuti tinggi layar sebenarnya di HP, saat bilah alamat browser muncul-hilang. */
                 max-height: 90dvh;
                 display: flex;
                 flex-direction: column;
@@ -1695,7 +1695,7 @@
             }
             .batal-tutup:hover { background: #f3f4f6; color: #374151; }
 
-            // Form ikut jadi kolom flex, sebab isi & kaki modal berada di dalamnya — bukan langsung di bawah .b...
+            /* Form ikut jadi kolom flex, sebab isi & kaki modal berada di dalamnya — bukan langsung di bawah .b... */
             .batal-form {
                 flex: 1 1 auto;
                 min-height: 0;
@@ -1704,7 +1704,7 @@
             }
 
             .batal-isi {
-                // min-height: 0 wajib ada.
+                /* min-height: 0 wajib ada. */
                 flex: 1 1 auto;
                 min-height: 0;
                 padding: 20px;
@@ -2405,8 +2405,8 @@
 
     @push('styles')
     <style>
-        // ── Modal pengembalian ───────────────────────────────────── Kerangka modalnya memakai kembali .ba...
-        // Selama ada berkas diproses, kotak lain tidak bisa ditekan: dua pemampatan sekaligus akan berebut ...
+        /* ── Modal pengembalian ───────────────────────────────────── Kerangka modalnya memakai kembali .ba... */
+        /* Selama ada berkas diproses, kotak lain tidak bisa ditekan: dua pemampatan sekaligus akan berebut ... */
         .bukti-daftar[data-sibuk="1"] .bukti-kotak { pointer-events: none; opacity: .55; }
         .bukti-daftar[data-sibuk="1"] .bukti-kotak-sibuk { pointer-events: none; opacity: 1; }
 
@@ -2438,12 +2438,12 @@
         }
         .bukti-susut i { margin-right: 4px; }
 
-        // ── Kotak unggah bukti ── Ditulis tangan, sebab CSS bawaan yang sudah dibangun tidak memuat sebagi...
+        /* ── Kotak unggah bukti ── Ditulis tangan, sebab CSS bawaan yang sudah dibangun tidak memuat sebagi... */
         .bukti-pengantar { margin-bottom: 12px; }
 
         .bukti-daftar { display: flex; flex-direction: column; gap: 10px; }
 
-        // Masukan berkas aslinya disembunyikan, bukan dihapus: seluruh kotak berfungsi sebagai <label>-nya,...
+        /* Masukan berkas aslinya disembunyikan, bukan dihapus: seluruh kotak berfungsi sebagai <label>-nya,... */
         .bukti-masukan {
             position: absolute; width: 1px; height: 1px;
             opacity: 0; overflow: hidden; clip: rect(0 0 0 0);
@@ -2486,7 +2486,7 @@
             display: block; margin-top: 2px;
             font-size: 12px; line-height: 1.5; color: #6b7280;
         }
-        // Nama berkas dari ponsel bisa sangat panjang; dipotong daripada mendorong tombol "Ganti" keluar da...
+        /* Nama berkas dari ponsel bisa sangat panjang; dipotong daripada mendorong tombol "Ganti" keluar da... */
         .bukti-nama {
             display: block; margin-top: 2px;
             font-size: 12px; color: #15803d; font-weight: 600;
@@ -2580,7 +2580,7 @@
         }
         .retur-catatan i { margin-top: 2px; }
 
-        // ══ Modal konfirmasi penerimaan ═══════════════════════════ Isinya panjang karena memuat syarat ga...
+        /* ══ Modal konfirmasi penerimaan ═══════════════════════════ Isinya panjang karena memuat syarat ga... */
         .terima-kotak {
             background: #fff; border-radius: 18px;
             box-shadow: 0 22px 50px rgb(0 0 0 / .28);
@@ -2776,7 +2776,7 @@
             font-size: 10.5px; color: #ef4444; margin-top: 8px; line-height: 1.6;
         }
 
-        // ── Kaki modal & tombolnya ───────────────────────────────── flex-shrink: 0 menjaga tombol tetap t...
+        /* ── Kaki modal & tombolnya ───────────────────────────────── flex-shrink: 0 menjaga tombol tetap t... */
         .retur-kaki {
             flex-shrink: 0;
             display: flex;
@@ -2847,7 +2847,7 @@
             box-shadow: 0 4px 14px rgb(27 58 107 / .3);
         }
 
-        // Keadaan mati dibuat jelas terbaca sebagai "belum bisa", bukan sekadar tombol pudar yang menyisaka...
+        /* Keadaan mati dibuat jelas terbaca sebagai "belum bisa", bukan sekadar tombol pudar yang menyisaka... */
         .retur-tombol-kirim:disabled {
             background: #e5e7eb;
             color: #9ca3af;
@@ -2889,7 +2889,7 @@
         .retur-lencana-success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
         .retur-lencana-danger  { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 
-        // Garis penghubung digambar dari titik langkah, bukan elemen sendiri, supaya panjangnya selalu pas ...
+        /* Garis penghubung digambar dari titik langkah, bukan elemen sendiri, supaya panjangnya selalu pas ... */
         .retur-langkah { list-style: none; margin: 0; padding: 0; }
         .retur-langkah-item {
             position: relative;

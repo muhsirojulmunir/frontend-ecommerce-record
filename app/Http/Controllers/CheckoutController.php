@@ -351,8 +351,33 @@ class CheckoutController extends Controller
                 return back()->withInput()->with('error', 'Pengiriman instan hanya melayani area Kota Surabaya (maksimal 15 KM). Alamat pengiriman Anda (' . ($destCity ?: 'Luar Surabaya') . ') berada di luar area instan, silakan pilih pengiriman reguler (JNE, J&T, SiCepat, dll).');
             }
         }
-        $courierCost     = $selectedCourier ? $selectedCourier['cost'] : ($request->input('courier_cost', 15000));
-        $courierName     = $selectedCourier ? $selectedCourier['name'] : strtoupper($request->courier_code);
+        /*
+         * Kurir yang dipilih HARUS ada di daftar yang baru saja dihitung peladen
+         * untuk alamat ini.
+         *
+         * Sebelumnya, kode kurir yang tidak dikenali membuat ongkirnya diambil
+         * dari `courier_cost` kiriman pembeli. Nilai itu berasal dari halaman,
+         * dan apa pun yang berasal dari halaman bisa diubah orang: cukup kirim
+         * kode kurir asing bersama courier_cost=0, dan ongkirnya menjadi nol
+         * sementara tarif kurir yang sesungguhnya tetap ditanggung toko.
+         *
+         * Sekarang permintaannya ditolak. Lebih baik pembeli memilih ulang
+         * kurirnya daripada toko menanggung ongkir yang tidak pernah dibayar.
+         */
+        if (! $selectedCourier) {
+            Log::warning('Kurir di luar daftar ditolak saat checkout', [
+                'pengguna'    => Auth::id(),
+                'kode_kurir'  => $request->courier_code,
+                'kota_tujuan' => $destCity,
+            ]);
+
+            return back()->withInput()->with('error',
+                'Pilihan kurirnya sudah tidak berlaku untuk alamat ini. '
+                . 'Silakan pilih ulang jasa kirimnya.');
+        }
+
+        $courierCost = (int) $selectedCourier['cost'];
+        $courierName = $selectedCourier['name'];
 
         // Kode referal diperiksa ULANG di sini.
         $referral = app(ReferralService::class);
@@ -560,7 +585,16 @@ class CheckoutController extends Controller
      */
     public function midtransCallback(Request $request)
     {
-        Log::info('Midtrans Webhook Received', $request->all());
+        /*
+         * Yang dicatat hanya penanda pesanannya, bukan seluruh muatan.
+         * Muatan penuh berisi nomor Virtual Account dan keterangan pembayaran
+         * pembeli — data yang tidak perlu tersimpan selamanya di berkas catatan
+         * yang biasanya dibaca lebih banyak orang daripada basis data.
+         */
+        Log::info('Notifikasi Midtrans diterima', [
+            'pesanan' => $request->input('order_id'),
+            'status'  => $request->input('transaction_status'),
+        ]);
 
         $verified = $this->midtransService->verifyCallback($request);
 
@@ -572,6 +606,49 @@ class CheckoutController extends Controller
 
         if (!$order) {
             return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+        }
+
+        /*
+         * Nominalnya harus sama dengan tagihan pesanan.
+         *
+         * Nilai ini ikut ditandatangani Midtrans sehingga tidak bisa dipalsukan,
+         * tetapi mencocokkannya tetap perlu: kalau suatu saat tagihan pesanan
+         * berubah setelah tautan pembayaran terbit, notifikasi lama tidak boleh
+         * melunasi tagihan yang baru.
+         */
+        $tagihan = round((float) $order->grand_total, 2);
+        $dibayar = round((float) $verified['gross_amount'], 2);
+
+        if ($verified['payment_status'] === 'paid' && abs($tagihan - $dibayar) > 0.01) {
+            Log::warning('Nominal notifikasi Midtrans tidak sama dengan tagihan', [
+                'pesanan' => $order->order_number,
+                'tagihan' => $tagihan,
+                'dibayar' => $dibayar,
+            ]);
+
+            return response()->json(['status' => 'error', 'message' => 'Amount mismatch'], 409);
+        }
+
+        /*
+         * Pesanan yang sudah lunas tidak boleh turun status.
+         *
+         * Notifikasi Midtrans tidak bernomor urut dan bisa datang terlambat
+         * atau dikirim ulang. Notifikasi "expire" lama yang tiba setelah
+         * pembayaran berhasil akan menandai pesanan yang sudah dibayar menjadi
+         * gagal. Hanya pengembalian dana dan pembatalan resmi yang boleh
+         * mengubah pesanan lunas.
+         */
+        $turunStatus = $order->payment_status === 'paid'
+            && in_array($verified['payment_status'], ['unpaid', 'failed'], true);
+
+        if ($turunStatus) {
+            Log::warning('Notifikasi Midtrans yang menurunkan status pesanan lunas diabaikan', [
+                'pesanan'  => $order->order_number,
+                'diminta'  => $verified['payment_status'],
+                'transaksi' => $verified['transaction_status'],
+            ]);
+
+            return response()->json(['status' => 'OK', 'message' => 'Ignored: stale notification']);
         }
 
         // Update payment_status & order_status

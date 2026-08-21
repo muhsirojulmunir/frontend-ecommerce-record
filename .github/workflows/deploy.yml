@@ -1,0 +1,40 @@
+﻿name: 🚀 Auto Deploy Frontend ke Dewaweb
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy ke recordshoes.com
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout kode terbaru
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy via SSH ke cPanel
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            cd ~/public_html
+            git fetch origin
+            git reset --hard origin/main
+            PHP_BIN="php"
+            for kandidat in /usr/local/bin/ea-php84 /opt/cpanel/ea-php84/root/usr/bin/php /usr/local/bin/ea-php82 /opt/cpanel/ea-php82/root/usr/bin/php; do
+              if [ -x "$kandidat" ]; then PHP_BIN="$kandidat"; break; fi
+            done
+            rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php
+            ${PHP_BIN} artisan config:clear
+            ${PHP_BIN} artisan route:clear
+            ${PHP_BIN} artisan view:clear
+            ${PHP_BIN} artisan config:cache
+            ${PHP_BIN} artisan route:cache
+            ${PHP_BIN} artisan view:cache
+            echo "✅ Deploy frontend selesai!"

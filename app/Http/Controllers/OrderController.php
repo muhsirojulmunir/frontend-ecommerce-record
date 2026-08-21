@@ -7,6 +7,7 @@ use App\Support\CatatAktivitas;
 use App\Services\PembatalanPesananService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -93,9 +94,41 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Nomor resi belum tersedia.']);
         }
 
+        /*
+         * Nomor yang dulu dikarang sistem sendiri saat pemesanan ke Biteship
+         * gagal — berawalan "REC-" atau "REC0". Nomor itu tidak terdaftar di
+         * kurir mana pun, jadi menanyakannya ke Biteship hanya membuang Rp 10
+         * per percobaan dan tetap berujung gagal.
+         */
+        if (preg_match('/^(REC-|REC0)/i', trim($order->tracking_number))) {
+            return response()->json([
+                'success'         => true,
+                'fallback'        => true,
+                'tracking_number' => $order->tracking_number,
+                'courier'         => $order->courier,
+                'status'          => $order->status,
+                'history'         => $this->generateFallbackHistory($order),
+            ]);
+        }
+
         $apiKey = env('BITESHIP_API_KEY');
         if (!$apiKey) {
             return response()->json(['success' => false, 'message' => 'Layanan tracking belum dikonfigurasi.']);
+        }
+
+        /*
+         * Jawaban disinggahkan beberapa menit.
+         *
+         * Tiap panggilan Tracking memotong saldo Biteship Rp 10, sementara
+         * halaman detail pesanan memanggilnya setiap kali dibuka. Satu pembeli
+         * yang menyegarkan halaman sepuluh kali berarti Rp 100 terbuang untuk
+         * jawaban yang sama persis — kurir pun tidak memperbarui statusnya
+         * setiap detik.
+         */
+        $kunciSinggah = 'lacak-pembeli:' . $order->tracking_number;
+
+        if ($tersimpan = Cache::get($kunciSinggah)) {
+            return response()->json($tersimpan);
         }
 
         $isProduction = env('BITESHIP_IS_PRODUCTION', false);
@@ -136,7 +169,7 @@ class OrderController extends Controller
                 ->values()
                 ->toArray();
 
-            return response()->json([
+            $jawaban = [
                 'success'         => true,
                 'tracking_number' => $order->tracking_number,
                 'courier'         => $order->courier,
@@ -145,7 +178,14 @@ class OrderController extends Controller
                 'history'         => $history,
                 'origin'          => $data['origin'] ?? [],
                 'destination'     => $data['destination'] ?? [],
-            ]);
+            ];
+
+            // Hanya jawaban yang benar-benar dari Biteship yang disinggahkan.
+            // Jawaban cadangan tidak, supaya begitu Biteship pulih pembeli
+            // langsung melihat data yang sebenarnya.
+            Cache::put($kunciSinggah, $jawaban, now()->addMinutes(5));
+
+            return response()->json($jawaban);
 
         } catch (\Throwable $e) {
             Log::warning('Biteship tracking error: ' . $e->getMessage());
@@ -216,6 +256,19 @@ class OrderController extends Controller
         $order = Order::where('order_number', $orderNumber)
             ->where('user_id', Auth::id())
             ->firstOrFail();
+
+        /*
+         * Kelunasan diperiksa terpisah dari status pengiriman.
+         *
+         * Menyelesaikan pesanan membuka pengajuan pengembalian dan menjadi
+         * dasar keabsahan kode referal. Bersandar pada status "processing"
+         * saja berarti menganggap status itu selalu berarti sudah dibayar —
+         * anggapan yang benar hari ini, tetapi tidak dijamin oleh apa pun.
+         */
+        if ($order->payment_status !== 'paid') {
+            return redirect()->back()->with('error',
+                'Pesanan ini belum tercatat lunas, jadi belum bisa diselesaikan.');
+        }
 
         if (in_array($order->status, ['shipped', 'processing'])) {
             $order->status = 'completed';

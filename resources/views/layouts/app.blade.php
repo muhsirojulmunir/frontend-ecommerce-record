@@ -27,17 +27,17 @@
                     min-height: 34px; padding: 0 4px;
                 }
 
-                // Tautan footer disusun menurun dalam daftar, jadi yang ditambah cukup ruang atas-bawahnya.
+                /* Tautan footer disusun menurun dalam daftar, jadi yang ditambah cukup ruang atas-bawahnya. */
                 footer li > a {
                     display: block;
                     padding: 7px 0;
                     min-height: 34px;
                 }
 
-                // Ikon media sosial di footer: lingkarannya sudah cukup besar, tetapi jarak antar ikon dirapatkan o...
+                /* Ikon media sosial di footer: lingkarannya sudah cukup besar, tetapi jarak antar ikon dirapatkan o... */
                 footer .rounded-full { min-width: 38px; min-height: 38px; }
 
-                // Tautan teks kecil yang bertebaran di kepala kartu dan kepala halaman: "Dashboard Saya", "Lihat Se...
+                /* Tautan teks kecil yang bertebaran di kepala kartu dan kepala halaman: "Dashboard Saya", "Lihat Se... */
                 a.text-xs.font-bold,
                 button.text-xs.font-bold,
                 a.text-\[11px\].font-bold,

@@ -199,7 +199,7 @@
 
     @push('styles')
     <style>
-        // Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind arbitrary yang belum tentu ikut ter-build.
+        /* Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind arbitrary yang belum tentu ikut ter-build. */
         .kartu-rpay {
             position: relative;
             overflow: hidden;

@@ -177,10 +177,13 @@ class MidtransService
         $serverKey         = $this->serverKey;
         $signatureKey      = $notification['signature_key']      ?? '';
 
-        // Verifikasi signature
+        // Verifikasi signature.
+        // Dibandingkan dengan hash_equals, bukan !==, supaya lamanya
+        // perbandingan tidak bergantung pada seberapa banyak karakter awal
+        // yang sudah benar — perbandingan biasa membocorkan petunjuk itu.
         $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
 
-        if ($signatureKey !== $expectedSignature) {
+        if (! hash_equals($expectedSignature, (string) $signatureKey)) {
             return ['valid' => false, 'message' => 'Invalid signature'];
         }
 
@@ -213,6 +216,11 @@ class MidtransService
             'transaction_status' => $transactionStatus,
             'payment_type'       => $paymentType,
             'metode'             => $this->metodeDariNotifikasi($notification),
+
+            // Nominal yang dinyatakan Midtrans. Ikut ditandatangani, jadi tidak
+            // bisa dipalsukan — dipakai pemanggil untuk mencocokkan dengan
+            // tagihan pesanan sebelum menandainya lunas.
+            'gross_amount'       => (float) $grossAmount,
         ];
     }
 

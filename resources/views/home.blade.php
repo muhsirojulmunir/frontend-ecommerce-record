@@ -455,7 +455,7 @@
         @once
             @push('styles')
                 <style>
-                    // ── Kartu kategori ────────────────────────────────────── Ditulis sebagai CSS biasa, bukan kelas T...
+                    /* ── Kartu kategori ────────────────────────────────────── Ditulis sebagai CSS biasa, bukan kelas T... */
                     .kartu-kategori {
                         position: relative;
                         flex: 0 0 auto;
@@ -572,7 +572,7 @@
                         transform: translateX(0);
                     }
 
-                    // ── Barisan berjalan ──────────────────────────────────── Bergulir dari kanan ke kiri tanpa henti.
+                    /* ── Barisan berjalan ──────────────────────────────────── Bergulir dari kanan ke kiri tanpa henti. */
                     @keyframes marquee-ke-kiri {
                         from { transform: translate3d(0, 0, 0); }
                         to   { transform: translate3d(-50%, 0, 0); }
@@ -580,7 +580,7 @@
 
                     .marquee-track {
                         display: flex;
-                        // max-content wajib: lebar track harus mengikuti isinya, karena animasi menggeser tepat 50% dari le...
+                        /* max-content wajib: lebar track harus mengikuti isinya, karena animasi menggeser tepat 50% dari le... */
                         width: max-content;
                         animation: marquee-ke-kiri var(--durasi, 40s) linear infinite;
                         will-change: transform;
@@ -730,7 +730,7 @@
 
     @push('styles')
     <style>
-        // ══════════ Program Affiliate ══════════ Ditulis sebagai CSS sendiri, bukan kelas Tailwind arbitra...
+        /* ══════════ Program Affiliate ══════════ Ditulis sebagai CSS sendiri, bukan kelas Tailwind arbitra... */
         .afil {
             position: relative;
             overflow: hidden;
@@ -741,7 +741,7 @@
         }
         @media (min-width: 768px) { .afil { padding: 52px 48px; } }
 
-        // Dua bola cahaya yang bergerak pelan — memberi kesan hidup tanpa mengganggu keterbacaan teks di at...
+        /* Dua bola cahaya yang bergerak pelan — memberi kesan hidup tanpa mengganggu keterbacaan teks di at... */
         .afil-cahaya {
             position: absolute;
             border-radius: 50%;
@@ -944,7 +944,7 @@
             color: rgb(255 255 255 / .45);
         }
 
-        // Hormati pengguna yang mematikan animasi di pengaturan sistemnya — gerakan terus-menerus bisa memi...
+        /* Hormati pengguna yang mematikan animasi di pengaturan sistemnya — gerakan terus-menerus bisa memi... */
         @media (prefers-reduced-motion: reduce) {
             .afil-cahaya, .afil-kilau, .afil-titik, .afil-panah, .afil-plus {
                 animation: none;

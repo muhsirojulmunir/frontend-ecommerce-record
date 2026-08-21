@@ -13,8 +13,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        /*
+         * Webhook Midtrans datang dari peladen mereka, bukan dari peramban
+         * pembeli, jadi tidak mungkin membawa token CSRF. Keasliannya dijaga
+         * oleh tanda tangan SHA-512 yang diperiksa di MidtransService.
+         *
+         * Kedua alamat didaftarkan karena keduanya memang terpasang sebagai
+         * rute. Yang kedua sebelumnya terlewat — kalau alamat itu yang
+         * didaftarkan di dasbor Midtrans, notifikasinya ditolak 419 dan
+         * pesanan tidak pernah tercatat lunas secara otomatis.
+         */
         $middleware->validateCsrfTokens(except: [
             'midtrans/callback',
+            'checkout/midtrans/callback',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

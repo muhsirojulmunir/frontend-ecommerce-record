@@ -87,9 +87,10 @@ class TransactionFeeService
         int $grandTotal,
         int $midtransFee,
         int $ongkirAsli,
-        int $komisiReferal = 0
+        int $komisiReferal = 0,
+        int $premiAsuransi = 0
     ): int {
-        return (int) ($grandTotal - $midtransFee - $ongkirAsli - $komisiReferal);
+        return (int) ($grandTotal - $midtransFee - $ongkirAsli - $komisiReferal - $premiAsuransi);
     }
 
     /**
@@ -122,7 +123,11 @@ class TransactionFeeService
             $grandTotal,
             $biaya,
             $ongkirAsli,
-            (int) round((float) ($order->referral_commission ?? 0))
+            (int) round((float) ($order->referral_commission ?? 0)),
+
+            // Premi asuransi pengiriman: uang toko yang keluar ke Biteship,
+            // sama seperti ongkir. Nol bila pengiriman ini tidak diasuransikan.
+            (int) round((float) ($order->shipping_insurance_fee ?? 0))
         );
     }
 

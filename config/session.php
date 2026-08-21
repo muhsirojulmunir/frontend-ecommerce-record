@@ -127,10 +127,17 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'laravel')).'-session'
-    ),
+    /*
+     * Nama cookie sesi toko.
+     *
+     * Sengaja dipatok, bukan diturunkan dari APP_NAME seperti bawaan Laravel.
+     * Toko dan Seller Center adalah dua aplikasi terpisah yang berbagi satu
+     * induk domain di hosting (recordshoes.com dan admin.recordshoes.com).
+     * Bila nama cookienya sama, keduanya saling menimpa sesi masing-masing,
+     * dan aplikasi yang menerima cookie tetangganya gagal mendekripsinya
+     * karena APP_KEY-nya berbeda — berujung 419 pada setiap kiriman borang.
+     */
+    'cookie' => env('SESSION_COOKIE', 'record-toko-session'),
 
     /*
     |--------------------------------------------------------------------------

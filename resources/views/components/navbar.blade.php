@@ -259,12 +259,12 @@
     /* Kata kedua disembunyikan sampai layarnya benar-benar lega. */
     .bar-tombol-tambahan { display: none; }
 
-    // Jaraknya diatur di sini, bukan lewat kelas gap-4 Tailwind.
+    /* Jaraknya diatur di sini, bukan lewat kelas gap-4 Tailwind. */
     .bar-mobile { gap: 8px; }
     @media (min-width: 400px) { .bar-mobile { gap: 10px; } }
     @media (min-width: 640px) { .bar-mobile { gap: 14px; } }
 
-    // ══════════ Ajakan di layar sempit ══════════ Kembaran ringkas dari .bar-tombol, khusus untuk bar ...
+    /* ══════════ Ajakan di layar sempit ══════════ Kembaran ringkas dari .bar-tombol, khusus untuk bar ... */
     .bar-aksi {
         display: inline-flex;
         align-items: center;
@@ -286,7 +286,7 @@
     .bar-aksi-wa      { background: #25D366; }
     .bar-aksi-wa:hover    { background: #20ba59; }
 
-    // Tulisannya baru muncul kalau barisnya memang muat.
+    /* Tulisannya baru muncul kalau barisnya memang muat. */
     .bar-aksi-label { display: none; }
 
     @media (min-width: 520px) {
@@ -300,7 +300,7 @@
         .bar-aksi i { font-size: 15px; }
     }
 
-    // Mulai 768px, .bar-kanan tampil dan sudah memuat "Buy Online" serta "WhatsApp" versi lebarnya.
+    /* Mulai 768px, .bar-kanan tampil dan sudah memuat "Buy Online" serta "WhatsApp" versi lebarnya. */
     @media (min-width: 768px) {
         .bar-aksi { display: none; }
     }

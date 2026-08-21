@@ -206,7 +206,7 @@
 
     @push('styles')
     <style>
-        // Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind yang belum tentu ikut ter-build.
+        /* Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind yang belum tentu ikut ter-build. */
         .baris-dompet {
             display: grid; gap: 20px; margin-bottom: 32px;
         }

@@ -51,6 +51,26 @@ class PembatalanPesananService
     public function batalkan(Order $order, string $alasan, ?string $penjelasan = null): void
     {
         DB::transaction(function () use ($order, $alasan, $penjelasan) {
+            /*
+             * Barisnya dikunci dan dibaca ulang di dalam transaksi.
+             *
+             * Tanpa ini, dua permintaan pembatalan yang datang bersamaan
+             * sama-sama membaca status "paid", sama-sama lolos pemeriksaan
+             * "sudah dibukukan?", lalu sama-sama menuliskan pengembalian dana —
+             * pembeli menerima uangnya dua kali. Stok pun ikut dikembalikan
+             * dua kali.
+             *
+             * Yang kedua kini menunggu di sini, lalu mendapati statusnya sudah
+             * "cancelled" dan berhenti tanpa melakukan apa-apa.
+             */
+            $terkunci = Order::whereKey($order->getKey())->lockForUpdate()->first();
+
+            if (! $terkunci || $terkunci->status === 'cancelled') {
+                return;
+            }
+
+            $order->setRawAttributes($terkunci->getAttributes(), true);
+
             $perluRefund = $order->payment_status === 'paid';
             $nominal     = (float) $order->grand_total;
 

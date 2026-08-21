@@ -172,6 +172,10 @@ class Order extends Model
             if ($order->payment_status === 'paid'
                 && ($order->isDirty('payment_status')
                     || $order->isDirty('payment_method')
+                    // Premi asuransi baru diketahui saat resi terbit, jauh
+                    // setelah pembayaran. Tanpa ini, penghasilan bersih tetap
+                    // memakai angka lama dan tampak lebih besar dari kenyataan.
+                    || $order->isDirty('shipping_insurance_fee')
                     || $order->net_revenue === null)) {
                 app(\App\Services\TransactionFeeService::class)->terapkanKe($order);
             }

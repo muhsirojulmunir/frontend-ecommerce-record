@@ -1851,7 +1851,7 @@
             }
             .sisa-langkah i { margin-top: 2px; color: #d97706; }
 
-            // ── Pilihan kurir ────────────────────────────────────────── Ditulis sebagai CSS sendiri agar tida...
+            /* ── Pilihan kurir ────────────────────────────────────────── Ditulis sebagai CSS sendiri agar tida... */
             .judul-kurir {
                 display: flex;
                 align-items: center;
@@ -1893,12 +1893,12 @@
                 background: rgb(27 58 107 / 0.05);
             }
 
-            // Garis hijau tipis di tepi kiri: penanda cepat bahwa baris ini adalah layanan instan, terbaca bahk...
+            /* Garis hijau tipis di tepi kiri: penanda cepat bahwa baris ini adalah layanan instan, terbaca bahk... */
             .kartu-kurir-instan {
                 border-left: 3px solid #10b981;
             }
 
-            // ── Kartu kode referal ───────────────────────────────────── Ditulis sebagai CSS sendiri agar tida...
+            /* ── Kartu kode referal ───────────────────────────────────── Ditulis sebagai CSS sendiri agar tida... */
             .kartu-referal {
                 background: #eef7fe;
                 border: 1px solid #dbeafe;
@@ -1958,7 +1958,7 @@
                 color: #047857; text-decoration: underline;
             }
 
-            // ── Peta titik lokasi pengiriman ──────────────────────────── Ukurannya wajib eksplisit: Leaflet m...
+            /* ── Peta titik lokasi pengiriman ──────────────────────────── Ukurannya wajib eksplisit: Leaflet m... */
             .peta-lokasi {
                 width: 100%;
                 height: 280px;

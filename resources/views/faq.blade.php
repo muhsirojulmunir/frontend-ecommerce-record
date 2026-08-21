@@ -155,7 +155,7 @@
 
     @push('styles')
         <style>
-            // Halaman FAQ.
+            /* Halaman FAQ. */
 
             [x-cloak] { display: none !important; }
 

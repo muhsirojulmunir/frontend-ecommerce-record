@@ -179,7 +179,7 @@
     </div>
 @push('styles')
 <style>
-    // ── Tanda "Belum Dinilai" ── Ditulis tangan seperti blok lain, sebab hasil build Tailwind yang ter...
+    /* ── Tanda "Belum Dinilai" ── Ditulis tangan seperti blok lain, sebab hasil build Tailwind yang ter... */
 
     .belum-nilai {
         display: inline-flex; align-items: center; gap: 5px;
@@ -194,7 +194,7 @@
     }
     .belum-nilai:hover { background: #FEF3C7; border-color: #F59E0B; }
 
-    // Bintangnya berdenyut pelan — cukup untuk menarik pandangan sekali, tidak cukup untuk mengganggu o...
+    /* Bintangnya berdenyut pelan — cukup untuk menarik pandangan sekali, tidak cukup untuk mengganggu o... */
     .belum-nilai i {
         font-size: 9px; color: #F59E0B;
         animation: belum-nilai-denyut 2.8s ease-in-out infinite;
