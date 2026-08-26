@@ -59,6 +59,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'midtrans/callback',
             'checkout/midtrans/callback',
+
+            // Webhook Biteship juga datang dari peladen mereka, bukan dari
+            // peramban, jadi tidak mungkin membawa token CSRF. Keasliannya
+            // diperiksa lewat Custom Header di BiteshipWebhookController.
+            'webhook/biteship',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

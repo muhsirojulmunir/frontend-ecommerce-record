@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'biteship' => [
+        /*
+         * Kata sandi bersama untuk webhook pengiriman.
+         *
+         * Biteship belum menyediakan tanda tangan digital untuk notifikasinya,
+         * jadi keasliannya dijaga dengan Custom Header yang kita tentukan
+         * sendiri saat mendaftarkan webhook di dasbor mereka. Nilai di sini
+         * harus sama persis dengan yang diisikan di sana.
+         *
+         * Kalau kosong, seluruh notifikasi DITOLAK — bukan diterima begitu
+         * saja. Pintu yang dibiarkan terbuka karena kuncinya belum dipasang
+         * adalah cara paling umum sebuah webhook disalahgunakan.
+         */
+        'webhook_token' => env('BITESHIP_WEBHOOK_TOKEN', ''),
+    ],
+
 ];

@@ -38,6 +38,12 @@ Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->na
 Route::post('/midtrans/callback', [CheckoutController::class, 'midtransCallback'])->name('midtrans.callback');
 Route::post('/checkout/midtrans/callback', [CheckoutController::class, 'midtransCallback']);
 
+// Webhook Biteship — status pengiriman dikirim Biteship setiap kali berubah.
+// Gratis, dan menggantikan pemanggilan Tracking API yang memotong saldo Rp 10
+// tiap kali halaman pelacakan dibuka.
+Route::post('/webhook/biteship', \App\Http\Controllers\BiteshipWebhookController::class)
+    ->name('webhook.biteship');
+
 // ─── Keranjang & awal checkout: boleh diakses tamu ────────────────
 //
 // Pembeli baru tidak dipaksa mendaftar lebih dulu. Ia bisa memasukkan
