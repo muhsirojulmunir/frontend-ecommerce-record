@@ -8,9 +8,9 @@
         <title>{{ isset($title) ? $title . ' - ' : '' }}Record - LANGKAHPENUHGAYA</title>
 
         {{-- Favicon / Icon Tab Browser --}}
-        <link rel="icon" type="image/png" href="{{ asset('images/logo-brand-rapi.png') }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-brand-rapi.png') }}">
-        <link rel="apple-touch-icon" href="{{ asset('images/logo-brand-rapi.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon-record.png?v=2') }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-record.png?v=2') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/favicon-record.png?v=2') }}">
 
         {{-- Font Inter dari Google --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +23,7 @@
         {{-- CSS & JS dikompilasi oleh Vite --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        {{-- â•â•â•â•â•â•â•â•â•â• Kenyamanan di layar sentuh â•â•â•â•â•â•â•â•â•â• --}}
+        {{-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Kenyamanan di layar sentuh Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â --}}
         <style>
             @media (max-width: 640px) {
                 /* Bar atas: dua tautan kecil yang berdempetan. */
@@ -50,7 +50,7 @@
                     padding-block: 9px;
                 }
 
-                /* Bintang di kartu produk â€” sekaligus tautan ke ulasannya. */
+                /* Bintang di kartu produk Ã¢â‚¬â€ sekaligus tautan ke ulasannya. */
                 .kartu-bintang { min-height: 30px; padding: 4px 0; }
 
                 /* Tanda "Belum Dinilai" di riwayat pesanan. */
@@ -89,7 +89,7 @@
                                 </svg>
                                 <span>{{ session('success') }}</span>
                             </div>
-                            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 font-bold">Ã—</button>
+                            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 font-bold">Ãƒâ€”</button>
                         </div>
                     </div>
                 @endif
@@ -104,7 +104,7 @@
                                 </svg>
                                 <span>{{ session('error') }}</span>
                             </div>
-                            <button @click="show = false" class="text-rose-500 hover:text-rose-700 font-bold">Ã—</button>
+                            <button @click="show = false" class="text-rose-500 hover:text-rose-700 font-bold">Ãƒâ€”</button>
                         </div>
                     </div>
                 @endif

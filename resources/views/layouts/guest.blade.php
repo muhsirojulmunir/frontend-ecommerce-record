@@ -8,9 +8,9 @@
         <title>{{ isset($title) ? $title . ' - ' : '' }}Record - LANGKAHPENUHGAYA</title>
 
         {{-- Favicon / Icon Tab Browser --}}
-        <link rel="icon" type="image/png" href="{{ asset('images/logo-brand-rapi.png') }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-brand-rapi.png') }}">
-        <link rel="apple-touch-icon" href="{{ asset('images/logo-brand-rapi.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon-record.png?v=2') }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-record.png?v=2') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/favicon-record.png?v=2') }}">
 
         {{-- Font Inter dari Google --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
