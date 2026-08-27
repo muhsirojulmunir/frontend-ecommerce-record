@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     {{-- ===== BANNER HERO (bagian atas halaman) ===== --}}
     @if($heroBanners->isNotEmpty())
         <div class="relative mb-12 shadow-sm group select-none"
@@ -247,9 +247,15 @@
                                     @endif
 
                                         @if(Str::endsWith($banner->image, ['.mp4', '.webm', '.ogg', '.mov']))
-                                            <video src="{{ $banner->image_url }}" muted playsinline preload="auto" @ended="next()"
+                                            @php
+                                                $bannerExt  = strtolower(pathinfo($banner->image, PATHINFO_EXTENSION));
+                                                $bannerMime = match($bannerExt) { 'mp4' => 'video/mp4', 'webm' => 'video/webm', 'ogg' => 'video/ogg', 'mov' => 'video/mp4', default => 'video/mp4' };
+                                            @endphp
+                                            <video muted playsinline preload="auto" @ended="next()"
                                                 data-banner-video
-                                                style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+                                                style="width:100%; height:100%; object-fit:cover; display:block;">
+                                                <source src="{{ $banner->image_url }}" type="{{ $bannerMime }}">
+                                            </video>
                                         @else
                                             {{-- Gambar ditampilkan apa adanya, tanpa efek zoom --}}
                                             <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" draggable="false"
@@ -271,9 +277,15 @@
                         <div style="flex: 0 0 100%; width: 100%; height: 100%;" class="overflow-hidden"
                              data-slide="{{ $heroBanners->count() }}" aria-hidden="true">
                             @if(Str::endsWith($awal->image, ['.mp4', '.webm', '.ogg', '.mov']))
-                                <video src="{{ $awal->image_url }}" muted playsinline preload="auto" @ended="next()"
+                                @php
+                                    $awalExt  = strtolower(pathinfo($awal->image, PATHINFO_EXTENSION));
+                                    $awalMime = match($awalExt) { 'mp4' => 'video/mp4', 'webm' => 'video/webm', 'ogg' => 'video/ogg', 'mov' => 'video/mp4', default => 'video/mp4' };
+                                @endphp
+                                <video muted playsinline preload="auto" @ended="next()"
                                     data-banner-video
-                                    style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+                                    style="width:100%; height:100%; object-fit:cover; display:block;">
+                                    <source src="{{ $awal->image_url }}" type="{{ $awalMime }}">
+                                </video>
                             @else
                                 <img src="{{ $awal->image_url }}" alt="" draggable="false"
                                     style="width:100%; height:100%; object-fit:cover; display:block;"
