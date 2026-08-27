@@ -81,17 +81,15 @@
             pewaktuBilah: null,
             dihentikan: false,
 
-            DURASI_TAYANG: 5500, // Tayang 5.5 detik
-            JEDA_MIN: 8000,      // Jeda minimal 8 detik
-            JEDA_MAKS: 18000,    // Jeda maksimal 18 detik
+            DURASI_TAYANG: 5000, // Tayang 5 detik
 
             init() {
                 if (this.daftar.length === 0) return;
 
                 this.acakUrutan();
 
-                // Muncul pertama kali 3.5 detik setelah halaman selesai dimuat
-                this.pewaktu = setTimeout(() => this.tayangkan(), 3500);
+                // Muncul pertama kali 5 detik setelah halaman selesai dibuka
+                this.pewaktu = setTimeout(() => this.tayangkan(), 5000);
             },
 
             destroy() {
@@ -117,7 +115,7 @@
 
                 this.kini = this.daftar[this.urutan[this.posisi++]];
                 
-                // Format waktu acak dinamis: menit / baru saja (TIDAK ADA HARI)
+                // Format waktu segar dinamis (TIDAK ADA HARI)
                 const menitAcak = (this.kini.menit || Math.floor(Math.random() * 35) + 1);
                 if (menitAcak <= 2) {
                     this.waktuTampil = 'Baru saja';
@@ -155,9 +153,36 @@
                     return;
                 }
 
-                // Jeda acak berbeda-beda antara 8 - 18 detik
-                const jedaAcak = Math.floor(Math.random() * (this.JEDA_MAKS - this.JEDA_MIN + 1)) + this.JEDA_MIN;
+                // Hitung jeda acak alami bervariasi agar seolah-olah real
+                const jedaAcak = this.hitungJedaAcak();
                 this.pewaktu = setTimeout(() => this.tayangkan(), jedaAcak);
+            },
+
+            // Pola Jeda Acak Realistis:
+            // - Jika ada pesanan real asli: jeda cepat 5-10 detik
+            // - Acak alami: kadang 20-40 detik, kadang 1-2 menit, kadang 3-5 menit
+            hitungJedaAcak() {
+                // Cek item antrean berikutnya
+                const indeksBerikutnya = this.urutan[this.posisi % this.urutan.length];
+                const itemBerikutnya = this.daftar[indeksBerikutnya];
+
+                // Jika pesanan real dari pembeli asli: jeda cepat (5 - 8 detik)
+                if (itemBerikutnya && itemBerikutnya.asli) {
+                    return Math.floor(Math.random() * (8000 - 5000 + 1)) + 5000;
+                }
+
+                const acak = Math.random();
+
+                if (acak < 0.40) {
+                    // 40% jeda cepat/sedang (18 detik s.d 40 detik)
+                    return Math.floor(Math.random() * (40000 - 18000 + 1)) + 18000;
+                } else if (acak < 0.75) {
+                    // 35% jeda 1 s.d 2 menit (60 detik s.d 120 detik)
+                    return Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;
+                } else {
+                    // 25% jeda santai 2.5 s.d 4.5 menit (150 detik s.d 270 detik)
+                    return Math.floor(Math.random() * (270000 - 150000 + 1)) + 150000;
+                }
             },
 
             formatRupiah(nilai) {

@@ -15,13 +15,13 @@ class PembelianTerbaruService
 
     /**
      * Mengambil daftar pembelian bervariasi dengan sensor nama (misal: Mu***).
-     * Menggabungkan pesanan asli dan katalog produk aktif.
+     * Menggabungkan pesanan asli (real) dan katalog produk aktif.
      *
-     * @return array<int, array{nama: string, kota: string, produk: string, gambar: ?string, slug: ?string, nominal: float, menit: int}>
+     * @return array<int, array{nama: string, kota: string, produk: string, gambar: ?string, slug: ?string, nominal: float, menit: int, asli: bool}>
      */
     public function ambil(): array
     {
-        return Cache::remember('pembelian-terbaru-v3', self::UMUR_CACHE_DETIK, function () {
+        return Cache::remember('pembelian-terbaru-v4', self::UMUR_CACHE_DETIK, function () {
             $daftar = [];
 
             $kotaVariasi = [
@@ -32,7 +32,7 @@ class PembelianTerbaruService
                 'Jember', 'Pontianak', 'Batam', 'Pekanbaru', 'Samarinda',
             ];
 
-            // 1. Ambil data pesanan ASLI dari database (diutamakan tampil)
+            // 1. Ambil data pesanan ASLI dari database (ditandai asli = true)
             $pesananAsli = Order::query()
                 ->where('status', '!=', 'cancelled')
                 ->with(['user:id,name', 'items' => fn ($q) => $q->with('product:id,name,slug,image,price')])
@@ -54,7 +54,8 @@ class PembelianTerbaruService
                         'gambar'  => $item->product->image,
                         'slug'    => $item->product->slug,
                         'nominal' => (float) $item->price,
-                        'menit'   => rand(1, 30),
+                        'menit'   => rand(1, 20),
+                        'asli'    => true,
                     ];
                 }
             }
@@ -88,13 +89,14 @@ class PembelianTerbaruService
                         'slug'    => $p->slug,
                         'nominal' => (float) $p->price,
                         'menit'   => rand(1, 45),
+                        'asli'    => false,
                     ];
 
                     $indeks++;
                 }
             }
 
-            // Acak urutan agar tidak monoton
+            // Acak urutan
             shuffle($daftar);
 
             return $daftar;
