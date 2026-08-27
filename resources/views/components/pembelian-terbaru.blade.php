@@ -1,58 +1,60 @@
 @props(['pembelian' => []])
 
-{{-- Notifikasi pembelian terbaru. --}}
+{{-- Notifikasi pembelian terbaru (Social Proof) di pojok kiri bawah --}}
 @if(! empty($pembelian))
 <div x-data="pembelianTerbaru({{ Js::from($pembelian) }})"
      x-show="tampil"
      x-cloak
      x-transition:enter="transition ease-out duration-500 transform"
-     x-transition:enter-start="-translate-y-12 opacity-0 scale-95"
-     x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+     x-transition:enter-start="-translate-x-12 translate-y-6 opacity-0 scale-95"
+     x-transition:enter-end="translate-x-0 translate-y-0 opacity-100 scale-100"
      x-transition:leave="transition ease-in duration-400 transform"
-     x-transition:leave-start="translate-y-0 opacity-100 scale-100"
-     x-transition:leave-end="-translate-y-8 opacity-0 scale-95"
-     class="fixed top-20 right-4 sm:right-6 z-50 max-w-sm w-full pointer-events-auto">
+     x-transition:leave-start="translate-x-0 translate-y-0 opacity-100 scale-100"
+     x-transition:leave-end="-translate-x-12 opacity-0 scale-95"
+     class="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-50 max-w-[320px] sm:max-w-sm w-full pointer-events-auto">
 
-    <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl p-4 shadow-2xl flex items-center gap-3.5 relative overflow-hidden">
-        {{-- Bilah waktu tayang --}}
-        <div class="absolute bottom-0 left-0 h-1 bg-accent transition-all duration-100 ease-linear"
+    <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl p-3.5 sm:p-4 shadow-2xl flex items-center gap-3 relative overflow-hidden ring-1 ring-black/5">
+        {{-- Bilah waktu tayang meluncur --}}
+        <div class="absolute bottom-0 left-0 h-1 bg-orange-500 transition-all duration-100 ease-linear"
              :style="`width: ${sisaWaktu}%`"></div>
 
         {{-- Gambar produk --}}
-        <a :href="tautanProduk" class="shrink-0 relative">
+        <a :href="tautanProduk" class="shrink-0 relative group">
             <template x-if="kini && kini.gambar">
                 <img :src="alamatGambar(kini.gambar)" :alt="kini.produk"
-                     class="w-14 h-14 rounded-xl object-cover border border-gray-100 shadow-sm">
+                     class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-gray-100 shadow-sm group-hover:scale-105 transition duration-300">
             </template>
             <template x-if="!kini || !kini.gambar">
-                <div class="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-lg shadow-sm">
                     <i class="fa-solid fa-bag-shopping"></i>
                 </div>
             </template>
-            <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[10px] shadow-sm">
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[9px] sm:text-[10px] shadow-sm ring-2 ring-white">
                 <i class="fa-solid fa-check"></i>
             </span>
         </a>
 
-        {{-- Keterangan --}}
-        <div class="flex-1 min-w-0">
+        {{-- Keterangan Pembeli & Produk --}}
+        <div class="flex-1 min-w-0 pr-2">
             <div class="flex items-center justify-between gap-1 mb-0.5">
                 <p class="text-xs font-bold text-gray-900 truncate">
-                    <span class="text-primary font-black" x-text="kini ? kini.nama : ''"></span>
-                    <span class="text-gray-500 font-normal">telah membeli</span>
+                    <span class="text-blue-900 font-extrabold" x-text="kini ? kini.nama : ''"></span>
+                    <span class="text-gray-400 text-[10px] font-normal" x-show="kini && kini.kota" x-text="'(' + kini.kota + ')'"></span>
+                    <span class="text-gray-500 font-medium text-[11px]">membeli</span>
                 </p>
-                <span class="text-[10px] text-gray-400 shrink-0" x-text="lamaBerlalu"></span>
+                <span class="text-[10px] text-gray-400 font-medium shrink-0" x-text="waktuTampil"></span>
             </div>
 
             <a :href="tautanProduk"
-               class="block text-xs font-bold text-gray-800 truncate leading-snug hover:text-primary transition"
+               class="block text-xs font-bold text-gray-800 truncate leading-snug hover:text-orange-600 transition"
                x-text="kini ? kini.produk : ''"></a>
 
-            <p class="text-xs font-black text-accent mt-0.5" x-text="nominalTampil"></p>
+            <p class="text-xs font-black text-orange-600 mt-0.5" x-text="nominalTampil"></p>
         </div>
 
+        {{-- Tombol Tutup --}}
         <button @click="sembunyikan(true)" aria-label="Tutup notifikasi"
-                class="shrink-0 text-gray-400 hover:text-gray-600 transition p-1 text-xs">
+                class="shrink-0 text-gray-400 hover:text-gray-600 transition p-1 text-xs -mt-5">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
@@ -71,7 +73,7 @@
             tampil: false,
             kini: null,
             sisaWaktu: 100,
-            lamaBerlalu: '',
+            waktuTampil: '',
             nominalTampil: '',
             tautanProduk: '#',
 
@@ -79,18 +81,17 @@
             pewaktuBilah: null,
             dihentikan: false,
 
-            DURASI_TAYANG: 6000,
-            JEDA_MIN: 60000,    // 1 menit
-            JEDA_MAKS: 180000,  // 3 menit
+            DURASI_TAYANG: 5500, // Tayang 5.5 detik
+            JEDA_MIN: 8000,      // Jeda minimal 8 detik
+            JEDA_MAKS: 18000,    // Jeda maksimal 18 detik
 
             init() {
                 if (this.daftar.length === 0) return;
 
                 this.acakUrutan();
 
-                // Muncul sekali di awal supaya pengunjung baru langsung
-                // melihat bahwa tokonya hidup.
-                this.pewaktu = setTimeout(() => this.tayangkan(), 4000);
+                // Muncul pertama kali 3.5 detik setelah halaman selesai dimuat
+                this.pewaktu = setTimeout(() => this.tayangkan(), 3500);
             },
 
             destroy() {
@@ -98,25 +99,32 @@
                 clearInterval(this.pewaktuBilah);
             },
 
-            // Urutan diacak sekali, lalu dijalani berurutan.
             acakUrutan() {
                 this.urutan = [...this.daftar.keys()];
-
                 for (let i = this.urutan.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [this.urutan[i], this.urutan[j]] = [this.urutan[j], this.urutan[i]];
                 }
-
                 this.posisi = 0;
             },
 
             tayangkan() {
                 if (this.dihentikan || this.daftar.length === 0) return;
 
-                if (this.posisi >= this.urutan.length) this.acakUrutan();
+                if (this.posisi >= this.urutan.length) {
+                    this.acakUrutan();
+                }
 
-                this.kini          = this.daftar[this.urutan[this.posisi++]];
-                this.lamaBerlalu   = this.hitungLamaBerlalu(this.kini.waktu);
+                this.kini = this.daftar[this.urutan[this.posisi++]];
+                
+                // Format waktu acak dinamis: menit / baru saja (TIDAK ADA HARI)
+                const menitAcak = (this.kini.menit || Math.floor(Math.random() * 35) + 1);
+                if (menitAcak <= 2) {
+                    this.waktuTampil = 'Baru saja';
+                } else {
+                    this.waktuTampil = `${menitAcak} mnt lalu`;
+                }
+
                 this.nominalTampil = this.formatRupiah(this.kini.nominal);
                 this.tautanProduk  = this.kini.slug ? `/products/${this.kini.slug}` : '#';
 
@@ -137,7 +145,6 @@
                 this.pewaktu = setTimeout(() => this.sembunyikan(), this.DURASI_TAYANG);
             },
 
-            // Ditutup sendiri: jadwalkan yang berikutnya.
             sembunyikan(olehPengunjung = false) {
                 this.tampil = false;
                 clearInterval(this.pewaktuBilah);
@@ -148,31 +155,20 @@
                     return;
                 }
 
-                const jeda = this.JEDA_MIN + Math.random() * (this.JEDA_MAKS - this.JEDA_MIN);
-                this.pewaktu = setTimeout(() => this.tayangkan(), jeda);
-            },
-
-            // Dihitung di browser dari waktu asli pesanan, jadi halaman yang lama dibiarkan terbuka tidak menam...
-            hitungLamaBerlalu(waktu) {
-                const menit = Math.floor((Date.now() - new Date(waktu).getTime()) / 60000);
-
-                if (menit < 1)    return 'Baru saja';
-                if (menit < 60)   return `${menit} menit lalu`;
-
-                const jam = Math.floor(menit / 60);
-                if (jam < 24)     return `${jam} jam lalu`;
-
-                const hari = Math.floor(jam / 24);
-                return hari === 1 ? 'Kemarin' : `${hari} hari lalu`;
+                // Jeda acak berbeda-beda antara 8 - 18 detik
+                const jedaAcak = Math.floor(Math.random() * (this.JEDA_MAKS - this.JEDA_MIN + 1)) + this.JEDA_MIN;
+                this.pewaktu = setTimeout(() => this.tayangkan(), jedaAcak);
             },
 
             formatRupiah(nilai) {
+                if (!nilai || isNaN(nilai)) return '';
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(nilai));
             },
 
             alamatGambar(berkas) {
-                if (! berkas) return '';
-                return berkas.startsWith('http') ? berkas : '/storage/' + berkas;
+                if (!berkas) return '';
+                if (berkas.startsWith('http')) return berkas;
+                return 'https://admin.recordshoes.com/storage/' + berkas.replace(/^\/+/, '');
             },
         }));
     }
