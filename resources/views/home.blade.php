@@ -38,14 +38,17 @@
                                 this.progress = Math.min(100, (v.currentTime / v.duration) * 100);
                             }
 
-                            // Penjaga kemacetan.
-                            {{-- Lamanya diam diukur dengan jam sungguhan, bukan --}}
-                            if (v && v.paused && v.currentTime === this.waktuTerakhir) {
+                            // Penjaga kemacetan: deteksi video paused ATAU buffering/loading stuck.
+                            const vBerjalan = v && !v.paused && !v.ended && v.currentTime > this.waktuTerakhir;
+                            if (!vBerjalan) {
                                 if (this.diamSejak === 0) this.diamSejak = Date.now();
 
-                                if (Date.now() - this.diamSejak > 8000) {
+                                // Toleransi 4 detik — jika video masih macet, langsung skip.
+                                if (Date.now() - this.diamSejak > 4000) {
                                     this.slideVideo = false;
                                     this.diamSejak = 0;
+                                    this.next();
+                                    return;
                                 }
                             } else {
                                 this.diamSejak = 0;
