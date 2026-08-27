@@ -36,13 +36,12 @@
 
         {{-- Keterangan Pembeli & Produk --}}
         <div class="flex-1 min-w-0 pr-2">
-            <div class="flex items-center justify-between gap-1 mb-0.5">
+            <div class="flex items-center gap-1 mb-0.5">
                 <p class="text-xs font-bold text-gray-900 truncate">
                     <span class="text-blue-900 font-extrabold" x-text="kini ? kini.nama : ''"></span>
                     <span class="text-gray-400 text-[10px] font-normal" x-show="kini && kini.kota" x-text="'(' + kini.kota + ')'"></span>
                     <span class="text-gray-500 font-medium text-[11px]">membeli</span>
                 </p>
-                <span class="text-[10px] text-gray-400 font-medium shrink-0" x-text="waktuTampil"></span>
             </div>
 
             <a :href="tautanProduk"
@@ -73,7 +72,6 @@
             tampil: false,
             kini: null,
             sisaWaktu: 100,
-            waktuTampil: '',
             nominalTampil: '',
             tautanProduk: '#',
 
@@ -114,14 +112,6 @@
                 }
 
                 this.kini = this.daftar[this.urutan[this.posisi++]];
-                
-                // Format waktu segar dinamis (TIDAK ADA HARI)
-                const menitAcak = (this.kini.menit || Math.floor(Math.random() * 35) + 1);
-                if (menitAcak <= 2) {
-                    this.waktuTampil = 'Baru saja';
-                } else {
-                    this.waktuTampil = `${menitAcak} mnt lalu`;
-                }
 
                 this.nominalTampil = this.formatRupiah(this.kini.nominal);
                 this.tautanProduk  = this.kini.slug ? `/products/${this.kini.slug}` : '#';
@@ -159,10 +149,9 @@
             },
 
             // Pola Jeda Acak Realistis:
-            // - Jika ada pesanan real asli: jeda cepat 5-10 detik
-            // - Acak alami: kadang 20-40 detik, kadang 1-2 menit, kadang 3-5 menit
+            // - Jika ada pesanan real asli: jeda cepat 5-8 detik
+            // - Acak alami: kadang 18-40 detik, kadang 1-2 menit, kadang 2.5-4.5 menit
             hitungJedaAcak() {
-                // Cek item antrean berikutnya
                 const indeksBerikutnya = this.urutan[this.posisi % this.urutan.length];
                 const itemBerikutnya = this.daftar[indeksBerikutnya];
 
