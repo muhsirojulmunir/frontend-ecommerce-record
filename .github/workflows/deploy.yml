@@ -29,6 +29,13 @@ jobs:
             echo "▶ Pull kode terbaru dari GitHub..."
             git fetch origin
             git reset --hard origin/main
+            echo "? Memastikan BACKEND_STORAGE_URL benar di .env..."
+            if grep -q "BACKEND_STORAGE_URL" .env 2>/dev/null; then
+              sed -i "s|BACKEND_STORAGE_URL=.*|BACKEND_STORAGE_URL=https://admin.recordshoes.com/storage|" .env
+            else
+              echo "BACKEND_STORAGE_URL=https://admin.recordshoes.com/storage" >> .env
+            fi
+            echo "  -> BACKEND_STORAGE_URL="
 
             echo "▶ Menentukan PHP 8.4..."
             PHP_BIN="php"

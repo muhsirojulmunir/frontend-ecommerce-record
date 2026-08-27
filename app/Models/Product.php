@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -239,7 +239,7 @@ class Product extends Model
         if (empty($path)) {
             return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700&q=80';
         }
-        $base = rtrim(config('app.backend_storage_url', env('BACKEND_STORAGE_URL', asset('storage'))), '/');
+        $base = rtrim(env('BACKEND_STORAGE_URL', 'https://admin.recordshoes.com/storage'), '/');
         return $base . '/' . ltrim($path, '/');
     }
 
