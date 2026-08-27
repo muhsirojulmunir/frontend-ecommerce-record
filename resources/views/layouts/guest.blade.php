@@ -7,6 +7,11 @@
 
         <title>{{ isset($title) ? $title . ' - ' : '' }}Record - LANGKAHPENUHGAYA</title>
 
+        {{-- Favicon / Icon Tab Browser --}}
+        <link rel="icon" type="image/png" href="{{ asset('images/logo-brand-rapi.png') }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-brand-rapi.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/logo-brand-rapi.png') }}">
+
         {{-- Font Inter dari Google --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
