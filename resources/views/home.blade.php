@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     {{-- ===== BANNER HERO (bagian atas halaman) ===== --}}
     @if($heroBanners->isNotEmpty())
         <div class="relative mb-12 shadow-sm group select-none"
