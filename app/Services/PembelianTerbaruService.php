@@ -7,7 +7,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Data notifikasi pembelian terbaru (Social Proof) dengan sensor nama (Mu***).
+ * Data notifikasi pembelian terbaru (Social Proof) dengan 100+ variasi nama & kota.
  */
 class PembelianTerbaruService
 {
@@ -15,13 +15,12 @@ class PembelianTerbaruService
 
     /**
      * Mengambil daftar pembelian bervariasi dengan sensor nama (misal: Mu***).
-     * Menggabungkan pesanan asli (real) dan katalog produk aktif.
      *
-     * @return array<int, array{nama: string, kota: string, produk: string, gambar: ?string, slug: ?string, nominal: float, menit: int, asli: bool}>
+     * @return array<int, array{nama: string, kota: string, produk: string, gambar: ?string, slug: ?string, nominal: float, asli: bool}>
      */
     public function ambil(): array
     {
-        return Cache::remember('pembelian-terbaru-v4', self::UMUR_CACHE_DETIK, function () {
+        return Cache::remember('pembelian-terbaru-v5', self::UMUR_CACHE_DETIK, function () {
             $daftar = [];
 
             $kotaVariasi = [
@@ -30,14 +29,17 @@ class PembelianTerbaruService
                 'Depok', 'Bogor', 'Solo', 'Denpasar', 'Makassar',
                 'Palembang', 'Banjarmasin', 'Cirebon', 'Kediri', 'Gresik',
                 'Jember', 'Pontianak', 'Batam', 'Pekanbaru', 'Samarinda',
+                'Balikpapan', 'Bandar Lampung', 'Padang', 'Mataram', 'Manado',
+                'Serang', 'Tasikmalaya', 'Madiun', 'Magelang', 'Probolinggo',
+                'Pasuruan', 'Tegal', 'Sukabumi', 'Banyuwangi', 'Pekalongan'
             ];
 
-            // 1. Ambil data pesanan ASLI dari database (ditandai asli = true)
+            // 1. Ambil data pesanan ASLI dari database
             $pesananAsli = Order::query()
                 ->where('status', '!=', 'cancelled')
                 ->with(['user:id,name', 'items' => fn ($q) => $q->with('product:id,name,slug,image,price')])
                 ->latest()
-                ->take(20)
+                ->take(30)
                 ->get();
 
             foreach ($pesananAsli as $order) {
@@ -54,13 +56,12 @@ class PembelianTerbaruService
                         'gambar'  => $item->product->image,
                         'slug'    => $item->product->slug,
                         'nominal' => (float) $item->price,
-                        'menit'   => rand(1, 20),
                         'asli'    => true,
                     ];
                 }
             }
 
-            // 2. Ambil katalog produk aktif untuk melengkapi variasi agar selalu ramai & dinamis
+            // 2. Ambil katalog produk aktif untuk membuat variasi 100+ kombinasi unik
             $produkAktif = Product::query()
                 ->where('status', 'active')
                 ->get(['id', 'name', 'slug', 'image', 'price']);
@@ -73,13 +74,31 @@ class PembelianTerbaruService
                     'Aldi', 'Fajar', 'Reza', 'Eko', 'Doni',
                     'Andika', 'Prasetyo', 'Satria', 'Yusuf', 'Syahrul',
                     'Maulana', 'Teguh', 'Arief', 'Dian', 'Rian',
-                    'Cahyo', 'Hendra', 'Surya', 'Irfan', 'Agus'
+                    'Cahyo', 'Hendra', 'Surya', 'Irfan', 'Agus',
+                    'Budi', 'David', 'Gilang', 'Galih', 'Haris',
+                    'Indra', 'Jaka', 'Kurnia', 'Lukman', 'Marcel',
+                    'Naufal', 'Oki', 'Pandu', 'Qori', 'Rahmat',
+                    'Sigit', 'Taufik', 'Utomo', 'Viko', 'Wawan',
+                    'Yoga', 'Zainal', 'Akbar', 'Brian', 'Candra',
+                    'Dwi', 'Erwin', 'Firman', 'Gede', 'Hanif',
+                    'Ivan', 'Joko', 'Krisna', 'Lutfi', 'Mario',
+                    'Nugraha', 'Panji', 'Radit', 'Sandi', 'Tommy',
+                    'Vicky', 'Wisnu', 'Yudha', 'Zaky', 'Angga',
+                    'Bobby', 'Danang', 'Erik', 'Fandy', 'Gani',
+                    'Hafiz', 'Iqbal', 'Jonathan', 'Kiki', 'Leo',
+                    'Michael', 'Nanda', 'Pandji', 'Rio', 'Syafiq',
+                    'Tio', 'Wira', 'Yanuar', 'Zidan', 'Andre'
                 ];
 
-                $indeks = 0;
-                foreach ($produkAktif as $p) {
-                    $namaPilihan = $namaVariasi[$indeks % count($namaVariasi)];
-                    $kotaPilihan = $kotaVariasi[($indeks * 3) % count($kotaVariasi)];
+                $totalProduk = $produkAktif->count();
+                $totalNama   = count($namaVariasi);
+                $totalKota   = count($kotaVariasi);
+
+                // Buat 100 entri kombinasi acak tanpa pengulangan nama berdekatan
+                for ($i = 0; $i < 100; $i++) {
+                    $p = $produkAktif[$i % $totalProduk];
+                    $namaPilihan = $namaVariasi[$i % $totalNama];
+                    $kotaPilihan = $kotaVariasi[($i * 7 + 3) % $totalKota];
 
                     $daftar[] = [
                         'nama'    => $this->sensorNama($namaPilihan),
@@ -88,15 +107,12 @@ class PembelianTerbaruService
                         'gambar'  => $p->image,
                         'slug'    => $p->slug,
                         'nominal' => (float) $p->price,
-                        'menit'   => rand(1, 45),
                         'asli'    => false,
                     ];
-
-                    $indeks++;
                 }
             }
 
-            // Acak urutan
+            // Acak secara menyeluruh
             shuffle($daftar);
 
             return $daftar;
@@ -105,7 +121,7 @@ class PembelianTerbaruService
 
     /**
      * Sensor nama menjadi 2 huruf awal + 3 bintang.
-     * Contoh: "Munir" -> "Mu***", "Aditya" -> "Ad***", "Budi" -> "Bu***"
+     * Contoh: "Munir" -> "Mu***", "Aditya" -> "Ad***"
      */
     private function sensorNama(?string $nama): string
     {
@@ -114,7 +130,6 @@ class PembelianTerbaruService
             return 'Pe***';
         }
 
-        // Ambil kata pertama
         $kataPertama = explode(' ', $nama)[0];
 
         if (mb_strlen($kataPertama) <= 2) {

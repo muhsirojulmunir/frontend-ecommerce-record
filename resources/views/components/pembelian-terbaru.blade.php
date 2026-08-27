@@ -68,6 +68,7 @@
             daftar: daftar || [],
             urutan: [],
             posisi: 0,
+            riwayatNama: [], // Buffer nama yang sudah pernah muncul agar tidak berulang
 
             tampil: false,
             kini: null,
@@ -86,7 +87,7 @@
 
                 this.acakUrutan();
 
-                // Muncul pertama kali 5 detik setelah halaman selesai dibuka
+                // Pertama kali buka web: muncul tepat 5 detik
                 this.pewaktu = setTimeout(() => this.tayangkan(), 5000);
             },
 
@@ -102,6 +103,7 @@
                     [this.urutan[i], this.urutan[j]] = [this.urutan[j], this.urutan[i]];
                 }
                 this.posisi = 0;
+                this.riwayatNama = [];
             },
 
             tayangkan() {
@@ -111,7 +113,31 @@
                     this.acakUrutan();
                 }
 
-                this.kini = this.daftar[this.urutan[this.posisi++]];
+                // Cari kandidat yang namanya belum pernah muncul belakangan
+                let indeksTerpilih = this.urutan[this.posisi++];
+                let kandidat = this.daftar[indeksTerpilih];
+
+                // Jika nama sudah ada di riwayat 30 nama terakhir, cari yang lain di antrean
+                let percobaan = 0;
+                while (kandidat && this.riwayatNama.includes(kandidat.nama + '_' + kandidat.kota) && percobaan < 15 && this.posisi < this.urutan.length) {
+                    indeksTerpilih = this.urutan[this.posisi++];
+                    kandidat = this.daftar[indeksTerpilih];
+                    percobaan++;
+                }
+
+                if (!kandidat) {
+                    this.acakUrutan();
+                    kandidat = this.daftar[this.urutan[this.posisi++]];
+                }
+
+                this.kini = kandidat;
+
+                // Simpan ke riwayat (maksimal simpan 40 riwayat terakhir)
+                const kunciUnik = this.kini.nama + '_' + this.kini.kota;
+                this.riwayatNama.push(kunciUnik);
+                if (this.riwayatNama.length > 40) {
+                    this.riwayatNama.shift();
+                }
 
                 this.nominalTampil = this.formatRupiah(this.kini.nominal);
                 this.tautanProduk  = this.kini.slug ? `/products/${this.kini.slug}` : '#';
@@ -143,14 +169,12 @@
                     return;
                 }
 
-                // Hitung jeda acak alami bervariasi agar seolah-olah real
+                // Hitung jeda acak sangat variatif (detik s/d beberapa menit)
                 const jedaAcak = this.hitungJedaAcak();
                 this.pewaktu = setTimeout(() => this.tayangkan(), jedaAcak);
             },
 
-            // Pola Jeda Acak Realistis:
-            // - Jika ada pesanan real asli: jeda cepat 5-8 detik
-            // - Acak alami: kadang 18-40 detik, kadang 1-2 menit, kadang 2.5-4.5 menit
+            // Jeda Acak Variatif & Alami (15s s/d 7 menit):
             hitungJedaAcak() {
                 const indeksBerikutnya = this.urutan[this.posisi % this.urutan.length];
                 const itemBerikutnya = this.daftar[indeksBerikutnya];
@@ -162,15 +186,18 @@
 
                 const acak = Math.random();
 
-                if (acak < 0.40) {
-                    // 40% jeda cepat/sedang (18 detik s.d 40 detik)
-                    return Math.floor(Math.random() * (40000 - 18000 + 1)) + 18000;
-                } else if (acak < 0.75) {
-                    // 35% jeda 1 s.d 2 menit (60 detik s.d 120 detik)
-                    return Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;
+                if (acak < 0.25) {
+                    // 25% jeda 15 detik s.d 35 detik
+                    return Math.floor(Math.random() * (35000 - 15000 + 1)) + 15000;
+                } else if (acak < 0.65) {
+                    // 40% jeda 1 menit s.d 2.5 menit (60 detik s.d 150 detik)
+                    return Math.floor(Math.random() * (150000 - 60000 + 1)) + 60000;
+                } else if (acak < 0.90) {
+                    // 25% jeda 3 menit s.d 5.5 menit (180 detik s.d 330 detik)
+                    return Math.floor(Math.random() * (330000 - 180000 + 1)) + 180000;
                 } else {
-                    // 25% jeda santai 2.5 s.d 4.5 menit (150 detik s.d 270 detik)
-                    return Math.floor(Math.random() * (270000 - 150000 + 1)) + 150000;
+                    // 10% jeda santai 6 menit s.d 8 menit (360 detik s.d 480 detik)
+                    return Math.floor(Math.random() * (480000 - 360000 + 1)) + 360000;
                 }
             },
 
