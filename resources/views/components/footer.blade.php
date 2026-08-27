@@ -74,7 +74,7 @@
                 <a href="{{ route('kebijakan-privasi') }}" class="hover:text-white transition">PRIVACY POLICY</a>
                 <a href="{{ route('syarat-ketentuan') }}" class="hover:text-white transition">PERSYARATAN &amp; KETENTUAN</a>
             </div>
-            <p>Copyright 2026 © PT JAYA MANDIRI</p>
+            <p>Copyright 2026 Â© PT JAYA MANDIRI</p>
         </div>
     </div>
 </footer>
