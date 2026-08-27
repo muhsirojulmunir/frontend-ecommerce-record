@@ -44,7 +44,7 @@
                 </ul>
             </div>
 
-            {{-- Kolom 4: Logo brand dan metode pembayaran --}}
+            {{-- Kolom 4: Logo brand dan media sosial --}}
             <div>
                 <div class="mb-6">
                     {{-- Varian gelap: cahayanya keputihan agar terbaca di latar gelap --}}
@@ -53,15 +53,12 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <a href="#"
-                        class="bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center"><i
-                            class="fab fa-facebook-f text-sm"></i></a>
-                    <a href="#"
-                        class="bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center"><i
-                            class="fab fa-instagram text-sm"></i></a>
-                    <a href="#"
-                        class="bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center"><i
-                            class="fab fa-youtube text-sm"></i></a>
+                    <a href="https://www.instagram.com/recordshoesofficial/" target="_blank" rel="noopener noreferrer"
+                        class="bg-white/10 hover:bg-gradient-to-tr hover:from-amber-500 hover:to-fuchsia-600 hover:text-white transition rounded-full h-9 w-9 flex items-center justify-center text-gray-300 shadow-sm" aria-label="Instagram RECORD"><i
+                            class="fab fa-instagram text-base"></i></a>
+                    <a href="https://www.tiktok.com/@recordshoesofficial_id" target="_blank" rel="noopener noreferrer"
+                        class="bg-white/10 hover:bg-black hover:text-white transition rounded-full h-9 w-9 flex items-center justify-center text-gray-300 shadow-sm" aria-label="TikTok RECORD"><i
+                            class="fab fa-tiktok text-base"></i></a>
                 </div>
             </div>
         </div>
@@ -74,7 +71,7 @@
                 <a href="{{ route('kebijakan-privasi') }}" class="hover:text-white transition">PRIVACY POLICY</a>
                 <a href="{{ route('syarat-ketentuan') }}" class="hover:text-white transition">PERSYARATAN &amp; KETENTUAN</a>
             </div>
-            <p>Copyright 2026 Â© PT JAYA MANDIRI</p>
+            <p>Copyright 2026 Ac PT JAYA MANDIRI</p>
         </div>
     </div>
 </footer>

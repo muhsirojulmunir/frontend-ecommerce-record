@@ -21,10 +21,8 @@
             @endauth
             
             <div class="hidden md:flex items-center gap-3 border-l border-white/30 pl-4">
-                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="hover:text-gray-300 transition"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/recordshoesofficial/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-300 transition" aria-label="Instagram RECORD"><i class="fab fa-instagram text-sm"></i></a>
+                <a href="https://www.tiktok.com/@recordshoesofficial_id" target="_blank" rel="noopener noreferrer" class="hover:text-gray-300 transition" aria-label="TikTok RECORD"><i class="fab fa-tiktok text-sm"></i></a>
             </div>
         </div>
     </div>
