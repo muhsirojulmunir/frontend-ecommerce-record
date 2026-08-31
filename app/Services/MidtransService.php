@@ -13,11 +13,11 @@ class MidtransService
     protected string $snapUrl;
     protected string $apiUrl;
 
-    public function __construct()
+            public function __construct()
     {
-        $this->serverKey    = env('MIDTRANS_SERVER_KEY', '');
-        $this->clientKey    = env('MIDTRANS_CLIENT_KEY', '');
-        $this->isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        $this->serverKey    = (string) (config('midtrans.server_key') ?: config('services.midtrans.server_key') ?: env('MIDTRANS_SERVER_KEY', ''));
+        $this->clientKey    = (string) (config('midtrans.client_key') ?: config('services.midtrans.client_key') ?: env('MIDTRANS_CLIENT_KEY', ''));
+        $this->isProduction = (bool) (config('midtrans.is_production') ?? config('services.midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false));
 
         $this->snapUrl = $this->isProduction
             ? 'https://app.midtrans.com/snap/v1/transactions'
