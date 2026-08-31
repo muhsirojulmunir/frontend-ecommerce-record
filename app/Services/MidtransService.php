@@ -42,18 +42,22 @@ class MidtransService
      * Buat Snap Token untuk Midtrans popup payment.
      * Mengembalikan snap_token yang digunakan di frontend.
      */
-    public function createSnapToken(Order $order): array
+        public function createSnapToken(Order $order): array
     {
-        $order->load(['user', 'items']);
+        $order->loadMissing(['user', 'items.product', 'items.productVariant']);
 
         // Build item details untuk Midtrans
         $itemDetails = [];
         foreach ($order->items as $item) {
+            $itemPrice = (int) round($item->price);
+            $itemQty   = max(1, (int) $item->quantity);
+            $itemName  = mb_substr($item->product_name . ($item->variant_info ? ' - ' . $item->variant_info : ''), 0, 50);
+
             $itemDetails[] = [
-                'id'       => 'PROD-' . $item->product_id,
-                'price'    => (int) $item->price,
-                'quantity' => (int) $item->quantity,
-                'name'     => mb_substr($item->product_name . ($item->variant_info ? ' - ' . $item->variant_info : ''), 0, 50),
+                'id'       => 'PROD-' . $item->product_id . ($item->product_variant_id ? '-' . $item->product_variant_id : ''),
+                'price'    => $itemPrice,
+                'quantity' => $itemQty,
+                'name'     => $itemName ?: 'Produk Record',
             ];
         }
 
@@ -61,7 +65,7 @@ class MidtransService
         if ($order->shipping_cost > 0) {
             $itemDetails[] = [
                 'id'       => 'SHIPPING',
-                'price'    => (int) $order->shipping_cost,
+                'price'    => (int) round($order->shipping_cost),
                 'quantity' => 1,
                 'name'     => 'Ongkos Kirim (' . ($order->courier ?: 'Kurir') . ')',
             ];
@@ -72,7 +76,7 @@ class MidtransService
         foreach ($itemDetails as $detail) {
             $totalItemsCost += ((int) $detail['price'] * (int) $detail['quantity']);
         }
-        $grossAmount = (int) $order->grand_total;
+        $grossAmount = (int) round($order->grand_total);
         $diff = $grossAmount - $totalItemsCost;
 
         if ($diff !== 0) {
@@ -84,7 +88,13 @@ class MidtransService
             ];
         }
 
-        $addr = $order->shipping_address ?? [];
+        $addr = is_array($order->shipping_address)
+            ? $order->shipping_address
+            : (json_decode((string) $order->shipping_address, true) ?: []);
+
+        $customerName  = $order->user?->name ?? ($addr['recipient_name'] ?? 'Pelanggan Record');
+        $customerEmail = $order->user?->email ?? 'customer@recordshoes.com';
+        $customerPhone = $addr['phone'] ?? ($order->user?->phone ?? '08123456789');
 
         $params = [
             'transaction_details' => [
@@ -92,15 +102,15 @@ class MidtransService
                 'gross_amount' => $grossAmount,
             ],
             'customer_details' => [
-                'first_name' => $order->user->name,
-                'email'      => $order->user->email,
-                'phone'      => $addr['phone'] ?? $order->user->phone ?? '',
+                'first_name' => $customerName,
+                'email'      => $customerEmail,
+                'phone'      => $customerPhone,
                 'shipping_address' => [
-                    'first_name' => $addr['recipient_name'] ?? $order->user->name,
-                    'phone'      => $addr['phone'] ?? '',
-                    'address'    => $addr['address_line'] ?? '',
-                    'city'       => $addr['city'] ?? '',
-                    'postal_code'=> $addr['postal_code'] ?? '',
+                    'first_name'   => $addr['recipient_name'] ?? $customerName,
+                    'phone'        => $customerPhone,
+                    'address'      => $addr['address_line'] ?? ($addr['address'] ?? 'Alamat Pengiriman'),
+                    'city'         => $addr['city'] ?? '',
+                    'postal_code'  => $addr['postal_code'] ?? '',
                     'country_code' => 'IDN',
                 ],
             ],
@@ -111,7 +121,6 @@ class MidtransService
         ];
 
         $kanal = config('midtrans-kanal.diizinkan.' . $order->payment_method);
-
         if (! empty($kanal)) {
             $params['enabled_payments'] = $kanal;
         }
@@ -137,26 +146,27 @@ class MidtransService
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Midtrans createSnapToken Exception: ' . $e->getMessage(), ['order' => $order->order_number]);
 
-            // Jika Order ID pernah dipakai di Sandbox Midtrans, coba lagi dengan append timestamp unik
-            if (str_contains(strtolower($e->getMessage()), 'already') || str_contains(strtolower($e->getMessage()), 'taken') || str_contains(strtolower($e->getMessage()), '406') || str_contains(strtolower($e->getMessage()), '400')) {
-                try {
-                    $params['transaction_details']['order_id'] = $order->order_number . '-' . time();
-                    $response = $this->httpPost($this->snapUrl, $params);
+            // Percobaan kedua: jika error karena enabled_payments atau order_id duplikat di Sandbox
+            try {
+                // Hapus batasan enabled_payments dan tambahkan timestamp unik pada order_id jika perlu
+                unset($params['enabled_payments']);
+                $params['transaction_details']['order_id'] = $order->order_number . '-' . time();
 
-                    if (isset($response['token'])) {
-                        return [
-                            'success'    => true,
-                            'token'      => $response['token'],
-                            'redirect'   => $response['redirect_url'] ?? null,
-                            'client_key' => $this->clientKey,
-                            'snap_url'   => $this->isProduction
-                                ? 'https://app.midtrans.com/snap/snap.js'
-                                : 'https://app.sandbox.midtrans.com/snap/snap.js',
-                        ];
-                    }
-                } catch (\Exception $ex) {
-                    \Illuminate\Support\Facades\Log::error('Midtrans retry SnapToken Exception: ' . $ex->getMessage());
+                $response = $this->httpPost($this->snapUrl, $params);
+
+                if (isset($response['token'])) {
+                    return [
+                        'success'    => true,
+                        'token'      => $response['token'],
+                        'redirect'   => $response['redirect_url'] ?? null,
+                        'client_key' => $this->clientKey,
+                        'snap_url'   => $this->isProduction
+                            ? 'https://app.midtrans.com/snap/snap.js'
+                            : 'https://app.sandbox.midtrans.com/snap/snap.js',
+                    ];
                 }
+            } catch (\Exception $ex) {
+                \Illuminate\Support\Facades\Log::error('Midtrans retry SnapToken Exception: ' . $ex->getMessage());
             }
 
             return ['success' => false, 'message' => $e->getMessage()];

@@ -190,7 +190,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('orders.show', $order->id) }}"
+                                        <a href="{{ route('orders.show', $order->order_number) }}"
                                             class="text-xs font-bold text-accent hover:text-accent-dark transition uppercase">
                                             Detail
                                         </a>

@@ -82,7 +82,22 @@
                 </div>
 
                 {{-- Status polling indicator --}}
-                @if($order->payment_method !== 'COD')
+                @if($snapError)
+                <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-sm p-4 text-xs flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-2.5">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-amber-800">Sistem pembayaran otomatis sedang dalam antrean</p>
+                            <p class="text-amber-700 mt-0.5">{{ $snapError }}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.location.reload()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded text-[11px] shrink-0 transition">
+                        Muat Ulang
+                    </button>
+                </div>
+            @endif
+
+            @if($order->payment_method !== 'COD')
                     <div x-show="!paymentSuccess" class="flex items-center justify-center gap-2 text-xs text-blue-200 pt-1">
                         <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -110,6 +125,21 @@
                     </span>
                 </div>
             </div>
+
+            @if($snapError)
+                <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-sm p-4 text-xs flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-2.5">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-amber-800">Sistem pembayaran otomatis sedang dalam antrean</p>
+                            <p class="text-amber-700 mt-0.5">{{ $snapError }}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.location.reload()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded text-[11px] shrink-0 transition">
+                        Muat Ulang
+                    </button>
+                </div>
+            @endif
 
             @if($order->payment_method !== 'COD')
                 {{-- Konten Midtrans Snap --}}
@@ -261,7 +291,23 @@
 
             payWithMidtrans() {
                 if (typeof snap === 'undefined') {
-                    alert('Sistem pembayaran sedang memuat, silakan tunggu sebentar.');
+                    const existingScript = document.querySelector('script[src*="snap.js"]');
+                    if (!existingScript) {
+                        const script = document.createElement('script');
+                        script.src = '{{ $isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js" }}';
+                        script.setAttribute('data-client-key', '{{ $clientKey }}');
+                        document.head.appendChild(script);
+                    }
+                    this.paying = true;
+                    setTimeout(() => {
+                        if (typeof snap !== 'undefined') {
+                            this.paying = false;
+                            this.payWithMidtrans();
+                        } else {
+                            this.paying = false;
+                            alert('Sistem pembayaran sedang memuat, silakan klik tombol Bayar Sekarang kembali.');
+                        }
+                    }, 1000);
                     return;
                 }
                 this.paying = true;

@@ -351,8 +351,14 @@ class OrderController extends Controller
      */
     public function downloadInvoice($orderNumber)
     {
-        $order = Order::where('order_number', $orderNumber)
-            ->where('user_id', Auth::id())
+        $order = Order::where('user_id', Auth::id())
+            ->where(function ($q) use ($orderNumber) {
+                if (is_numeric($orderNumber)) {
+                    $q->where('id', $orderNumber)->orWhere('order_number', $orderNumber);
+                } else {
+                    $q->where('order_number', $orderNumber);
+                }
+            })
             ->with(['items.product', 'items.productVariant', 'user'])
             ->firstOrFail();
 
