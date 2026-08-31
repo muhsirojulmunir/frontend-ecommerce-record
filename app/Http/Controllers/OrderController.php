@@ -345,4 +345,21 @@ class OrderController extends Controller
                     : 'Pesanan ini sudah dibatalkan sebelumnya.');
         }
     }
+
+    /**
+     * Unduh berkas invoice resmi berformat PDF.
+     */
+    public function downloadInvoice($orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)
+            ->where('user_id', Auth::id())
+            ->with(['items.product', 'items.productVariant', 'user'])
+            ->firstOrFail();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', ['order' => $order])
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Invoice-' . ($order->invoice_number ?: $order->order_number) . '.pdf';
+        return $pdf->download($filename);
+    }
 }

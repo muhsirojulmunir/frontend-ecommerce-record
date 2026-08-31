@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderInvoiceMail;
+use Illuminate\Support\Facades\Mail;
+
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -472,7 +475,18 @@ class CheckoutController extends Controller
             DB::commit();
 
             // Redirect ke halaman pembayaran (payment instruction / Midtrans)
-            return redirect()->route('checkout.payment', $order->order_number);
+            
+        // Kirim email konfirmasi & invoice PDF ke pembeli via Dewaweb SMTP
+        try {
+            $recipientEmail = $order->shipping_address['email'] ?? $order->user?->email;
+            if (!empty($recipientEmail)) {
+                Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
+            }
+        } catch (\Throwable $mailErr) {
+            Log::error('Gagal mengirim email invoice checkout: ' . $mailErr->getMessage());
+        }
+
+        return redirect()->route('checkout.payment', $order->order_number);
 
         } catch (SaldoTidakCukup $e) {
             // Keadaan wajar, bukan kegagalan sistem: beri tahu apa adanya.
@@ -670,6 +684,18 @@ class CheckoutController extends Controller
         }
 
         $order->save();
+
+                // Kirim email invoice resmi lunas ke pembeli saat pembayaran sukses
+        if ($order->payment_status === 'paid') {
+            try {
+                $recipientEmail = $order->shipping_address['email'] ?? $order->user?->email;
+                if (!empty($recipientEmail)) {
+                    Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
+                }
+            } catch (\Throwable $mailErr) {
+                Log::error('Gagal mengirim email invoice lunas Midtrans: ' . $mailErr->getMessage());
+            }
+        }
 
         return response()->json(['status' => 'OK']);
     }

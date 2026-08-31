@@ -102,6 +102,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/tracking', [OrderController::class, 'tracking'])->name('tracking');
 
     Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+    Route::get('/orders/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/tracking-status', [OrderController::class, 'trackingStatus'])->name('orders.tracking-status');
     Route::post('/orders/{order}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');

@@ -839,11 +839,18 @@
 
                 {{-- Invoice hanya ada setelah pembayaran lunas --}}
                 @if($order->invoice_number)
-                    <a href="{{ route('orders.invoice', $order->order_number) }}"
-                       class="block w-full mb-3 border border-primary text-primary hover:bg-primary hover:text-white text-center font-bold text-xs py-3 rounded-sm transition uppercase tracking-wider">
-                        <i class="fa-solid fa-file-invoice mr-1.5"></i>
-                        Lihat Invoice
-                    </a>
+                                        <div class="grid grid-cols-2 gap-2 mb-3">
+                        <a href="{{ route('orders.invoice', $order->order_number) }}"
+                           class="border border-primary text-primary hover:bg-primary hover:text-white text-center font-bold text-xs py-2.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            Lihat Invoice
+                        </a>
+                        <a href="{{ route('orders.invoice.download', $order->order_number) }}"
+                           class="bg-primary text-white hover:bg-primary/90 text-center font-bold text-xs py-2.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            Unduh PDF
+                        </a>
+                    </div>
                 @endif
 
                 <a href="{{ route('products.index') }}"

@@ -13,6 +13,7 @@
             <a href="{{ route('orders.show', $order->order_number) }}" class="inv-tautan">
                 <i class="fa-solid fa-arrow-left"></i> Kembali ke Pesanan
             </a>
+            <a href="{{ route('orders.invoice.download', $order->order_number) }}" class="inv-tombol" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#1B3A6B;color:#fff;"><i class="fa-solid fa-file-arrow-down"></i> Unduh PDF</a>
             <button type="button" onclick="window.print()" class="inv-tombol">
                 <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
             </button>
