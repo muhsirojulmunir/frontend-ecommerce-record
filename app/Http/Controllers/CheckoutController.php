@@ -702,7 +702,7 @@ class CheckoutController extends Controller
     /**
      * Kirim email invoice resmi lunas dengan lampiran PDF ke pembeli.
      */
-    protected function kirimEmailInvoice(Order $order): void
+    public static function kirimEmailInvoice(Order $order): void
     {
         try {
             $order->refresh()->loadMissing(['items.product', 'items.productVariant', 'user']);
