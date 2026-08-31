@@ -138,7 +138,7 @@ class MidtransService
             \Illuminate\Support\Facades\Log::error('Midtrans createSnapToken Exception: ' . $e->getMessage(), ['order' => $order->order_number]);
 
             // Jika Order ID pernah dipakai di Sandbox Midtrans, coba lagi dengan append timestamp unik
-            if (str_contains(strtolower($e->getMessage()), 'already been processed') || str_contains(strtolower($e->getMessage()), '406')) {
+            if (str_contains(strtolower($e->getMessage()), 'already') || str_contains(strtolower($e->getMessage()), 'taken') || str_contains(strtolower($e->getMessage()), '406') || str_contains(strtolower($e->getMessage()), '400')) {
                 try {
                     $params['transaction_details']['order_id'] = $order->order_number . '-' . time();
                     $response = $this->httpPost($this->snapUrl, $params);

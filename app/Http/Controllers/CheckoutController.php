@@ -619,6 +619,11 @@ class CheckoutController extends Controller
         }
 
         $order = Order::where('order_number', $verified['order_number'])->first();
+        if (!$order) {
+            // Jika order_id memiliki akhiran timestamp unik dari retry Snap (mis. ORD-XXXX-1725100000)
+            $baseOrderNumber = preg_replace('/-\d{9,}$/', '', (string) $verified['order_number']);
+            $order = Order::where('order_number', $baseOrderNumber)->first();
+        }
 
         if (!$order) {
             return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
