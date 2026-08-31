@@ -125,6 +125,13 @@ class MidtransService
             $params['enabled_payments'] = $kanal;
         }
 
+        if ($order->payment_method === 'Mandiri') {
+            $params['echannel'] = [
+                'bill_info1' => 'Tagihan Pesanan:',
+                'bill_info2' => 'Order ' . $order->order_number,
+            ];
+        }
+
         try {
             $response = $this->httpPost($this->snapUrl, $params);
 
