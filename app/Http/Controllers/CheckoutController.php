@@ -476,14 +476,16 @@ class CheckoutController extends Controller
 
             // Redirect ke halaman pembayaran (payment instruction / Midtrans)
             
-        // Kirim email konfirmasi & invoice PDF ke pembeli via Dewaweb SMTP
-        try {
-            $recipientEmail = $order->shipping_address['email'] ?? $order->user?->email;
-            if (!empty($recipientEmail)) {
-                Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
+        // Kirim email invoice lunas hanya jika pesanan langsung lunas (mis. pembayaran R_Pay)
+        if ($order->payment_status === 'paid') {
+            try {
+                $recipientEmail = $order->shipping_address['email'] ?? $order->user?->email;
+                if (!empty($recipientEmail)) {
+                    Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
+                }
+            } catch (\Throwable $mailErr) {
+                Log::error('Gagal mengirim email invoice lunas: ' . $mailErr->getMessage());
             }
-        } catch (\Throwable $mailErr) {
-            Log::error('Gagal mengirim email invoice checkout: ' . $mailErr->getMessage());
         }
 
         return redirect()->route('checkout.payment', $order->order_number);

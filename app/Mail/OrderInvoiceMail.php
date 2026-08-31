@@ -27,10 +27,9 @@ class OrderInvoiceMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $statusText = ($this->order->payment_status === 'paid') ? 'LUNAS' : 'Menunggu Pembayaran';
         $nomor = $this->order->invoice_number ?: $this->order->order_number;
         return new Envelope(
-            subject: "Invoice Pesanan #{$nomor} [{$statusText}] - RECORD Official Store",
+            subject: "Invoice Pembayaran Pesanan #{$nomor} (LUNAS) - RECORD Official Store",
         );
     }
 
