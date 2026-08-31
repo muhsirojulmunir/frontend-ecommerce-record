@@ -694,17 +694,41 @@ class CheckoutController extends Controller
 
                 // Kirim email invoice resmi lunas ke pembeli saat pembayaran sukses
         if ($order->payment_status === 'paid') {
-            try {
-                $recipientEmail = $order->shipping_address['email'] ?? $order->user?->email;
-                if (!empty($recipientEmail)) {
-                    Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
-                }
-            } catch (\Throwable $mailErr) {
-                Log::error('Gagal mengirim email invoice lunas Midtrans: ' . $mailErr->getMessage());
-            }
+            $this->kirimEmailInvoice($order);
         }
 
         return response()->json(['status' => 'OK']);
     }
-}
+    /**
+     * Kirim email invoice resmi lunas dengan lampiran PDF ke pembeli.
+     */
+    protected function kirimEmailInvoice(Order $order): void
+    {
+        try {
+            $order->refresh()->loadMissing(['items.product', 'items.productVariant', 'user']);
 
+            $recipientEmail = $order->shipping_address['email']
+                ?? ($order->user?->email ?: null);
+
+            if (empty($recipientEmail)) {
+                Log::warning('Gagal kirim email invoice: email penerima kosong', ['order' => $order->order_number]);
+                return;
+            }
+
+            // Cegah pengiriman ganda via Cache lock
+            $cacheKey = 'invoice_email_sent_' . $order->id;
+            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addHours(24));
+                Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
+                Log::info('Email invoice resmi lunas berhasil dikirim ke pembeli', [
+                    'pesanan' => $order->order_number,
+                    'tujuan'  => $recipientEmail,
+                ]);
+            }
+        } catch (\Throwable $mailErr) {
+            Log::error('Gagal mengirim email invoice lunas: ' . $mailErr->getMessage(), [
+                'order' => $order->order_number,
+            ]);
+        }
+    }
+}
