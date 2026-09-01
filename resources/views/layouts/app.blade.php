@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
@@ -89,7 +89,7 @@
                                 </svg>
                                 <span>{{ session('success') }}</span>
                             </div>
-                            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 font-bold">ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</button>
+                            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 font-bold text-lg leading-none">×</button>
                         </div>
                     </div>
                 @endif
@@ -104,7 +104,7 @@
                                 </svg>
                                 <span>{{ session('error') }}</span>
                             </div>
-                            <button @click="show = false" class="text-rose-500 hover:text-rose-700 font-bold">ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</button>
+                            <button @click="show = false" class="text-rose-500 hover:text-rose-700 font-bold text-lg leading-none">×</button>
                         </div>
                     </div>
                 @endif
