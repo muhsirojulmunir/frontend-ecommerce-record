@@ -9,7 +9,7 @@
                 @if(Auth::user()->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium">Dashboard Admin</a>
                 @else
-                    <a href="{{ route('dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium">Dashboard Saya</a>
+                    <a href="{{ route('dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium">Akun Saya</a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf

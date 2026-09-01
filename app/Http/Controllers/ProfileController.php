@@ -16,9 +16,7 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        return Redirect::to(route('dashboard') . '#pengaturan-akun');
     }
 
     /**
@@ -34,7 +32,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::to(route('dashboard') . '#pengaturan-akun')->with('status', 'profile-updated');
     }
 
     /**

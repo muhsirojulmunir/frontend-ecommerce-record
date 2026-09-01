@@ -50,9 +50,7 @@
                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-border"
                             x-transition>
                             <a href="{{ route('dashboard') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Dashboard Saya</a>
-                            <a href="{{ route('profile.edit') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Profil</a>
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Akun Saya</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"

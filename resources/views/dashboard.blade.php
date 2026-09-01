@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="title">Dashboard Saya</x-slot>
+    <x-slot name="title">Akun Saya</x-slot>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
@@ -202,6 +202,114 @@
                 </div>
             </div>
         @endif
+        <!-- ══ Pengaturan Profil & Keamanan Akun ══ -->
+        <div id="pengaturan-akun" class="mt-10 bg-white border border-border rounded-sm shadow-sm p-6 sm:p-8">
+            <div class="border-b border-border pb-4 mb-6">
+                <h2 class="text-base font-black uppercase tracking-wider text-primary flex items-center gap-2">
+                    <i class="fas fa-user-gear text-accent"></i> Pengaturan Akun
+                </h2>
+                <p class="text-xs text-text-light mt-0.5">Kelola informasi data pribadi dan keamanan kata sandi akun Anda</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Form Update Profil (Nama & Email) -->
+                <div class="bg-gray-50/50 p-6 rounded-sm border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-800 mb-1 flex items-center gap-2">
+                            <i class="fas fa-id-card text-primary"></i> Informasi Profil
+                        </h3>
+                        <p class="text-[11px] text-gray-500 mb-5">Perbarui nama lengkap dan alamat email akun Anda.</p>
+
+                        <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
+                            @csrf
+                            @method('patch')
+
+                            <div>
+                                <label for="name" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Lengkap</label>
+                                <input id="name" name="name" type="text"
+                                    class="w-full text-xs font-medium border border-gray-300 rounded-sm px-3.5 py-2.5 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    value="{{ old('name', Auth::user()->name) }}" required autocomplete="name" />
+                                <x-input-error class="mt-1" :messages="$errors->get('name')" />
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Alamat Email</label>
+                                <input id="email" name="email" type="email"
+                                    class="w-full text-xs font-medium border border-gray-300 rounded-sm px-3.5 py-2.5 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    value="{{ old('email', Auth::user()->email) }}" required autocomplete="username" />
+                                <x-input-error class="mt-1" :messages="$errors->get('email')" />
+                            </div>
+
+                            <div class="pt-2 flex items-center gap-3">
+                                <button type="submit" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-5 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm">
+                                    Simpan Profil
+                                </button>
+
+                                @if (session('status') === 'profile-updated')
+                                    <span x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)"
+                                        class="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                        <i class="fas fa-check-circle"></i> Profil tersimpan!
+                                    </span>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Form Update Kata Sandi -->
+                <div class="bg-gray-50/50 p-6 rounded-sm border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-800 mb-1 flex items-center gap-2">
+                            <i class="fas fa-lock text-primary"></i> Keamanan Kata Sandi
+                        </h3>
+                        <p class="text-[11px] text-gray-500 mb-5">Pastikan akun Anda menggunakan kata sandi yang kuat agar selalu aman.</p>
+
+                        <form method="post" action="{{ route('password.update') }}" class="space-y-4">
+                            @csrf
+                            @method('put')
+
+                            <div>
+                                <label for="update_password_current_password" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kata Sandi Saat Ini</label>
+                                <input id="update_password_current_password" name="current_password" type="password"
+                                    class="w-full text-xs font-medium border border-gray-300 rounded-sm px-3.5 py-2.5 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    autocomplete="current-password" />
+                                <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-1" />
+                            </div>
+
+                            <div>
+                                <label for="update_password_password" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kata Sandi Baru</label>
+                                <input id="update_password_password" name="password" type="password"
+                                    class="w-full text-xs font-medium border border-gray-300 rounded-sm px-3.5 py-2.5 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    autocomplete="new-password" />
+                                <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-1" />
+                            </div>
+
+                            <div>
+                                <label for="update_password_password_confirmation" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Konfirmasi Kata Sandi Baru</label>
+                                <input id="update_password_password_confirmation" name="password_confirmation" type="password"
+                                    class="w-full text-xs font-medium border border-gray-300 rounded-sm px-3.5 py-2.5 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    autocomplete="new-password" />
+                                <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-1" />
+                            </div>
+
+                            <div class="pt-2 flex items-center gap-3">
+                                <button type="submit" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-5 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm">
+                                    Perbarui Kata Sandi
+                                </button>
+
+                                @if (session('status') === 'password-updated')
+                                    <span x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)"
+                                        class="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                        <i class="fas fa-check-circle"></i> Kata sandi diperbarui!
+                                    </span>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     @push('styles')

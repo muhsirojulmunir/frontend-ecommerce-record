@@ -14,7 +14,7 @@
                 <p class="text-xs text-gray-600 mt-1">Kelola dan lacak status pesanan produk Anda di Record</p>
             </div>
             <a href="{{ route('dashboard') }}" class="text-xs font-bold text-gray-700 hover:text-primary uppercase flex items-center gap-1.5 transition">
-                <i class="fa-solid fa-arrow-left"></i> Dashboard Saya
+                <i class="fa-solid fa-arrow-left"></i> Akun Saya
             </a>
         </div>
 
