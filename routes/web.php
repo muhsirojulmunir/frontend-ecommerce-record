@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     // Profil akun
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/delete-request', [ProfileController::class, 'requestDeletionCode'])->name('profile.delete-request');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Pembuatan pesanan tetap wajib login — akun sudah terbentuk di langkah Kontak
