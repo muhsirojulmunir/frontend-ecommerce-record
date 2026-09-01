@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -718,7 +718,7 @@ class CheckoutController extends Controller
             // Cegah pengiriman ganda via Cache lock
             $cacheKey = 'invoice_email_sent_' . $order->id;
             if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-                \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addHours(24));
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addHours(1));
                 Mail::to($recipientEmail)->send(new OrderInvoiceMail($order));
                 Log::info('Email invoice resmi lunas berhasil dikirim ke pembeli', [
                     'pesanan' => $order->order_number,

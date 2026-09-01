@@ -1,9 +1,12 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
+use App\Mail\OrderCancelledMail;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Pembatalan pesanan oleh pembeli.
@@ -112,6 +115,32 @@ class PembatalanPesananService
             if ($item->product) {
                 $item->product->increment('stock', $item->quantity);
             }
+        }
+    }
+
+    private function kirimEmailBatal(Order $order): void
+    {
+        try {
+            $order->loadMissing(['items.product', 'items.productVariant', 'user']);
+
+            $recipientEmail = $order->shipping_address['email']
+                ?? ($order->user?->email ?: null);
+
+            if (empty($recipientEmail)) {
+                Log::warning('Gagal kirim email batal: email penerima kosong', ['order' => $order->order_number]);
+                return;
+            }
+
+            Mail::to($recipientEmail)->send(new OrderCancelledMail($order));
+
+            Log::info('Email notifikasi pembatalan pesanan terkirim', [
+                'pesanan' => $order->order_number,
+                'tujuan'  => $recipientEmail,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim email pembatalan pesanan: ' . $e->getMessage(), [
+                'order' => $order->order_number,
+            ]);
         }
     }
 }
