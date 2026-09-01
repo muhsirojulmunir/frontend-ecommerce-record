@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
     // Pembuatan pesanan tetap wajib login — akun sudah terbentuk di langkah Kontak
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/{orderNumber}/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
+    Route::post('/checkout/{orderNumber}/change-method', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.payment.change-method');
     Route::get('/checkout/{orderNumber}/status', [CheckoutController::class, 'paymentStatus'])->name('checkout.payment.status');
     Route::get('/checkout/{orderNumber}/finish', [CheckoutController::class, 'paymentFinish'])->name('checkout.payment.finish');
 
