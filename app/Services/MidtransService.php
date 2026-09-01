@@ -146,6 +146,19 @@ class MidtransService
             ];
         }
 
+        // Sinkronisasi Batas Waktu Midtrans dengan Batas Waktu Toko (24 Jam dari created_at pesanan)
+        $orderStartTime = $order->created_at ? $order->created_at->timezone('Asia/Jakarta') : now()->timezone('Asia/Jakarta');
+        $params['expiry'] = [
+            'start_time' => $orderStartTime->format('Y-m-d H:i:s +0700'),
+            'unit'       => 'minute',
+            'duration'   => 1440,
+        ];
+        $params['custom_expiry'] = [
+            'order_time'      => $orderStartTime->format('Y-m-d H:i:s +0700'),
+            'expiry_duration' => 1440,
+            'unit'            => 'minute',
+        ];
+
         // Percobaan 1: Coba dengan order_id asli
         try {
             $response = $this->httpPost($this->snapUrl, $params);

@@ -787,13 +787,13 @@ class CheckoutController extends Controller
             ]);
         }
 
+        $oldMethod = $order->payment_method;
         $order->payment_method = $request->payment_method;
         $order->save();
 
-        // Hapus cache Snap Token lama untuk pesanan ini agar di-generate ulang sesuai metode baru
-        for ($i = 0; $i <= 10; $i++) {
-            \Illuminate\Support\Facades\Cache::forget('midtrans_snap_' . $order->id . '_' . md5($order->payment_method));
-        }
+        // Hapus cache Snap Token lama untuk pesanan ini agar di-generate ulang sesuai metode baru dengan waktu tersisa yang sama
+        \Illuminate\Support\Facades\Cache::forget('midtrans_snap_' . $order->id . '_' . md5($oldMethod));
+        \Illuminate\Support\Facades\Cache::forget('midtrans_snap_' . $order->id . '_' . md5($request->payment_method));
 
         return response()->json([
             'success'  => true,
