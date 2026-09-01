@@ -37,20 +37,35 @@
                     </button>
                 </form>
 
-                {{-- Dropdown profil pengguna --}}
+                                {{-- Dropdown profil pengguna --}}
                 @auth
+                    @php
+                        $unpaidCount = Auth::user()->unpaidOrdersCount();
+                    @endphp
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex items-center text-gray-600 hover:text-primary transition">
+                        <button @click="open = !open" class="relative flex items-center text-gray-600 hover:text-primary transition">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
+                            @if($unpaidCount > 0)
+                                <span style="position: absolute; top: -5px; right: -6px; background-color: #dc2626; color: #ffffff; border-radius: 9999px; min-width: 17px; height: 17px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; padding: 0 4px; line-height: 1; border: 2px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+                                    {{ $unpaidCount }}
+                                </span>
+                            @endif
                         </button>
                         <div x-show="open" @click.away="open = false"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-border"
+                            class="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-lg py-1 border border-border z-50"
                             x-transition>
                             <a href="{{ route('dashboard') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-bg-secondary">Akun Saya</a>
+                                class="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-bg-secondary font-medium">
+                                <span>Akun Saya</span>
+                                @if($unpaidCount > 0)
+                                    <span style="background-color: #fee2e2; color: #b91c1c; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">
+                                        {{ $unpaidCount }} Belum Bayar
+                                    </span>
+                                @endif
+                            </a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"

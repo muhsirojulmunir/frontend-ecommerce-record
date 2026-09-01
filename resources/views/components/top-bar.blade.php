@@ -15,7 +15,7 @@
                     <a href="{{ route('dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium flex items-center gap-1.5">
                         <span>Akun Saya</span>
                         @if($unpaidCount > 0)
-                            <span class="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-xs animate-pulse">
+                            <span style="background-color: #dc2626; color: #ffffff; border-radius: 9999px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; padding: 0 5px; line-height: 1; margin-left: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
                                 {{ $unpaidCount }}
                             </span>
                         @endif
