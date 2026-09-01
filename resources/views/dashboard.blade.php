@@ -308,6 +308,66 @@
                     </div>
                 </div>
             </div>
+            <!-- ── Hapus Akun ── -->
+            <div class="mt-8 pt-6 border-t border-rose-100 bg-rose-50/40 p-6 rounded-sm border border-rose-100" x-data="{ confirmingUserDeletion: false }">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-rose-800 flex items-center gap-2">
+                            <i class="fas fa-trash-alt text-rose-600"></i> Hapus Akun
+                        </h3>
+                        <p class="text-[11px] text-rose-700 mt-1 max-w-xl">
+                            Setelah akun dihapus, Anda tidak dapat login kembali. Riwayat transaksi belanja Anda tetap tersimpan di sistem toko kami.
+                        </p>
+                    </div>
+                    <button type="button" @click="confirmingUserDeletion = true"
+                        class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-sm uppercase tracking-wider transition shrink-0 shadow-xs">
+                        Hapus Akun Saya
+                    </button>
+                </div>
+
+                <!-- Modal Konfirmasi Hapus Akun -->
+                <div x-show="confirmingUserDeletion" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                    <div @click.away="confirmingUserDeletion = false" class="bg-white rounded-md shadow-xl max-w-md w-full p-6 text-left space-y-4">
+                        <div class="flex items-center gap-3 text-rose-600">
+                            <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-gray-900">Konfirmasi Hapus Akun</h3>
+                                <p class="text-xs text-gray-500">Tindakan ini tidak dapat dibatalkan.</p>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            Apakah Anda yakin ingin menghapus akun ini? Masukkan kata sandi akun Anda untuk mengonfirmasi penghapusan akun.
+                        </p>
+
+                        <form method="post" action="{{ route('profile.destroy') }}" class="space-y-4">
+                            @csrf
+                            @method('delete')
+
+                            <div>
+                                <label for="delete_account_password" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kata Sandi</label>
+                                <input id="delete_account_password" name="password" type="password" required
+                                    class="w-full text-xs border border-gray-300 rounded-sm px-3.5 py-2.5 focus:ring-1 focus:ring-rose-500 focus:border-rose-500"
+                                    placeholder="Masukkan kata sandi akun Anda" />
+                                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-1" />
+                            </div>
+
+                            <div class="flex justify-end gap-2 pt-2">
+                                <button type="button" @click="confirmingUserDeletion = false"
+                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-4 py-2.5 rounded-sm transition uppercase">
+                                    Batal
+                                </button>
+                                <button type="submit"
+                                    class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-sm transition uppercase shadow-sm">
+                                    Ya, Hapus Akun
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     </div>

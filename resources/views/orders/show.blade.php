@@ -88,7 +88,7 @@
 
                     @if($order->cancellation_reason)
                         {{-- Alasan yang dipilih pembeli saat membatalkan --}}
-                        <div class="bg-white/70 border border-rose-200 rounded-sm p-3 text-left inline-block max-w-md">
+                        <div class="bg-white/90 border border-rose-200 rounded-sm p-4 text-center inline-block max-w-md w-full shadow-xs mx-auto">
                             <p class="text-[10px] font-black uppercase tracking-wider text-rose-500">Alasan Pembatalan</p>
                             <p class="text-xs font-bold text-rose-900 mt-1">{{ $order->cancellation_reason }}</p>
                             @if($order->cancellation_note)
