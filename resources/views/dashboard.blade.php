@@ -202,326 +202,323 @@
                 </div>
             </div>
         @endif
-                        <!-- ══ PENGATURAN AKUN (Profil, Kata Sandi, Hapus Akun) ══ -->
-        <div id="pengaturan-akun" class="mt-14 mb-10 bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
-            {{-- Header Section --}}
-            <div class="px-6 py-5 border-b border-gray-200 bg-gray-50/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <div>
-                    <h2 class="text-sm font-black uppercase tracking-wider text-primary flex items-center gap-2">
-                        <i class="fa-solid fa-user-gear text-accent"></i> Pengaturan Akun
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Kelola profil pribadi dan keamanan akses akun Anda</p>
+                                <!-- ══ PENGATURAN AKUN (Profil, Kata Sandi, Hapus Akun) ══ -->
+        <div id="pengaturan-akun" class="mt-14 mb-10">
+            {{-- Header Section Title --}}
+            <div class="mb-6">
+                <h2 class="text-sm font-black uppercase tracking-wider text-primary flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-accent"></i> Pengaturan Akun
+                </h2>
+                <p class="text-xs text-text-light mt-1">Kelola data profil pribadi dan keamanan akses akun Anda</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kartu 1: Informasi Profil -->
+                <div class="bg-white border border-gray-200 rounded-sm p-6 sm:p-7 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                            <div class="w-9 h-9 rounded-sm bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                                <i class="fa-solid fa-id-card"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-primary">Informasi Profil</h3>
+                                <p class="text-[11px] text-gray-500 mt-0.5">Perbarui nama lengkap dan alamat email akun Anda</p>
+                            </div>
+                        </div>
+
+                        <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
+                            @csrf
+                            @method('patch')
+
+                            <div>
+                                <label for="profile_name" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Nama Lengkap</label>
+                                <input id="profile_name" name="name" type="text"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    value="{{ old('name', Auth::user()->name) }}" required autocomplete="name"
+                                    placeholder="Masukkan nama lengkap Anda" />
+                                <x-input-error class="mt-1" :messages="$errors->get('name')" />
+                            </div>
+
+                            <div>
+                                <label for="profile_email" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Alamat Email</label>
+                                <input id="profile_email" name="email" type="email"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    value="{{ old('email', Auth::user()->email) }}" required autocomplete="username"
+                                    placeholder="nama@email.com" />
+                                <x-input-error class="mt-1" :messages="$errors->get('email')" />
+                            </div>
+
+                            <div class="pt-3 flex items-center gap-3">
+                                <button type="submit" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-6 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Profil
+                                </button>
+
+                                @if (session('status') === 'profile-updated')
+                                    <span x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)"
+                                        class="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-check"></i> Tersimpan!
+                                    </span>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Kartu 2: Keamanan Kata Sandi -->
+                <div class="bg-white border border-gray-200 rounded-sm p-6 sm:p-7 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                            <div class="w-9 h-9 rounded-sm bg-accent/10 text-accent flex items-center justify-center font-bold text-sm shrink-0">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-primary">Keamanan Kata Sandi</h3>
+                                <p class="text-[11px] text-gray-500 mt-0.5">Gunakan kata sandi yang kuat agar akun tetap terlindungi</p>
+                            </div>
+                        </div>
+
+                        <form method="post" action="{{ route('password.update') }}" class="space-y-4">
+                            @csrf
+                            @method('put')
+
+                            <div>
+                                <label for="current_password" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Kata Sandi Saat Ini</label>
+                                <input id="current_password" name="current_password" type="password"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    autocomplete="current-password" placeholder="••••••••" />
+                                <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-1" />
+                            </div>
+
+                            <div>
+                                <label for="new_password" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Kata Sandi Baru</label>
+                                <input id="new_password" name="password" type="password"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    autocomplete="new-password" placeholder="Minimal 8 karakter" />
+                                <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-1" />
+                            </div>
+
+                            <div>
+                                <label for="new_password_confirmation" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Konfirmasi Kata Sandi Baru</label>
+                                <input id="new_password_confirmation" name="password_confirmation" type="password"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
+                                    autocomplete="new-password" placeholder="Ulangi kata sandi baru" />
+                                <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-1" />
+                            </div>
+
+                            <div class="pt-3 flex items-center gap-3">
+                                <button type="submit" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-6 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-key"></i> Perbarui Kata Sandi
+                                </button>
+
+                                @if (session('status') === 'password-updated')
+                                    <span x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)"
+                                        class="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-check"></i> Kata sandi diperbarui!
+                                    </span>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-6 sm:p-8">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Kartu 1: Informasi Profil -->
-                    <div class="border border-gray-200 rounded-sm p-6 bg-white shadow-xs flex flex-col justify-between">
+            <!-- ── Kartu 3: Hapus Akun (Dengan Verifikasi Password & Email OTP) ── -->
+            <div class="mt-6 bg-white border border-gray-200 rounded-sm p-6 sm:p-7 shadow-xs"
+                 x-data="{
+                     modalOpen: false,
+                     step: 1,
+                     password: '',
+                     otpCode: '',
+                     loading: false,
+                     errorMessage: '',
+                     successMessage: '',
+                     bukaModal() {
+                         this.modalOpen = true;
+                         this.step = 1;
+                         this.password = '';
+                         this.otpCode = '';
+                         this.errorMessage = '';
+                         this.successMessage = '';
+                     },
+                     tutupModal() {
+                         this.modalOpen = false;
+                         this.errorMessage = '';
+                         this.successMessage = '';
+                     },
+                     async kirimPermintaanOTP() {
+                         if (!this.password) {
+                             this.errorMessage = 'Silakan masukkan kata sandi akun Anda.';
+                             return;
+                         }
+                         this.loading = true;
+                         this.errorMessage = '';
+                         try {
+                             const res = await fetch('{{ route('profile.delete-request') }}', {
+                                 method: 'POST',
+                                 headers: {
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json',
+                                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                 },
+                                 body: JSON.stringify({ password: this.password })
+                             });
+                             const data = await res.json();
+                             if (!res.ok) {
+                                 this.errorMessage = data.message || 'Kata sandi yang Anda masukkan salah.';
+                                 this.loading = false;
+                                 return;
+                             }
+                             this.successMessage = data.message;
+                             this.step = 2;
+                         } catch (e) {
+                             this.errorMessage = 'Terjadi kendala jaringan. Silakan coba lagi.';
+                         } finally {
+                             this.loading = false;
+                         }
+                     },
+                     async konfirmasiHapusFinal() {
+                         if (!this.otpCode || this.otpCode.length < 6) {
+                             this.errorMessage = 'Masukkan 6 digit kode verifikasi yang ada di email Anda.';
+                             return;
+                         }
+                         this.loading = true;
+                         this.errorMessage = '';
+                         try {
+                             const res = await fetch('{{ route('profile.destroy') }}', {
+                                 method: 'DELETE',
+                                 headers: {
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json',
+                                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                 },
+                                 body: JSON.stringify({ code: this.otpCode })
+                             });
+                             const data = await res.json();
+                             if (!res.ok) {
+                                 this.errorMessage = data.message || 'Kode verifikasi salah atau kedaluwarsa.';
+                                 this.loading = false;
+                                 return;
+                             }
+                             window.location.href = data.redirect || '/';
+                         } catch (e) {
+                             this.errorMessage = 'Terjadi kesalahan sistem. Silakan coba lagi.';
+                             this.loading = false;
+                         }
+                     }
+                 }">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-9 h-9 rounded-sm bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
                         <div>
-                            <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                                <div class="w-9 h-9 rounded-sm bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-                                    <i class="fa-solid fa-id-card"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-xs font-bold uppercase tracking-wider text-primary">Informasi Profil</h3>
-                                    <p class="text-[11px] text-gray-500">Perbarui nama dan alamat email akun Anda</p>
-                                </div>
-                            </div>
-
-                            <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
-                                @csrf
-                                @method('patch')
-
-                                <div>
-                                    <label for="profile_name" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Nama Lengkap</label>
-                                    <input id="profile_name" name="name" type="text"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
-                                        value="{{ old('name', Auth::user()->name) }}" required autocomplete="name"
-                                        placeholder="Masukkan nama lengkap Anda" />
-                                    <x-input-error class="mt-1" :messages="$errors->get('name')" />
-                                </div>
-
-                                <div>
-                                    <label for="profile_email" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Alamat Email</label>
-                                    <input id="profile_email" name="email" type="email"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
-                                        value="{{ old('email', Auth::user()->email) }}" required autocomplete="username"
-                                        placeholder="nama@email.com" />
-                                    <x-input-error class="mt-1" :messages="$errors->get('email')" />
-                                </div>
-
-                                <div class="pt-3 flex items-center gap-3">
-                                    <button type="submit" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-6 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm flex items-center gap-2">
-                                        <i class="fa-solid fa-floppy-disk"></i> Simpan Profil
-                                    </button>
-
-                                    @if (session('status') === 'profile-updated')
-                                        <span x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)"
-                                            class="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
-                                            <i class="fa-solid fa-circle-check"></i> Tersimpan!
-                                        </span>
-                                    @endif
-                                </div>
-                            </form>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-800">Hapus Akun</h3>
+                            <p class="text-xs text-gray-500 mt-0.5 max-w-xl leading-relaxed">
+                                Setelah akun dihapus, Anda tidak dapat login kembali. Riwayat transaksi belanja Anda tetap tersimpan di sistem toko untuk keperluan pembukuan.
+                            </p>
                         </div>
                     </div>
-
-                    <!-- Kartu 2: Keamanan Kata Sandi -->
-                    <div class="border border-gray-200 rounded-sm p-6 bg-white shadow-xs flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                                <div class="w-9 h-9 rounded-sm bg-accent/10 text-accent flex items-center justify-center font-bold text-sm">
-                                    <i class="fa-solid fa-lock"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-xs font-bold uppercase tracking-wider text-primary">Keamanan Kata Sandi</h3>
-                                    <p class="text-[11px] text-gray-500">Gunakan kata sandi yang kuat agar akun tetap terlindungi</p>
-                                </div>
-                            </div>
-
-                            <form method="post" action="{{ route('password.update') }}" class="space-y-4">
-                                @csrf
-                                @method('put')
-
-                                <div>
-                                    <label for="current_password" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Kata Sandi Saat Ini</label>
-                                    <input id="current_password" name="current_password" type="password"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
-                                        autocomplete="current-password" placeholder="••••••••" />
-                                    <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-1" />
-                                </div>
-
-                                <div>
-                                    <label for="new_password" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Kata Sandi Baru</label>
-                                    <input id="new_password" name="password" type="password"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
-                                        autocomplete="new-password" placeholder="Minimal 8 karakter" />
-                                    <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-1" />
-                                </div>
-
-                                <div>
-                                    <label for="new_password_confirmation" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Konfirmasi Kata Sandi Baru</label>
-                                    <input id="new_password_confirmation" name="password_confirmation" type="password"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-primary focus:border-primary transition"
-                                        autocomplete="new-password" placeholder="Ulangi kata sandi baru" />
-                                    <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-1" />
-                                </div>
-
-                                <div class="pt-3 flex items-center gap-3">
-                                    <button type="submit" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-6 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm flex items-center gap-2">
-                                        <i class="fa-solid fa-key"></i> Perbarui Kata Sandi
-                                    </button>
-
-                                    @if (session('status') === 'password-updated')
-                                        <span x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)"
-                                            class="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
-                                            <i class="fa-solid fa-circle-check"></i> Kata sandi diperbarui!
-                                        </span>
-                                    @endif
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    <button type="button" @click="bukaModal()"
+                        style="background-color: #ffffff; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;"
+                        class="hover:bg-rose-50 text-xs px-5 py-2.5 rounded-sm uppercase tracking-wider transition shrink-0 shadow-xs flex items-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Hapus Akun Saya
+                    </button>
                 </div>
 
-                <!-- ── Kartu 3: Hapus Akun (Dengan Verifikasi Password & Email OTP) ── -->
-                <div class="mt-8 pt-6 border-t border-gray-200"
-                     x-data="{
-                         modalOpen: false,
-                         step: 1,
-                         password: '',
-                         otpCode: '',
-                         loading: false,
-                         errorMessage: '',
-                         successMessage: '',
-                         bukaModal() {
-                             this.modalOpen = true;
-                             this.step = 1;
-                             this.password = '';
-                             this.otpCode = '';
-                             this.errorMessage = '';
-                             this.successMessage = '';
-                         },
-                         tutupModal() {
-                             this.modalOpen = false;
-                             this.errorMessage = '';
-                             this.successMessage = '';
-                         },
-                         async kirimPermintaanOTP() {
-                             if (!this.password) {
-                                 this.errorMessage = 'Silakan masukkan kata sandi akun Anda.';
-                                 return;
-                             }
-                             this.loading = true;
-                             this.errorMessage = '';
-                             try {
-                                 const res = await fetch('{{ route('profile.delete-request') }}', {
-                                     method: 'POST',
-                                     headers: {
-                                         'Content-Type': 'application/json',
-                                         'Accept': 'application/json',
-                                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                     },
-                                     body: JSON.stringify({ password: this.password })
-                                 });
-                                 const data = await res.json();
-                                 if (!res.ok) {
-                                     this.errorMessage = data.message || 'Kata sandi yang Anda masukkan salah.';
-                                     this.loading = false;
-                                     return;
-                                 }
-                                 this.successMessage = data.message;
-                                 this.step = 2;
-                             } catch (e) {
-                                 this.errorMessage = 'Terjadi kendala jaringan. Silakan coba lagi.';
-                             } finally {
-                                 this.loading = false;
-                             }
-                         },
-                         async konfirmasiHapusFinal() {
-                             if (!this.otpCode || this.otpCode.length < 6) {
-                                 this.errorMessage = 'Masukkan 6 digit kode verifikasi yang ada di email Anda.';
-                                 return;
-                             }
-                             this.loading = true;
-                             this.errorMessage = '';
-                             try {
-                                 const res = await fetch('{{ route('profile.destroy') }}', {
-                                     method: 'DELETE',
-                                     headers: {
-                                         'Content-Type': 'application/json',
-                                         'Accept': 'application/json',
-                                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                     },
-                                     body: JSON.stringify({ code: this.otpCode })
-                                 });
-                                 const data = await res.json();
-                                 if (!res.ok) {
-                                     this.errorMessage = data.message || 'Kode verifikasi salah atau kedaluwarsa.';
-                                     this.loading = false;
-                                     return;
-                                 }
-                                 window.location.href = data.redirect || '/';
-                             } catch (e) {
-                                 this.errorMessage = 'Terjadi kesalahan sistem. Silakan coba lagi.';
-                                 this.loading = false;
-                             }
-                         }
-                     }">
-                    <div class="bg-gray-50 border border-gray-200 rounded-sm p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-start gap-3.5">
-                            <div class="w-9 h-9 rounded-sm bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
+                <!-- ── Modal Konfirmasi Hapus Akun 2-Langkah ── -->
+                <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                    <div @click.away="tutupModal()" class="bg-white rounded-sm shadow-2xl max-w-md w-full p-6 sm:p-7 text-left space-y-5 border border-gray-200">
+                        
+                        {{-- Header Modal --}}
+                        <div class="flex items-center gap-3.5 border-b border-gray-100 pb-4">
+                            <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-800">Hapus Akun</h3>
-                                <p class="text-xs text-gray-500 mt-0.5 max-w-xl leading-relaxed">
-                                    Setelah akun dihapus, Anda tidak dapat login kembali. Riwayat transaksi belanja Anda tetap tersimpan di sistem toko untuk keperluan pembukuan.
-                                </p>
+                                <h3 class="text-sm font-black text-gray-900 uppercase tracking-wide">Konfirmasi Hapus Akun</h3>
+                                <p class="text-xs text-gray-500">Tindakan ini memerlukan verifikasi ganda</p>
                             </div>
                         </div>
-                        <button type="button" @click="bukaModal()"
-                            style="background-color: #ffffff; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;"
-                            class="hover:bg-rose-50 text-xs px-5 py-2.5 rounded-sm uppercase tracking-wider transition shrink-0 shadow-xs flex items-center gap-2">
-                            <i class="fa-solid fa-trash-can"></i> Hapus Akun Saya
-                        </button>
-                    </div>
 
-                    <!-- ── Modal Konfirmasi Hapus Akun 2-Langkah ── -->
-                    <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-                        <div @click.away="tutupModal()" class="bg-white rounded-sm shadow-2xl max-w-md w-full p-6 sm:p-7 text-left space-y-5 border border-gray-200">
-                            
-                            {{-- Header Modal --}}
-                            <div class="flex items-center gap-3.5 border-b border-gray-100 pb-4">
-                                <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-wide">Konfirmasi Hapus Akun</h3>
-                                    <p class="text-xs text-gray-500">Tindakan ini memerlukan verifikasi ganda</p>
-                                </div>
+                        {{-- Alert Error jika ada --}}
+                        <div x-show="errorMessage" x-cloak class="p-3 rounded-sm bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+                            <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
+                            <span x-text="errorMessage"></span>
+                        </div>
+
+                        {{-- ── STEP 1: Masukkan Kata Sandi ── --}}
+                        <div x-show="step === 1" class="space-y-4">
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Untuk keamanan, silakan masukkan <strong>Kata Sandi Akun</strong> Anda terlebih dahulu. Kami akan mengirimkan <strong>Kode Verifikasi</strong> ke email Anda.
+                            </p>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Kata Sandi Akun</label>
+                                <input type="password" x-model="password" @keydown.enter.prevent="kirimPermintaanOTP()"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-rose-500 focus:border-rose-500"
+                                    placeholder="Masukkan kata sandi akun Anda" />
                             </div>
 
-                            {{-- Alert Error jika ada --}}
-                            <div x-show="errorMessage" x-cloak class="p-3 rounded-sm bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
-                                <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
-                                <span x-text="errorMessage"></span>
+                            <div class="flex justify-end items-center gap-3 pt-3 border-t border-gray-100">
+                                <button type="button" @click="tutupModal()"
+                                    style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"
+                                    class="hover:bg-gray-200 text-xs font-bold px-5 py-2.5 rounded-sm transition uppercase">
+                                    Batal
+                                </button>
+                                <button type="button" @click="kirimPermintaanOTP()" :disabled="loading"
+                                    style="background-color: #1B3A6B; color: #ffffff;"
+                                    class="hover:bg-primary-light text-xs font-bold px-5 py-2.5 rounded-sm transition uppercase shadow-sm flex items-center gap-2">
+                                    <span x-show="!loading"><i class="fa-solid fa-envelope"></i> Lanjut & Kirim Kode Email</span>
+                                    <span x-show="loading" x-cloak><i class="fa-solid fa-spinner fa-spin"></i> Memproses...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- ── STEP 2: Masukkan Kode Verifikasi Email ── --}}
+                        <div x-show="step === 2" x-cloak class="space-y-4">
+                            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-800 text-xs">
+                                <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Kode Berhasil Dikirim!</p>
+                                <p class="text-[11px] text-emerald-700 mt-1" x-text="successMessage"></p>
                             </div>
 
-                            {{-- ── STEP 1: Masukkan Kata Sandi ── --}}
-                            <div x-show="step === 1" class="space-y-4">
-                                <p class="text-xs text-gray-600 leading-relaxed">
-                                    Untuk keamanan, silakan masukkan <strong>Kata Sandi Akun</strong> Anda terlebih dahulu. Kami akan mengirimkan <strong>Kode Verifikasi</strong> ke email Anda.
-                                </p>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Masukkan <strong>6 Digit Kode Verifikasi</strong> yang telah kami kirimkan ke email Anda untuk menyelesaikan penghapusan akun:
+                            </p>
 
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Kata Sandi Akun</label>
-                                    <input type="password" x-model="password" @keydown.enter.prevent="kirimPermintaanOTP()"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-sm text-gray-800 focus:ring-1 focus:ring-rose-500 focus:border-rose-500"
-                                        placeholder="Masukkan kata sandi akun Anda" />
-                                </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Kode Verifikasi (6 Digit)</label>
+                                <input type="text" x-model="otpCode" maxlength="6" @keydown.enter.prevent="konfirmasiHapusFinal()"
+                                    class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-center font-mono font-bold text-lg text-primary tracking-widest focus:ring-1 focus:ring-rose-500 focus:border-rose-500"
+                                    placeholder="000000" />
+                            </div>
 
-                                <div class="flex justify-end items-center gap-3 pt-3 border-t border-gray-100">
+                            <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                                <button type="button" @click="kirimPermintaanOTP()" :disabled="loading"
+                                    class="text-xs text-primary hover:underline font-bold">
+                                    Kirim Ulang Kode
+                                </button>
+                                <div class="flex items-center gap-2">
                                     <button type="button" @click="tutupModal()"
                                         style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"
-                                        class="hover:bg-gray-200 text-xs font-bold px-5 py-2.5 rounded-sm transition uppercase">
+                                        class="hover:bg-gray-200 text-xs font-bold px-4 py-2.5 rounded-sm transition uppercase">
                                         Batal
                                     </button>
-                                    <button type="button" @click="kirimPermintaanOTP()" :disabled="loading"
-                                        style="background-color: #1B3A6B; color: #ffffff;"
-                                        class="hover:bg-primary-light text-xs font-bold px-5 py-2.5 rounded-sm transition uppercase shadow-sm flex items-center gap-2">
-                                        <span x-show="!loading"><i class="fa-solid fa-envelope"></i> Lanjut & Kirim Kode Email</span>
-                                        <span x-show="loading" x-cloak><i class="fa-solid fa-spinner fa-spin"></i> Memproses...</span>
+                                    <button type="button" @click="konfirmasiHapusFinal()" :disabled="loading"
+                                        style="background-color: #dc2626; color: #ffffff; border: 1px solid #b91c1c;"
+                                        class="hover:bg-rose-700 text-xs font-bold px-5 py-2.5 rounded-sm transition uppercase shadow-sm flex items-center gap-2">
+                                        <span x-show="!loading"><i class="fa-solid fa-trash-can"></i> Ya, Hapus Akun Permanen</span>
+                                        <span x-show="loading" x-cloak><i class="fa-solid fa-spinner fa-spin"></i> Menghapus...</span>
                                     </button>
                                 </div>
                             </div>
-
-                            {{-- ── STEP 2: Masukkan Kode Verifikasi Email ── --}}
-                            <div x-show="step === 2" x-cloak class="space-y-4">
-                                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-800 text-xs">
-                                    <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Kode Berhasil Dikirim!</p>
-                                    <p class="text-[11px] text-emerald-700 mt-1" x-text="successMessage"></p>
-                                </div>
-
-                                <p class="text-xs text-gray-600 leading-relaxed">
-                                    Masukkan <strong>6 Digit Kode Verifikasi</strong> yang telah kami kirimkan ke email Anda untuk menyelesaikan penghapusan akun:
-                                </p>
-
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Kode Verifikasi (6 Digit)</label>
-                                    <input type="text" x-model="otpCode" maxlength="6" @keydown.enter.prevent="konfirmasiHapusFinal()"
-                                        class="w-full bg-white border border-gray-300 rounded-sm px-4 py-2.5 text-center font-mono font-bold text-lg text-primary tracking-widest focus:ring-1 focus:ring-rose-500 focus:border-rose-500"
-                                        placeholder="000000" />
-                                </div>
-
-                                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                    <button type="button" @click="kirimPermintaanOTP()" :disabled="loading"
-                                        class="text-xs text-primary hover:underline font-bold">
-                                        Kirim Ulang Kode
-                                    </button>
-                                    <div class="flex items-center gap-2">
-                                        <button type="button" @click="tutupModal()"
-                                            style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"
-                                            class="hover:bg-gray-200 text-xs font-bold px-4 py-2.5 rounded-sm transition uppercase">
-                                            Batal
-                                        </button>
-                                        <button type="button" @click="konfirmasiHapusFinal()" :disabled="loading"
-                                            style="background-color: #dc2626; color: #ffffff; border: 1px solid #b91c1c;"
-                                            class="hover:bg-rose-700 text-xs font-bold px-5 py-2.5 rounded-sm transition uppercase shadow-sm flex items-center gap-2">
-                                            <span x-show="!loading"><i class="fa-solid fa-trash-can"></i> Ya, Hapus Akun Permanen</span>
-                                            <span x-show="loading" x-cloak><i class="fa-solid fa-spinner fa-spin"></i> Menghapus...</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
-    </div>@push('styles')
+    </div>
+@push('styles')
     <style>
         /* Gaya ditulis sendiri, tidak mengandalkan kelas Tailwind yang belum tentu ikut ter-build. */
         .baris-dompet {
