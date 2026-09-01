@@ -120,4 +120,15 @@ class User extends Authenticatable
     {
         return $this->addresses()->where('is_default', true)->first();
     }
+    /**
+     * Cek apakah ada pesanan yang baru saja selesai/sampai dalam 3 hari terakhir.
+     */
+    public function hasRecentlyDeliveredOrders(): bool
+    {
+        return $this->orders()
+            ->where('status', 'completed')
+            ->where('updated_at', '>=', now()->subDays(3))
+            ->exists();
+    }
+
 }

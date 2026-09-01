@@ -43,6 +43,7 @@
                         $unpaidCount = Auth::user()->unpaidOrdersCount();
                     @endphp
                     <div class="relative" x-data="{ open: false }">
+                        @php $hasDelivered = Auth::user()->hasRecentlyDeliveredOrders(); @endphp
                         <button @click="open = !open" class="relative flex items-center text-gray-600 hover:text-primary transition" style="background: none; border: none; cursor: pointer; padding: 4px;">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -50,6 +51,8 @@
                             </svg>
                             @if($unpaidCount > 0)
                                 <span style="position: absolute; top: -1px; right: -2px; background-color: #dc2626; border-radius: 9999px; width: 9px; height: 9px; display: block; border: 2px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" title="Ada pesanan belum dibayar"></span>
+                            @elseif($hasDelivered)
+                                <span style="position: absolute; top: -1px; right: -2px; background-color: #16a34a; border-radius: 9999px; width: 9px; height: 9px; display: block; border: 2px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" title="Ada pesanan yang sudah sampai!"></span>
                             @endif
                         </button>
                         <div x-show="open" @click.away="open = false"
@@ -71,9 +74,14 @@
                                     <i class="fa-solid fa-user-circle" style="color: #1B3A6B; font-size: 14px;"></i>
                                     Akun Saya
                                 </span>
-                                @if($unpaidCount > 0)
-                                    <span style="background-color: #dc2626; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; flex-shrink: 0;" title="Ada pesanan belum dibayar"></span>
-                                @endif
+                                <span style="display: flex; gap: 4px; align-items: center;">
+                                    @if($unpaidCount > 0)
+                                        <span style="background-color: #dc2626; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; flex-shrink: 0;" title="Belum bayar"></span>
+                                    @endif
+                                    @if($hasDelivered)
+                                        <span style="background-color: #16a34a; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; flex-shrink: 0;" title="Pesanan sampai!"></span>
+                                    @endif
+                                </span>
                             </a>
 
                             {{-- Divider --}}

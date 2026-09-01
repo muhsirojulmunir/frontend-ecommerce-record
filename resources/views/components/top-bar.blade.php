@@ -12,10 +12,16 @@
                     @php
                         $unpaidCount = Auth::user()->unpaidOrdersCount();
                     @endphp
+                    @php
+                        $hasDelivered = Auth::user()->hasRecentlyDeliveredOrders();
+                    @endphp
                     <a href="{{ route('dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium flex items-center gap-1.5">
                         <span>Akun Saya</span>
                         @if($unpaidCount > 0)
-                            <span style="background-color: #dc2626; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; margin-left: 3px; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(220,38,38,0.3); animation: pulse 1.5s ease-in-out infinite;" title="Ada pesanan belum dibayar"></span>
+                            <span style="background-color: #dc2626; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; margin-left: 1px; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(220,38,38,0.3); animation: pulse 1.5s ease-in-out infinite;" title="Ada pesanan belum dibayar"></span>
+                        @endif
+                        @if($hasDelivered)
+                            <span style="background-color: #16a34a; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; margin-left: 1px; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(22,163,74,0.3); animation: pulse 1.5s ease-in-out infinite 0.5s;" title="Ada pesanan yang sudah sampai!"></span>
                         @endif
                     </a>
                 @endif
