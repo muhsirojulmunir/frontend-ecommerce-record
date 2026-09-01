@@ -49,9 +49,7 @@
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             @if($unpaidCount > 0)
-                                <span style="position: absolute; top: -3px; right: -4px; background-color: #dc2626; color: #ffffff; border-radius: 9999px; min-width: 17px; height: 17px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; padding: 0 4px; line-height: 1; border: 2px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
-                                    {{ $unpaidCount }}
-                                </span>
+                                <span style="position: absolute; top: -1px; right: -2px; background-color: #dc2626; border-radius: 9999px; width: 9px; height: 9px; display: block; border: 2px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" title="Ada pesanan belum dibayar"></span>
                             @endif
                         </button>
                         <div x-show="open" @click.away="open = false"
@@ -74,9 +72,7 @@
                                     Akun Saya
                                 </span>
                                 @if($unpaidCount > 0)
-                                    <span style="background-color: #dc2626; color: #ffffff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 9999px; white-space: nowrap; line-height: 1.2;">
-                                        {{ $unpaidCount }}
-                                    </span>
+                                    <span style="background-color: #dc2626; border-radius: 9999px; width: 8px; height: 8px; display: inline-block; flex-shrink: 0;" title="Ada pesanan belum dibayar"></span>
                                 @endif
                             </a>
 
