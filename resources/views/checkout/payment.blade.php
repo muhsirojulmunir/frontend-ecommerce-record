@@ -60,8 +60,8 @@
 
         {{-- ── Banner Countdown Batas Waktu Pembayaran ── --}}
         @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
-            <div class="mb-6 bg-amber-50 border border-amber-200 rounded-sm p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-                <div class="flex items-center gap-3">
+            <div class="mb-6 bg-amber-50 border border-amber-200 rounded-sm p-4 sm:p-5 flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs text-center sm:text-left">
+                <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                     <div class="w-10 h-10 rounded-sm bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-base shrink-0">
                         <i class="fa-solid fa-clock"></i>
                     </div>
@@ -72,9 +72,9 @@
                         </p>
                     </div>
                 </div>
-                <div class="bg-white border border-amber-300/80 px-4 py-2 rounded-sm text-center shadow-xs shrink-0 self-stretch sm:self-auto">
+                <div class="bg-white border border-amber-300/80 px-5 py-2.5 rounded-sm text-center shadow-xs shrink-0 w-full sm:w-auto">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-amber-800 block">Sisa Waktu Pembayaran</span>
-                    <span class="font-mono font-black text-base sm:text-lg text-rose-600 tracking-wider block" x-text="countdownText">
+                    <span class="font-mono font-black text-xl sm:text-lg text-rose-600 tracking-wider block" x-text="countdownText">
                         Memuat...
                     </span>
                 </div>
