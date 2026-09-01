@@ -38,13 +38,27 @@ class MidtransService
         return $this->isProduction;
     }
 
-    /**
+        /**
      * Buat Snap Token untuk Midtrans popup payment.
      * Mengembalikan snap_token yang digunakan di frontend.
      */
-        public function createSnapToken(Order $order): array
+    public function createSnapToken(Order $order): array
     {
         $order->loadMissing(['user', 'items.product', 'items.productVariant']);
+
+        // Cache token agar selama pesanan belum dibayar, Snap Token & VA tetap konsisten
+        $cacheKey = 'midtrans_snap_' . $order->id . '_' . md5($order->payment_method);
+        if ($cachedToken = \Illuminate\Support\Facades\Cache::get($cacheKey)) {
+            return [
+                'success'    => true,
+                'token'      => $cachedToken,
+                'redirect'   => null,
+                'client_key' => $this->clientKey,
+                'snap_url'   => $this->isProduction
+                    ? 'https://app.midtrans.com/snap/snap.js'
+                    : 'https://app.sandbox.midtrans.com/snap/snap.js',
+            ];
+        }
 
         // Build item details untuk Midtrans
         $itemDetails = [];
@@ -132,19 +146,7 @@ class MidtransService
             ];
         }
 
-        $cacheKey = 'midtrans_snap_' . $order->id . '_' . md5($order->payment_method);
-        if ($cachedToken = \Illuminate\Support\Facades\Cache::get($cacheKey)) {
-            return [
-                'success'    => true,
-                'token'      => $cachedToken,
-                'redirect'   => null,
-                'client_key' => $this->clientKey,
-                'snap_url'   => $this->isProduction
-                    ? 'https://app.midtrans.com/snap/snap.js'
-                    : 'https://app.sandbox.midtrans.com/snap/snap.js',
-            ];
-        }
-
+        // Percobaan 1: Coba dengan order_id asli
         try {
             $response = $this->httpPost($this->snapUrl, $params);
 
@@ -161,44 +163,37 @@ class MidtransService
                         : 'https://app.sandbox.midtrans.com/snap/snap.js',
                 ];
             }
-
-            \Illuminate\Support\Facades\Log::error('Midtrans createSnapToken failed', ['order' => $order->order_number, 'response' => $response]);
-            return ['success' => false, 'message' => 'Gagal mendapatkan token Midtrans.', 'raw' => $response];
-
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Midtrans createSnapToken Exception: ' . $e->getMessage(), ['order' => $order->order_number]);
+            \Illuminate\Support\Facades\Log::warning('Midtrans createSnapToken notice: ' . $e->getMessage() . '. Retrying with unique transaction suffix.');
+        }
 
-            // Percobaan kedua: jika error karena order_id sudah terdaftar sebelumnya di Midtrans
-            try {
-                // TETAP pertahankan kanal pembayaran yang dipilih customer (jangan di-unset!)
-                $kanal = config('midtrans-kanal.diizinkan.' . $order->payment_method);
-                if (! empty($kanal)) {
-                    $params['enabled_payments'] = $kanal;
-                }
+        // Percobaan 2: Jika order_id sudah terdaftar sebelumnya di Midtrans, gunakan order_id unik dengan timestamp
+        try {
+            if (! empty($kanal)) {
+                $params['enabled_payments'] = $kanal;
+            }
+            $params['transaction_details']['order_id'] = $order->order_number . '-T' . time() . rand(10, 99);
 
-                // Tambahkan identifikasi unik metode & update waktu pada order_id
-                $params['transaction_details']['order_id'] = $order->order_number . '-' . substr(md5($order->payment_method . '-' . ($order->updated_at ? $order->updated_at->timestamp : time())), 0, 6);
+            $response = $this->httpPost($this->snapUrl, $params);
 
-                $response = $this->httpPost($this->snapUrl, $params);
+            if (isset($response['token'])) {
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $response['token'], now()->addHours(24));
 
-                if (isset($response['token'])) {
-                    \Illuminate\Support\Facades\Cache::put($cacheKey, $response['token'], now()->addHours(24));
-
-                    return [
-                        'success'    => true,
-                        'token'      => $response['token'],
-                        'redirect'   => $response['redirect_url'] ?? null,
-                        'client_key' => $this->clientKey,
-                        'snap_url'   => $this->isProduction
-                            ? 'https://app.midtrans.com/snap/snap.js'
-                            : 'https://app.sandbox.midtrans.com/snap/snap.js',
-                    ];
-                }
-            } catch (\Exception $ex) {
-                \Illuminate\Support\Facades\Log::error('Midtrans retry SnapToken Exception: ' . $ex->getMessage());
+                return [
+                    'success'    => true,
+                    'token'      => $response['token'],
+                    'redirect'   => $response['redirect_url'] ?? null,
+                    'client_key' => $this->clientKey,
+                    'snap_url'   => $this->isProduction
+                        ? 'https://app.midtrans.com/snap/snap.js'
+                        : 'https://app.sandbox.midtrans.com/snap/snap.js',
+                ];
             }
 
-            return ['success' => false, 'message' => $e->getMessage()];
+            return ['success' => false, 'message' => 'Gagal mendapatkan token Midtrans.', 'raw' => $response];
+        } catch (\Exception $ex) {
+            \Illuminate\Support\Facades\Log::error('Midtrans final createSnapToken failed: ' . $ex->getMessage());
+            return ['success' => false, 'message' => 'Sistem pembayaran sedang sibuk (' . $ex->getMessage() . '). Silakan muat ulang halaman.'];
         }
     }
 

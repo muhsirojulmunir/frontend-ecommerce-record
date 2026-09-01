@@ -500,7 +500,7 @@ class CheckoutController extends Controller
         }
     }
 
-    /**
+        /**
      * Halaman instruksi & eksekusi pembayaran (Midtrans Snap & COD).
      */
     public function payment($orderNumber)
@@ -510,12 +510,37 @@ class CheckoutController extends Controller
             ->with(['items.product', 'items.productVariant'])
             ->firstOrFail();
 
-        // Pesanan yang dibayar R_Pay sudah lunas sejak dibuat, jadi tidak ada
-        // yang perlu dibayar di halaman ini — pembeli langsung diantar ke
-        // pesanannya, lengkap dengan invoice yang sudah terbit.
+        // Pesanan yang dibayar R_Pay sudah lunas sejak dibuat
         if ($order->payment_method === 'R_Pay' && $order->payment_status === 'paid') {
             return redirect()->route('orders.show', $order->order_number)
                 ->with('success', 'Pembayaran dengan R_Pay berhasil. Pesananmu langsung diproses.');
+        }
+
+        // Hitung batas waktu pembayaran (24 jam dari created_at)
+        $expiresAt = $order->created_at->copy()->addHours(24);
+        $secondsRemaining = max(0, (int) now()->diffInSeconds($expiresAt, false));
+
+        // Jika waktu pembayaran sudah habis & belum lunas, otomatis batalkan pesanan
+        if ($secondsRemaining <= 0 && $order->payment_status === 'unpaid' && $order->status !== 'cancelled') {
+            try {
+                $pembatalanService = app(\App\Services\PembatalanPesananService::class);
+                $pembatalanService->batalkan(
+                    $order,
+                    'Waktu pembayaran telah habis (Kedaluwarsa)',
+                    'Sistem otomatis membatalkan pesanan karena telah melewati batas waktu pembayaran 24 jam.'
+                );
+            } catch (\Throwable $cancelErr) {
+                \Illuminate\Support\Facades\Log::error('Auto-cancel expired order error: ' . $cancelErr->getMessage());
+            }
+
+            return redirect()->route('orders.show', $order->order_number)
+                ->with('error', 'Batas waktu pembayaran pesanan telah habis (Kedaluwarsa). Pesanan dibatalkan otomatis oleh sistem, silakan buat pesanan baru.');
+        }
+
+        // Jika pesanan sudah dibatalkan
+        if ($order->status === 'cancelled') {
+            return redirect()->route('orders.show', $order->order_number)
+                ->with('error', 'Pesanan ini telah dibatalkan.');
         }
 
         $snapToken = null;
@@ -535,7 +560,7 @@ class CheckoutController extends Controller
         $clientKey = $this->midtransService->getClientKey();
         $isProduction = $this->midtransService->isProduction();
 
-        return view('checkout.payment', compact('order', 'snapToken', 'snapError', 'clientKey', 'isProduction'));
+        return view('checkout.payment', compact('order', 'snapToken', 'snapError', 'clientKey', 'isProduction', 'expiresAt', 'secondsRemaining'));
     }
 
     /**
@@ -618,7 +643,11 @@ class CheckoutController extends Controller
             return response()->json(['status' => 'error', 'message' => $verified['message']], 400);
         }
 
-        $order = Order::where('order_number', $verified['order_number'])->first();
+                $rawOrderNumber = (string) ($verified['order_number'] ?? '');
+        $order = Order::where('order_number', $rawOrderNumber)->first();
+        if (!$order && preg_match('/^(ORD-\d{8}-\d{4})/', $rawOrderNumber, $m)) {
+            $order = Order::where('order_number', $m[1])->first();
+        }
         if (!$order) {
             // Jika order_id memiliki akhiran timestamp unik dari retry Snap (mis. ORD-XXXX-1725100000)
             $baseOrderNumber = preg_replace('/-\d{9,}$/', '', (string) $verified['order_number']);
