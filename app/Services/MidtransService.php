@@ -132,10 +132,25 @@ class MidtransService
             ];
         }
 
+        $cacheKey = 'midtrans_snap_' . $order->id . '_' . md5($order->payment_method);
+        if ($cachedToken = \Illuminate\Support\Facades\Cache::get($cacheKey)) {
+            return [
+                'success'    => true,
+                'token'      => $cachedToken,
+                'redirect'   => null,
+                'client_key' => $this->clientKey,
+                'snap_url'   => $this->isProduction
+                    ? 'https://app.midtrans.com/snap/snap.js'
+                    : 'https://app.sandbox.midtrans.com/snap/snap.js',
+            ];
+        }
+
         try {
             $response = $this->httpPost($this->snapUrl, $params);
 
             if (isset($response['token'])) {
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $response['token'], now()->addHours(24));
+
                 return [
                     'success'    => true,
                     'token'      => $response['token'],
@@ -153,15 +168,22 @@ class MidtransService
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Midtrans createSnapToken Exception: ' . $e->getMessage(), ['order' => $order->order_number]);
 
-            // Percobaan kedua: jika error karena enabled_payments atau order_id duplikat di Sandbox
+            // Percobaan kedua: jika error karena order_id sudah terdaftar sebelumnya di Midtrans
             try {
-                // Hapus batasan enabled_payments dan tambahkan timestamp unik pada order_id jika perlu
-                unset($params['enabled_payments']);
-                $params['transaction_details']['order_id'] = $order->order_number . '-' . time();
+                // TETAP pertahankan kanal pembayaran yang dipilih customer (jangan di-unset!)
+                $kanal = config('midtrans-kanal.diizinkan.' . $order->payment_method);
+                if (! empty($kanal)) {
+                    $params['enabled_payments'] = $kanal;
+                }
+
+                // Tambahkan identifikasi unik metode & update waktu pada order_id
+                $params['transaction_details']['order_id'] = $order->order_number . '-' . substr(md5($order->payment_method . '-' . ($order->updated_at ? $order->updated_at->timestamp : time())), 0, 6);
 
                 $response = $this->httpPost($this->snapUrl, $params);
 
                 if (isset($response['token'])) {
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, $response['token'], now()->addHours(24));
+
                     return [
                         'success'    => true,
                         'token'      => $response['token'],

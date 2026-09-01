@@ -112,7 +112,15 @@
             <div class="bg-gray-50 border border-border rounded-sm p-5 space-y-3 text-xs text-text">
                 <div class="flex justify-between items-center border-b border-border pb-2">
                     <span class="text-text-light font-semibold">Metode Pembayaran</span>
-                    <span class="font-bold text-primary uppercase text-sm">{{ $order->payment_method }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-primary uppercase text-sm">{{ $order->payment_method }}</span>
+                        @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
+                            <button type="button" @click="showChangePaymentModal = true; changeError = '';"
+                                    class="bg-accent/10 hover:bg-accent/20 text-accent font-bold text-[11px] px-2.5 py-1 rounded-sm transition uppercase tracking-wider flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-rotate text-[10px]"></i> Ubah
+                            </button>
+                        @endif
+                    </div>
                 </div>
                 <div class="flex justify-between items-center border-b border-border pb-2">
                     <span class="text-text-light font-semibold">Kurir Pengiriman</span>

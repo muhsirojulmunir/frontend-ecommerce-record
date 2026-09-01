@@ -699,6 +699,80 @@ class CheckoutController extends Controller
 
         return response()->json(['status' => 'OK']);
     }
+        /**
+     * Ubah metode pembayaran untuk pesanan yang masih belum dibayar (unpaid).
+     */
+    public function changePaymentMethod(Request $request, $orderNumber)
+    {
+        $validMethods = ['QRIS', 'BCA', 'BNI', 'BRI', 'Mandiri', 'Indomaret', 'Alfamart', 'R_Pay'];
+
+        $request->validate([
+            'payment_method' => ['required', \Illuminate\Validation\Rule::in($validMethods)],
+        ]);
+
+        $order = Order::where('order_number', $orderNumber)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($order->payment_status !== 'unpaid' || $order->status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Metode pembayaran tidak dapat diubah karena pesanan sudah dibayar atau dibatalkan.',
+            ], 422);
+        }
+
+        // Jika user memilih R_Pay, periksa apakah saldonya cukup
+        if ($request->payment_method === 'R_Pay') {
+            $rpayService = app(\App\Services\RpayService::class);
+            $saldo = $rpayService->saldo(Auth::user());
+            if ($saldo < $order->grand_total) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Saldo R_Pay Anda (Rp ' . number_format($saldo, 0, ',', '.') . ') tidak mencukupi untuk tagihan ini.',
+                ], 422);
+            }
+
+            // Bayar langsung dengan R_Pay
+            \Illuminate\Support\Facades\DB::transaction(function () use ($order, $rpayService) {
+                $order->payment_method = 'R_Pay';
+                $order->payment_status = 'paid';
+                $order->status         = 'processing';
+                $order->save();
+
+                $rpayService->debit(
+                    Auth::id(),
+                    $order->grand_total,
+                    'checkout',
+                    'Pembayaran pesanan ' . $order->order_number,
+                    $order
+                );
+            });
+
+            // Kirim email invoice lunas
+            self::kirimEmailInvoice($order);
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Pembayaran dengan saldo R_Pay berhasil! Pesanan Anda langsung diproses.',
+                'redirect' => route('orders.show', $order->order_number),
+            ]);
+        }
+
+        $order->payment_method = $request->payment_method;
+        $order->save();
+
+        // Hapus cache Snap Token lama untuk pesanan ini agar di-generate ulang sesuai metode baru
+        for ($i = 0; $i <= 10; $i++) {
+            \Illuminate\Support\Facades\Cache::forget('midtrans_snap_' . $order->id . '_' . md5($order->payment_method));
+        }
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Metode pembayaran berhasil diubah ke ' . $order->payment_method,
+            'redirect' => route('checkout.payment', $order->order_number),
+        ]);
+    }
+
     /**
      * Kirim email invoice resmi lunas dengan lampiran PDF ke pembeli.
      */
