@@ -9,7 +9,17 @@
                 @if(Auth::user()->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium">Dashboard Admin</a>
                 @else
-                    <a href="{{ route('dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium">Akun Saya</a>
+                    @php
+                        $unpaidCount = Auth::user()->unpaidOrdersCount();
+                    @endphp
+                    <a href="{{ route('dashboard') }}" class="bar-atas-tautan hover:text-gray-200 transition font-medium flex items-center gap-1.5">
+                        <span>Akun Saya</span>
+                        @if($unpaidCount > 0)
+                            <span class="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-xs animate-pulse">
+                                {{ $unpaidCount }}
+                            </span>
+                        @endif
+                    </a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf

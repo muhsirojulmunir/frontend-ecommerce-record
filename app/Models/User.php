@@ -13,6 +13,17 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class User extends Authenticatable
 {
     /**
+     * Hitung jumlah pesanan yang belum dibayar (unpaid & tidak dibatalkan).
+     */
+    public function unpaidOrdersCount(): int
+    {
+        return $this->orders()
+            ->where('payment_status', 'unpaid')
+            ->where('status', '!=', 'cancelled')
+            ->count();
+    }
+
+    /**
  * @use HasFactory<UserFactory>
  */
     use HasFactory, Notifiable;

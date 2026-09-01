@@ -179,21 +179,37 @@
                                     <td class="px-6 py-4 font-bold text-primary">{{ $order->order_number }}</td>
                                     <td class="px-6 py-4 text-text-light">{{ $order->created_at->format('d/m/Y') }}</td>
                                     <td class="px-6 py-4 font-bold text-text">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>
-                                    <td class="px-6 py-4">
-                                        <span class="inline-block px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase
-                                            @if($order->status === 'completed') bg-emerald-50 text-emerald-800 border border-emerald-200
-                                            @elseif($order->status === 'pending') bg-amber-50 text-amber-800 border border-amber-200
-                                            @elseif($order->status === 'shipped') bg-sky-50 text-sky-800 border border-sky-200
-                                            @else bg-gray-50 text-gray-600 border border-gray-200
-                                            @endif">
-                                            {{ $order->status_label ?? ucfirst($order->status) }}
-                                        </span>
+                                                                        <td class="px-6 py-4">
+                                        @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[10px] font-black uppercase bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
+                                                <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span> Belum Dibayar
+                                            </span>
+                                        @else
+                                            <span class="inline-block px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase
+                                                @if($order->status === 'completed') bg-emerald-50 text-emerald-800 border border-emerald-200
+                                                @elseif($order->status === 'pending') bg-amber-50 text-amber-800 border border-amber-200
+                                                @elseif($order->status === 'shipped') bg-sky-50 text-sky-800 border border-sky-200
+                                                @elseif($order->status === 'processing') bg-blue-50 text-blue-800 border border-blue-200
+                                                @elseif($order->status === 'cancelled') bg-gray-50 text-gray-500 border border-gray-200
+                                                @else bg-gray-50 text-gray-600 border border-gray-200
+                                                @endif">
+                                                {{ $order->status_label ?? ucfirst($order->status) }}
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('orders.show', $order->order_number) }}"
-                                            class="text-xs font-bold text-accent hover:text-accent-dark transition uppercase">
-                                            Detail
-                                        </a>
+                                        @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
+                                            <a href="{{ route('checkout.payment', $order->order_number) }}"
+                                                style="background-color: #dc2626; color: #ffffff;"
+                                                class="inline-flex items-center gap-1.5 text-[11px] font-bold hover:bg-rose-700 px-3 py-1.5 rounded-sm uppercase tracking-wider transition shadow-sm">
+                                                <i class="fa-solid fa-credit-card text-[9px]"></i> Bayar Sekarang
+                                            </a>
+                                        @else
+                                            <a href="{{ route('orders.show', $order->order_number) }}"
+                                                class="text-xs font-bold text-accent hover:text-accent-dark transition uppercase">
+                                                Detail
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
