@@ -15,7 +15,7 @@
                 <h1 class="text-2xl font-black text-primary uppercase tracking-wide">
                     Pesanan <span class="text-accent font-mono">#{{ $order->order_number }}</span>
                 </h1>
-                <p class="text-xs text-text-light mt-1">Dipesan pada {{ $order->created_at->format('d M Y, H:i') }} WIB</p>
+                <p class="text-xs text-text-light mt-1">Dipesan pada {{ $order->created_at->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</p>
             </div>
 
             <div class="flex items-center gap-2">
