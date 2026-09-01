@@ -362,10 +362,20 @@ class OrderController extends Controller
             ->with(['items.product', 'items.productVariant', 'user'])
             ->firstOrFail();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', ['order' => $order])
-            ->setPaper('a4', 'portrait');
-
         $filename = 'Invoice-' . ($order->invoice_number ?: $order->order_number) . '.pdf';
-        return $pdf->download($filename);
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', ['order' => $order])
+                ->setPaper('a4', 'portrait');
+            return $pdf->download($filename);
+        }
+
+        if (app()->bound('dompdf.wrapper')) {
+            $pdf = app('dompdf.wrapper')->loadView('pdf.invoice', ['order' => $order])
+                ->setPaper('a4', 'portrait');
+            return $pdf->download($filename);
+        }
+
+        return view('orders.invoice', compact('order'));
     }
 }

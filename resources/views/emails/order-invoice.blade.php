@@ -134,14 +134,19 @@
                 </div>
             </div>
 
-            {{-- Lampiran PDF Notice & Tombol Web --}}
-            <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 14px; text-align: center; margin-bottom: 24px;">
-                <p style="margin: 0 0 12px; font-size: 13px; color: #1e40af;">
-                    &#128206; <strong>Dokumen PDF Invoice resmi</strong> telah dilampirkan langsung pada email ini dan siap diunduh.
+            {{-- Lampiran PDF Notice & Tombol Download/Web --}}
+            <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 18px 14px; text-align: center; margin-bottom: 24px;">
+                <p style="margin: 0 0 14px; font-size: 13px; color: #1e40af;">
+                    &#128206; <strong>Dokumen PDF Invoice resmi (Lunas)</strong> telah dilampirkan langsung pada email ini dan dapat Anda unduh kapan saja.
                 </p>
-                <a href="{{ $orderUrl }}" style="display: inline-block; background-color: #1B3A6B; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 10px 22px; border-radius: 6px;">
-                    Lihat Status Pesanan & Invoice Web
-                </a>
+                <div style="display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <a href="{{ route('orders.invoice.download', $order->order_number) }}" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 10px 20px; border-radius: 6px; margin: 4px;">
+                        &#128190; Unduh Invoice PDF
+                    </a>
+                    <a href="{{ $orderUrl }}" style="display: inline-block; background-color: #1B3A6B; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 10px 20px; border-radius: 6px; margin: 4px;">
+                        Lihat Status Pesanan
+                    </a>
+                </div>
             </div>
 
         </div>
