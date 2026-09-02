@@ -644,8 +644,13 @@
                     this.recalculateShippingCost();
                 },
 
-                async recalculateShippingCost() {
-                    if (!this.newAddrLat || !this.newAddrLng) return;
+                async recalculateShippingCost(lat = null, lng = null, city = null, postal = null) {
+                    const useLat = lat !== null ? lat : this.newAddrLat;
+                    const useLng = lng !== null ? lng : this.newAddrLng;
+                    const useCity = city !== null ? city : (this.newAddrCity || '');
+                    const usePostal = postal !== null ? postal : (this.newAddrPostal || this.newAddrPostalCode || '');
+
+                    if (!useLat || !useLng) return;
                     try {
                         const res = await fetch('{{ route('checkout.shipping-cost') }}', {
                             method: 'POST',
@@ -654,10 +659,10 @@
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
                             body: JSON.stringify({
-                                latitude: this.newAddrLat,
-                                longitude: this.newAddrLng,
-                                city: this.newAddrCity || '',
-                                postal_code: this.newAddrPostalCode || ''
+                                latitude: useLat,
+                                longitude: useLng,
+                                city: useCity,
+                                postal_code: usePostal
                             })
                         });
                         const data = await res.json();
@@ -959,11 +964,20 @@
                     return this.siapPesan;
                 },
 
-                selectAddress(id, label, recipient, phone, fullAddress) {
+                selectAddress(id, label, recipient, phone, fullAddress, lat = null, lng = null, city = null, postal = null) {
                     this.selectedAddressId = id;
                     this.selectedAddressLabel = label;
                     this.selectedAddressText = recipient + ' (' + phone + ') - ' + fullAddress;
                     this.showAddressModal = false;
+
+                    if (lat && lng) {
+                        this.newAddrLat = lat;
+                        this.newAddrLng = lng;
+                    }
+                    if (city) this.newAddrCity = city;
+                    if (postal) this.newAddrPostal = postal;
+
+                    this.recalculateShippingCost(lat, lng, city, postal);
                 },
 
                 selectNewAddressOption() {
@@ -1609,7 +1623,7 @@
                 <!-- Addresses List -->
                 <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
                     @forelse($addresses as $addr)
-                        <div @click="selectAddress({{ $addr->id }}, '{{ $addr->label }}', '{{ $addr->recipient_name }}', '{{ $addr->phone }}', '{{ $addr->full_address }}')"
+                        <div @click="selectAddress({{ $addr->id }}, '{{ addslashes($addr->label) }}', '{{ addslashes($addr->recipient_name) }}', '{{ addslashes($addr->phone) }}', '{{ addslashes($addr->full_address) }}', {{ (float)($addr->latitude ?: -7.2275) }}, {{ (float)($addr->longitude ?: 112.7865) }}, '{{ addslashes($addr->city) }}', '{{ addslashes($addr->postal_code) }}')"
                             class="border border-gray-100 hover:border-primary hover:bg-primary/5 p-4 rounded-2xl cursor-pointer transition flex items-start gap-3"
                             :class="selectedAddressId == '{{ $addr->id }}' ? 'border-primary bg-primary/5' : ''">
                             <div class="text-xs">
