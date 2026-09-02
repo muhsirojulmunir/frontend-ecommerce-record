@@ -439,107 +439,7 @@
                             ->addDays(config('alasan-retur.batas_hari', 7));
                     @endphp
 
-                    <div class="pt-2 space-y-4" id="nilai">
-                        {{-- Ajakan menilai, menetap selama masih ada barang yang --}}
-                        @if($belumDinilai->isNotEmpty())
-                            <div class="nilai-ajakan">
-                                <div class="nilai-ajakan-teks">
-                                    <p class="nilai-ajakan-judul">
-                                        <i class="fa-solid fa-star"></i>
-                                        {{ $belumDinilai->count() === 1
-                                            ? 'Produkmu belum dinilai'
-                                            : $belumDinilai->count() . ' produkmu belum dinilai' }}
-                                    </p>
-                                    <p class="nilai-ajakan-ket">
-                                        Beri bintang untuk membantu pembeli lain memilih.
-                                        Komentar dan fotonya boleh dikosongkan.
-                                    </p>
-                                </div>
-                                <button type="button"
-                                        onclick="window.dispatchEvent(new CustomEvent('buka-penilaian'))"
-                                        class="nilai-ajakan-tombol">
-                                    Beri Penilaian
-                                </button>
-                            </div>
-                        @endif
-
-                        {{-- Pengembalian TETAP terbuka setelah barang diterima, --}}
-                        @if(! $pengembalian && $bolehRetur)
-                            <div class="selesai-retur">
-                                <button type="button"
-                                        onclick="window.dispatchEvent(new CustomEvent('buka-retur'))"
-                                        class="selesai-retur-tombol">
-                                    <i class="fa-solid fa-rotate-left"></i>
-                                    <span>Ada Masalah? Ajukan Pengembalian</span>
-                                </button>
-                                <p class="selesai-retur-ket">
-                                    Masih bisa diajukan sampai
-                                    <strong>{{ $batasRetur->translatedFormat('l, d F Y') }}</strong>.
-                                    Sertakan video unboxing asli tanpa potongan saat mengajukan.
-                                </p>
-                            </div>
-                        @elseif(! $pengembalian)
-                            <div class="selesai-lewat">
-                                <i class="fa-solid fa-clock"></i>
-                                <p>
-                                    Batas waktu pengajuan pengembalian sudah lewat
-                                    ({{ $batasRetur->translatedFormat('d F Y') }}).
-                                    Butuh bantuan? Hubungi Customer Service kami.
-                                </p>
-                            </div>
-                        @endif
-
-                        {{-- ══ Kode referal ══ --}}
-                        @if($referalAktif)
-                            <div class="referal-pesanan" x-data="{ tersalin: false }">
-                                <div class="referal-pesanan-kepala">
-                                    <div class="referal-pesanan-ikon"><i class="fa-solid fa-gift"></i></div>
-                                    <div class="min-w-0">
-                                        <h4 class="referal-pesanan-judul">Kode Referal Kamu Aktif</h4>
-                                        <p class="referal-pesanan-sub">
-                                            Pesanan ini sudah selesai, jadi kodemu sah dipakai teman.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="referal-pesanan-kotak">
-                                    <span class="referal-pesanan-kode">{{ $kodeReferal }}</span>
-                                    <button type="button"
-                                            @click="navigator.clipboard.writeText('{{ $kodeReferal }}');
-                                                    tersalin = true; setTimeout(() => tersalin = false, 2000)"
-                                            class="referal-pesanan-salin">
-                                        <span x-show="!tersalin"><i class="fa-solid fa-copy"></i> Salin</span>
-                                        <span x-show="tersalin" x-cloak><i class="fa-solid fa-check"></i> Tersalin</span>
-                                    </button>
-                                </div>
-
-                                <div class="referal-pesanan-untung">
-                                    <div>
-                                        <p class="referal-pesanan-untung-nilai">{{ (int) config('referal.persen_diskon', 3) }}%</p>
-                                        <p class="referal-pesanan-untung-label">Diskon buat temanmu</p>
-                                    </div>
-                                    <div>
-                                        <p class="referal-pesanan-untung-nilai">{{ (int) config('referal.persen_komisi', 3) }}%</p>
-                                        <p class="referal-pesanan-untung-label">Komisi buat kamu</p>
-                                    </div>
-                                </div>
-
-                                {{-- Peringatan hangus, ditulis apa adanya --}}
-                                <div class="referal-pesanan-ingat">
-                                    <i class="fa-solid fa-triangle-exclamation"></i>
-                                    <p>
-                                        Kode ini <strong>hangus</strong> bila pesananmu dibatalkan atau
-                                        pengajuan pengembaliannya disetujui — dan pemakaian kodemu oleh
-                                        teman jadi tidak berlaku. Kode akan aktif lagi setelah kamu
-                                        punya pesanan lain yang selesai.
-                                    </p>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
-                {{-- ══ Timeline pengembalian ══ --}}
+                    {{-- ══ Timeline pengembalian ══ --}}
                 @if($pengembalian)
                     @php $alamatRetur = config('alasan-retur.alamat_pengembalian'); @endphp
 
@@ -714,7 +614,111 @@
                         @endif
                     </div>
                 @endif
-            @endif
+
+                    <div class="pt-2 space-y-4" id="nilai">
+                        {{-- Pengembalian TETAP terbuka setelah barang diterima, --}}
+                        @if(! $pengembalian && $bolehRetur)
+                            <div class="selesai-retur">
+                                <button type="button"
+                                        onclick="window.dispatchEvent(new CustomEvent('buka-retur'))"
+                                        class="selesai-retur-tombol">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span>Ada Masalah? Ajukan Pengembalian</span>
+                                </button>
+                                <p class="selesai-retur-ket">
+                                    Masih bisa diajukan sampai
+                                    <strong>{{ $batasRetur->translatedFormat('l, d F Y') }}</strong>.
+                                    Sertakan video unboxing asli tanpa potongan saat mengajukan.
+                                </p>
+                            </div>
+                        @elseif(! $pengembalian)
+                            <div class="selesai-lewat">
+                                <i class="fa-solid fa-clock"></i>
+                                <p>
+                                    Batas waktu pengajuan pengembalian sudah lewat
+                                    ({{ $batasRetur->translatedFormat('d F Y') }}).
+                                    Butuh bantuan? Hubungi Customer Service kami.
+                                </p>
+                            </div>
+                        @endif
+
+                        {{-- Ajakan menilai, menetap selama masih ada barang yang --}}
+                        @if($belumDinilai->isNotEmpty())
+                            <div class="nilai-ajakan">
+                                <div class="nilai-ajakan-teks">
+                                    <p class="nilai-ajakan-judul">
+                                        <i class="fa-solid fa-star"></i>
+                                        {{ $belumDinilai->count() === 1
+                                            ? 'Produkmu belum dinilai'
+                                            : $belumDinilai->count() . ' produkmu belum dinilai' }}
+                                    </p>
+                                    <p class="nilai-ajakan-ket">
+                                        Beri bintang untuk membantu pembeli lain memilih.
+                                        Komentar dan fotonya boleh dikosongkan.
+                                    </p>
+                                </div>
+                                <button type="button"
+                                        onclick="window.dispatchEvent(new CustomEvent('buka-penilaian'))"
+                                        class="nilai-ajakan-tombol">
+                                    Beri Penilaian
+                                </button>
+                            </div>
+                        @endif
+
+                        
+
+                        {{-- ══ Kode referal ══ --}}
+                        @if($referalAktif)
+                            <div class="referal-pesanan" x-data="{ tersalin: false }">
+                                <div class="referal-pesanan-kepala">
+                                    <div class="referal-pesanan-ikon"><i class="fa-solid fa-gift"></i></div>
+                                    <div class="min-w-0">
+                                        <h4 class="referal-pesanan-judul">Kode Referal Kamu Aktif</h4>
+                                        <p class="referal-pesanan-sub">
+                                            Pesanan ini sudah selesai, jadi kodemu sah dipakai teman.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="referal-pesanan-kotak">
+                                    <span class="referal-pesanan-kode">{{ $kodeReferal }}</span>
+                                    <button type="button"
+                                            @click="navigator.clipboard.writeText('{{ $kodeReferal }}');
+                                                    tersalin = true; setTimeout(() => tersalin = false, 2000)"
+                                            class="referal-pesanan-salin">
+                                        <span x-show="!tersalin"><i class="fa-solid fa-copy"></i> Salin</span>
+                                        <span x-show="tersalin" x-cloak><i class="fa-solid fa-check"></i> Tersalin</span>
+                                    </button>
+                                </div>
+
+                                <div class="referal-pesanan-untung">
+                                    <div>
+                                        <p class="referal-pesanan-untung-nilai">{{ (int) config('referal.persen_diskon', 3) }}%</p>
+                                        <p class="referal-pesanan-untung-label">Diskon buat temanmu</p>
+                                    </div>
+                                    <div>
+                                        <p class="referal-pesanan-untung-nilai">{{ (int) config('referal.persen_komisi', 3) }}%</p>
+                                        <p class="referal-pesanan-untung-label">Komisi buat kamu</p>
+                                    </div>
+                                </div>
+
+                                {{-- Peringatan hangus, ditulis apa adanya --}}
+                                <div class="referal-pesanan-ingat">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <p>
+                                        Kode ini <strong>hangus</strong> bila pesananmu dibatalkan atau
+                                        pengajuan pengembaliannya disetujui — dan pemakaian kodemu oleh
+                                        teman jadi tidak berlaku. Kode akan aktif lagi setelah kamu
+                                        punya pesanan lain yang selesai.
+                                    </p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                
+
         </div>
 
         {{-- DETAIL BARANG BELANJA & ALAMAT --}}
