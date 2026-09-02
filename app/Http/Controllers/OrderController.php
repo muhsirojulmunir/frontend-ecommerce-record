@@ -237,12 +237,21 @@ class OrderController extends Controller
      * Invoice pesanan. Hanya terbit setelah pembayaran lunas, sebab invoice
      * merupakan bukti pembayaran — bukan sekadar rincian pesanan.
      */
-    public function invoice($orderNumber)
+    public function invoice(Request $request, $orderNumber)
     {
-        $order = Order::where('order_number', $orderNumber)
-            ->where('user_id', Auth::id())
-            ->with(['items.product', 'items.productVariant', 'user'])
-            ->firstOrFail();
+        $order = Order::where(function ($q) use ($orderNumber) {
+            if (is_numeric($orderNumber)) {
+                $q->where('id', $orderNumber)->orWhere('order_number', $orderNumber);
+            } else {
+                $q->where('order_number', $orderNumber);
+            }
+        })
+        ->with(['items.product', 'items.productVariant', 'user'])
+        ->firstOrFail();
+
+        if (Auth::check() && !Auth::user()->is_admin && $order->user_id !== Auth::id() && !$request->hasValidSignature()) {
+            abort(403, 'Anda tidak memiliki akses ke invoice ini.');
+        }
 
         if (blank($order->invoice_number)) {
             return redirect()
@@ -354,24 +363,28 @@ class OrderController extends Controller
     /**
      * Unduh berkas invoice resmi berformat PDF.
      */
-    public function downloadInvoice($orderNumber)
+    public function downloadInvoice(Request $request, $orderNumber)
     {
-        $order = Order::where('user_id', Auth::id())
-            ->where(function ($q) use ($orderNumber) {
-                if (is_numeric($orderNumber)) {
-                    $q->where('id', $orderNumber)->orWhere('order_number', $orderNumber);
-                } else {
-                    $q->where('order_number', $orderNumber);
-                }
-            })
-            ->with(['items.product', 'items.productVariant', 'user'])
-            ->firstOrFail();
+        $order = Order::where(function ($q) use ($orderNumber) {
+            if (is_numeric($orderNumber)) {
+                $q->where('id', $orderNumber)->orWhere('order_number', $orderNumber);
+            } else {
+                $q->where('order_number', $orderNumber);
+            }
+        })
+        ->with(['items.product', 'items.productVariant', 'user'])
+        ->firstOrFail();
+
+        if (Auth::check() && !Auth::user()->is_admin && $order->user_id !== Auth::id() && !$request->hasValidSignature()) {
+            abort(403, 'Anda tidak memiliki akses ke invoice ini.');
+        }
 
         $filename = 'Invoice-' . ($order->invoice_number ?: $order->order_number) . '.pdf';
 
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', ['order' => $order])
-                ->setPaper('a4', 'portrait');
+                ->setPaper('a4', 'portrait')
+                ->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
             return $pdf->download($filename);
         }
 
