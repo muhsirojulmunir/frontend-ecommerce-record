@@ -418,7 +418,7 @@
                             </div>
                         </div>
 
-                        @if($bolehRetur)
+                        @if($bolehRetur && ! $pengembalian)
                             <div class="border-t border-emerald-100 pt-3 space-y-1.5">
                                 <button type="button"
                                         onclick="window.dispatchEvent(new CustomEvent('buka-retur'))"
