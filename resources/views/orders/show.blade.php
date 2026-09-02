@@ -1073,9 +1073,14 @@
                         @foreach($belumDinilai as $item)
                             <div class="nilai-produk">
                                 <div class="nilai-produk-kepala">
-                                    @if($item->product?->image)
-                                        <img src="{{ asset('storage/' . $item->product->image) }}"
-                                             alt="{{ $item->product_name }}" class="nilai-gambar">
+                                    @php
+                                        $gambarProduk = $item->product?->image_url
+                                            ?: ($item->product?->image ? asset('storage/' . $item->product->image) : null);
+                                    @endphp
+                                    @if($gambarProduk)
+                                        <img src="{{ $gambarProduk }}"
+                                             alt="{{ $item->product_name }}" class="nilai-gambar object-contain"
+                                             onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80';">
                                     @else
                                         <span class="nilai-gambar nilai-gambar-kosong">
                                             <i class="fa-solid fa-shoe-prints"></i>
