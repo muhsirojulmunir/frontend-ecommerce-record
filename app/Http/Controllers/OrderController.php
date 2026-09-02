@@ -177,7 +177,12 @@ class OrderController extends Controller
                 'status_label'    => $data['courier']['status_description'] ?? null,
                 'history'         => $history,
                 'origin'          => $data['origin'] ?? [],
-                'destination'     => $data['destination'] ?? [],
+                'destination'       => $data['destination'] ?? [],
+                'link'              => $data['link'] ?? null,
+                'foto_bukti'        => $data['proof_of_delivery']['link'] ?? $data['destination']['proof_of_delivery']['link'] ?? null,
+                'penerima_nama'     => $data['proof_of_delivery']['recipient_name'] ?? $data['proof_of_delivery']['note'] ?? null,
+                'driver_name'       => $data['courier']['driver_name'] ?? $data['courier']['name'] ?? null,
+                'driver_phone'      => $data['courier']['driver_phone'] ?? $data['courier']['phone'] ?? null,
             ];
 
             // Hanya jawaban yang benar-benar dari Biteship yang disinggahkan.
