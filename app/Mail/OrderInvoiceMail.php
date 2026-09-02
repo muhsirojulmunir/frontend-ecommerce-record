@@ -11,6 +11,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class OrderInvoiceMail extends Mailable
 {
@@ -18,11 +19,15 @@ class OrderInvoiceMail extends Mailable
 
     public Order $order;
     public string $orderUrl;
+    public string $downloadUrl;
+    public string $invoiceUrl;
 
     public function __construct(Order $order)
     {
         $this->order = $order->loadMissing(['items.product', 'items.productVariant', 'user']);
         $this->orderUrl = url('/orders/' . $order->order_number);
+        $this->downloadUrl = URL::signedRoute('orders.invoice.download', ['order' => $order->order_number]);
+        $this->invoiceUrl = URL::signedRoute('orders.invoice', ['order' => $order->order_number]);
     }
 
     public function envelope(): Envelope
@@ -40,6 +45,8 @@ class OrderInvoiceMail extends Mailable
             with: [
                 'order' => $this->order,
                 'orderUrl' => $this->orderUrl,
+                'downloadUrl' => $this->downloadUrl,
+                'invoiceUrl' => $this->invoiceUrl,
             ],
         );
     }

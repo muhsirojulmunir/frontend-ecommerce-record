@@ -79,6 +79,10 @@ Route::middleware('throttle:30,1')->group(function () {
 // Sekaligus menyentuh sesi supaya tidak keburu kedaluwarsa dan memicu galat 419.
 Route::get('/token-sesi', fn () => response()->json(['token' => csrf_token()]))->name('token.sesi');
 
+// Invoice Pesanan (dapat diakses dengan login atau via Signed URL aman dari email)
+Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+Route::get('/orders/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
+
 // ─── Halaman Khusus Customer (wajib login) ────────────────────────
 
 Route::middleware('auth')->group(function () {

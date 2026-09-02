@@ -140,7 +140,7 @@
                     &#128206; <strong>Dokumen PDF Invoice resmi (Lunas)</strong> telah dilampirkan langsung pada email ini dan dapat Anda unduh kapan saja.
                 </p>
                 <div style="display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                    <a href="{{ route('orders.invoice.download', $order->order_number) }}" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 10px 20px; border-radius: 6px; margin: 4px;">
+                    <a href="{{ $downloadUrl ?? route('orders.invoice.download', $order->order_number) }}" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 10px 20px; border-radius: 6px; margin: 4px;">
                         &#128190; Unduh Invoice PDF
                     </a>
                     <a href="{{ $orderUrl }}" style="display: inline-block; background-color: #1B3A6B; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 10px 20px; border-radius: 6px; margin: 4px;">
