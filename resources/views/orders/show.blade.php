@@ -289,39 +289,40 @@
                 @endphp
 
                 @if($jalurBatal !== $L::TIDAK_BISA && $jalurBatal !== $L::LEWAT_PENGEMBALIAN)
-                    <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                    <div class="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         @if($order->payment_status === 'unpaid')
                             <a href="{{ route('checkout.payment', $order->order_number) }}"
-                               class="flex-1 bg-accent hover:bg-accent-dark text-white font-bold text-xs py-3.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
-                                <i class="{{ $order->payment_method === 'MANUAL_BCA' ? 'fa-solid fa-building-columns' : 'fa-solid fa-credit-card' }}"></i>
+                               style="background-color: {{ $order->payment_method === 'MANUAL_BCA' ? '#00529B' : '#1B3A6B' }}; color: #ffffff;"
+                               class="flex-1 font-black text-xs py-3.5 px-6 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-sm hover:opacity-95 active:scale-[0.99] cursor-pointer">
+                                <i class="{{ $order->payment_method === 'MANUAL_BCA' ? 'fa-solid fa-building-columns' : 'fa-solid fa-credit-card' }} text-sm"></i>
                                 <span>{{ $order->payment_method === 'MANUAL_BCA' ? 'Transfer ke BCA & Unggah Bukti' : 'Bayar Sekarang (Online Payment)' }}</span>
                             </a>
                         @elseif($order->payment_status === 'pending_verification')
                             <a href="{{ route('checkout.payment', $order->order_number) }}"
-                               class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs py-3.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-clock-rotate-left"></i>
+                               style="background-color: #D97706; color: #ffffff;"
+                               class="flex-1 font-black text-xs py-3.5 px-6 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-sm hover:opacity-95 active:scale-[0.99] cursor-pointer">
+                                <i class="fa-solid fa-clock-rotate-left text-sm"></i>
                                 <span>Lihat / Ganti Bukti Transfer BCA</span>
                             </a>
                         @endif
 
                         <button type="button"
                                 onclick="window.dispatchEvent(new CustomEvent('buka-batal'))"
-                                class="{{ $order->payment_status === 'unpaid' ? 'w-full sm:w-auto' : 'w-full' }} bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs py-3.5 px-5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-1.5 border border-rose-200">
-                            <i class="fa-solid fa-xmark"></i>
+                                style="background-color: #FFF1F2; color: #BE123C; border: 1px solid #FECDD3;"
+                                class="{{ $order->payment_status === 'unpaid' ? 'w-full sm:w-auto' : 'w-full' }} font-bold text-xs py-3.5 px-5 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] cursor-pointer shrink-0">
+                            <i class="fa-solid fa-xmark text-xs"></i>
                             <span>Batalkan Pesanan</span>
                         </button>
                     </div>
 
                     {{-- Akibatnya ditulis di depan, sebelum tombolnya ditekan --}}
-                    <p class="batal-keterangan">
+                    <p class="batal-keterangan mt-2.5 text-xs text-gray-500 flex items-center gap-1.5">
                         @if($jalurBatal === $L::LANGSUNG_REFUND)
-                            <i class="fa-solid fa-wallet"></i>
-                            Pesanan belum diatur pengirimannya, jadi bisa langsung dibatalkan.
-                            Dana <strong>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</strong>
-                            akan kembali ke saldo R_Pay-mu seketika.
+                            <i class="fa-solid fa-wallet text-slate-400"></i>
+                            <span>Pesanan belum diatur pengirimannya, jadi bisa langsung dibatalkan. Dana <strong>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</strong> akan kembali ke saldo R_Pay-mu seketika.</span>
                         @else
-                            <i class="fa-solid fa-circle-info"></i>
-                            Pesanan belum dibayar, jadi bisa dibatalkan kapan saja tanpa biaya.
+                            <i class="fa-solid fa-circle-info text-slate-400"></i>
+                            <span>Pesanan belum dibayar, jadi bisa dibatalkan kapan saja tanpa biaya.</span>
                         @endif
                     </p>
                 @endif
