@@ -310,29 +310,60 @@
                         {{-- Tampilan Bukti yang Sudah Diunggah --}}
                         @if($order->payment_proof)
                             <div class="space-y-4" x-show="!showReupload">
-                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4">
-                                    <a href="{{ $order->payment_proof_url }}" target="_blank" class="block shrink-0 group relative overflow-hidden rounded-lg border border-gray-300 shadow-xs">
-                                        <img src="{{ $order->payment_proof_url }}" alt="Bukti Transfer" class="w-32 h-32 object-cover transition duration-300 group-hover:scale-105">
-                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1">
-                                            <i class="fa-solid fa-magnifying-glass-plus"></i> Lihat
+                                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
+                                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                                        {{-- Thumbnail Bukti Transfer --}}
+                                        <div class="shrink-0 text-center" style="width: 140px; min-width: 140px; max-width: 140px;">
+                                            <a href="{{ $order->payment_proof_url }}" target="_blank"
+                                               style="width: 140px; height: 140px; display: block;"
+                                               class="group relative overflow-hidden rounded-xl border-2 border-blue-200 bg-white shadow-xs mx-auto">
+                                                <img src="{{ $order->payment_proof_url }}" alt="Bukti Transfer"
+                                                     style="width: 140px; height: 140px; object-fit: cover;"
+                                                     class="transition duration-300 group-hover:scale-105">
+                                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-white text-[11px] font-bold gap-1 p-2 text-center">
+                                                    <i class="fa-solid fa-magnifying-glass-plus text-base"></i>
+                                                    <span>Klik Perbesar</span>
+                                                </div>
+                                            </a>
+                                            <a href="{{ $order->payment_proof_url }}" target="_blank"
+                                               class="mt-2 inline-flex items-center gap-1 text-[11px] text-blue-700 hover:text-blue-900 font-bold hover:underline">
+                                                <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                                                <span>Buka Foto Asli</span>
+                                            </a>
                                         </div>
-                                    </a>
-                                    <div class="space-y-1.5 text-xs text-slate-700 flex-1 text-center sm:text-left">
-                                        <p class="font-bold text-slate-900">
-                                            Bukti transfer telah berhasil diunggah
-                                        </p>
-                                        <p class="text-[11px] text-gray-500">
-                                            Diunggah pada: <span class="font-semibold text-slate-700">{{ $order->payment_proof_uploaded_at?->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }} WIB</span>
-                                        </p>
-                                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[11px] leading-relaxed">
-                                            <i class="fa-solid fa-hourglass-half mr-1 text-amber-600"></i>
-                                            Admin sedang mencocokkan bukti ini dengan mutasi rekening BCA toko. Pesanan akan segera diproses begitu dana terkonfirmasi.
+
+                                        {{-- Keterangan & Status Verifikasi --}}
+                                        <div class="min-w-0 flex-1 space-y-3 text-left w-full">
+                                            <div>
+                                                <h5 class="font-black text-slate-900 text-sm sm:text-base">
+                                                    Bukti transfer telah berhasil diunggah
+                                                </h5>
+                                                <p class="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+                                                    <i class="fa-regular fa-calendar-check text-slate-400"></i>
+                                                    <span>Diunggah pada: <strong class="text-slate-700">{{ $order->payment_proof_uploaded_at?->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }} WIB</strong></span>
+                                                </p>
+                                            </div>
+
+                                            <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs leading-relaxed space-y-1">
+                                                <p class="font-bold flex items-center gap-1.5 text-amber-800">
+                                                    <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+                                                    <span>Menunggu Pengecekan Admin</span>
+                                                </p>
+                                                <p class="text-amber-800/90 text-[11px] leading-normal">
+                                                    Admin toko sedang mencocokkan struk/bukti ini dengan mutasi rekening BCA toko. Pesanan akan langsung diproses begitu dana terkonfirmasi masuk.
+                                                </p>
+                                            </div>
+
+                                            @if($order->payment_status !== 'paid' && $order->status !== 'cancelled')
+                                                <div class="pt-1 flex flex-wrap items-center gap-3">
+                                                    <button type="button" @click="showReupload = true"
+                                                            class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-gray-300 hover:border-blue-500 hover:text-blue-600 rounded-xl text-xs font-bold text-gray-700 transition shadow-2xs cursor-pointer active:scale-[0.99]">
+                                                        <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
+                                                        <span>Ganti / Unggah Ulang Bukti</span>
+                                                    </button>
+                                                </div>
+                                            @endif
                                         </div>
-                                        @if($order->payment_status !== 'paid' && $order->status !== 'cancelled')
-                                            <button type="button" @click="showReupload = true" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline inline-flex items-center gap-1 pt-1 cursor-pointer">
-                                                <i class="fa-solid fa-arrows-rotate"></i> Ganti / Unggah Ulang Bukti
-                                            </button>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
