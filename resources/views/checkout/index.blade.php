@@ -1735,18 +1735,25 @@
 
         <!-- ================= PAYMENT SELECTION MODAL ================= -->
         <div x-show="showPaymentModal" 
-            class="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
             x-transition
             style="display: none;">
-            <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 relative" @click.away="showPaymentModal = false">
-                <div class="flex justify-between items-center border-b border-gray-50 pb-3">
-                    <h3 class="font-black text-gray-800 text-sm uppercase">Metode Pembayaran</h3>
-                    <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600">
-                        <i class="fa-solid fa-xmark text-base"></i>
+            <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full shadow-2xl relative flex flex-col max-h-[85vh] sm:max-h-[82vh]"
+                 @click.away="showPaymentModal = false">
+                
+                {{-- Header Modal: Selalu terlihat di paling atas, tidak pernah terpotong --}}
+                <div class="flex justify-between items-center px-5 py-4 sm:px-6 sm:py-4 border-b border-gray-100 shrink-0 bg-white rounded-t-3xl z-10">
+                    <div>
+                        <h3 class="font-black text-gray-900 text-sm sm:text-base uppercase tracking-wide">Metode Pembayaran</h3>
+                        <p class="text-[11px] text-gray-500 mt-0.5">Pilih metode pembayaran yang Anda inginkan</p>
+                    </div>
+                    <button type="button" @click="showPaymentModal = false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition cursor-pointer">
+                        <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 gap-3">
+                {{-- Daftar Pembayaran: Pilihan teratas (Transfer BCA) langsung terlihat jelas --}}
+                <div class="overflow-y-auto p-4 sm:p-6 space-y-3 overscroll-contain flex-1">
                     <template x-for="item in payments" :key="item.code">
                         <div @click="if (item.code === 'MANUAL_BCA') { selectedPayment = item.code; showPaymentModal = false; }"
                             class="border p-4 rounded-2xl transition flex items-center gap-3"
