@@ -1748,33 +1748,44 @@
 
                 <div class="grid grid-cols-1 gap-3">
                     <template x-for="item in payments" :key="item.code">
-                        <div @click="if (item.code !== 'R_Pay' || rpayCukup) { selectedPayment = item.code; showPaymentModal = false; }"
+                        <div @click="if (item.code === 'MANUAL_BCA') { selectedPayment = item.code; showPaymentModal = false; }"
                             class="border p-4 rounded-2xl transition flex items-center gap-3"
                             :class="{
-                                'border-primary bg-primary/5': selectedPayment === item.code,
-                                'border-gray-100 hover:border-primary hover:bg-primary/5 cursor-pointer':
-                                    selectedPayment !== item.code && (item.code !== 'R_Pay' || rpayCukup),
-                                'border-gray-100 opacity-50 cursor-not-allowed': item.code === 'R_Pay' && !rpayCukup
+                                'border-primary bg-primary/5 ring-1 ring-primary': selectedPayment === item.code,
+                                'border-gray-200 hover:border-primary hover:bg-primary/5 cursor-pointer':
+                                    selectedPayment !== item.code && item.code === 'MANUAL_BCA',
+                                'border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed': item.code !== 'MANUAL_BCA'
                             }">
-                            <div class="h-9 w-9 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0">
-                                <i :class="item.icon" class="text-gray-500 text-xs"></i>
+                            <div class="h-9 w-9 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0"
+                                 :class="item.code === 'MANUAL_BCA' ? 'text-primary' : 'text-gray-400'">
+                                <i :class="item.icon" class="text-xs"></i>
                             </div>
                             <div class="text-xs flex-grow">
                                 <p class="font-bold text-gray-800 flex items-center gap-1.5">
                                     <span x-text="item.name"></span>
-                                    <template x-if="item.code === 'R_Pay'">
-                                        <span class="lencana-rpay">SALDO Rp <span x-text="formatAngka(saldoRpay)"></span></span>
+                                    <template x-if="item.code !== 'MANUAL_BCA'">
+                                        <span class="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-300">Maintenance</span>
+                                    </template>
+                                    <template x-if="item.code === 'MANUAL_BCA'">
+                                        <span class="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-300">Tersedia</span>
                                     </template>
                                 </p>
-                                {{-- Alasan tidak bisa dipilih ditulis apa adanya,
-                                     bukan sekadar dibuat abu-abu tanpa penjelasan. --}}
-                                <p class="mt-0.5"
-                                   :class="(item.code === 'R_Pay' && !rpayCukup) ? 'text-rose-500 font-semibold' : 'text-gray-400'"
-                                   x-text="(item.code === 'R_Pay' && !rpayCukup)
-                                        ? 'Saldo kurang Rp ' + formatAngka(getTotal() - saldoRpay) + ' dari total belanja'
-                                        : item.type"></p>
+                                <template x-if="item.code === 'MANUAL_BCA'">
+                                    <p class="mt-0.5 text-gray-500 font-medium" x-text="item.type"></p>
+                                </template>
+                                <template x-if="item.code !== 'MANUAL_BCA'">
+                                    <p class="mt-0.5 text-[11px] text-amber-700 font-semibold flex items-center gap-1">
+                                        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                                        <span>Sementara tidak dapat dipilih (Sedang Maintenance)</span>
+                                    </p>
+                                </template>
                             </div>
-                            <i class="fa-solid fa-chevron-right text-gray-300 text-xs shrink-0"></i>
+                            <template x-if="item.code === 'MANUAL_BCA'">
+                                <i class="fa-solid fa-chevron-right text-gray-300 text-xs shrink-0"></i>
+                            </template>
+                            <template x-if="item.code !== 'MANUAL_BCA'">
+                                <i class="fa-solid fa-lock text-gray-400 text-xs shrink-0"></i>
+                            </template>
                         </div>
                     </template>
                 </div>

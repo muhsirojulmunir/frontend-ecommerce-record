@@ -288,32 +288,37 @@
                     $L = \App\Services\PembatalanPesananService::class;
                 @endphp
 
-                @if($jalurBatal !== $L::TIDAK_BISA && $jalurBatal !== $L::LEWAT_PENGEMBALIAN)
-                    <div class="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        @if($order->payment_status === 'unpaid')
-                            <a href="{{ route('checkout.payment', $order->order_number) }}"
-                               style="background-color: {{ $order->payment_method === 'MANUAL_BCA' ? '#00529B' : '#1B3A6B' }}; color: #ffffff;"
-                               class="flex-1 font-black text-xs py-3.5 px-6 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-sm hover:opacity-95 active:scale-[0.99] cursor-pointer">
-                                <i class="{{ $order->payment_method === 'MANUAL_BCA' ? 'fa-solid fa-building-columns' : 'fa-solid fa-credit-card' }} text-sm"></i>
-                                <span>{{ $order->payment_method === 'MANUAL_BCA' ? 'Transfer ke BCA & Unggah Bukti' : 'Bayar Sekarang (Online Payment)' }}</span>
-                            </a>
-                        @elseif($order->payment_status === 'pending_verification')
-                            <a href="{{ route('checkout.payment', $order->order_number) }}"
-                               style="background-color: #D97706; color: #ffffff;"
-                               class="flex-1 font-black text-xs py-3.5 px-6 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-sm hover:opacity-95 active:scale-[0.99] cursor-pointer">
-                                <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-                                <span>Lihat / Ganti Bukti Transfer BCA</span>
-                            </a>
-                        @endif
+                @php
+                    $adaTombolBayar = in_array($order->payment_status, ['unpaid', 'pending_verification']);
+                @endphp
 
-                        <button type="button"
-                                onclick="window.dispatchEvent(new CustomEvent('buka-batal'))"
-                                style="background-color: #FFF1F2; color: #BE123C; border: 1px solid #FECDD3;"
-                                class="{{ $order->payment_status === 'unpaid' ? 'w-full sm:w-auto' : 'w-full' }} font-bold text-xs py-3.5 px-5 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] cursor-pointer shrink-0">
-                            <i class="fa-solid fa-xmark text-xs"></i>
-                            <span>Batalkan Pesanan</span>
-                        </button>
-                    </div>
+                @if($jalurBatal !== $L::TIDAK_BISA && $jalurBatal !== $L::LEWAT_PENGEMBALIAN)
+                    <div class="pt-4 border-t border-gray-100">
+                        <div class="{{ $adaTombolBayar ? 'grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch' : 'flex flex-col sm:flex-row justify-end' }}">
+                            @if($order->payment_status === 'unpaid')
+                                <a href="{{ route('checkout.payment', $order->order_number) }}"
+                                   style="background-color: {{ $order->payment_method === 'MANUAL_BCA' ? '#00529B' : '#1B3A6B' }}; color: #ffffff;"
+                                   class="w-full font-bold text-xs sm:text-sm py-3.5 px-4 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm hover:opacity-95 active:scale-[0.99] text-center">
+                                    <i class="{{ $order->payment_method === 'MANUAL_BCA' ? 'fa-solid fa-building-columns' : 'fa-solid fa-credit-card' }} text-sm shrink-0"></i>
+                                    <span class="whitespace-nowrap truncate">{{ $order->payment_method === 'MANUAL_BCA' ? 'Transfer BCA & Unggah Bukti' : 'Bayar Sekarang' }}</span>
+                                </a>
+                            @elseif($order->payment_status === 'pending_verification')
+                                <a href="{{ route('checkout.payment', $order->order_number) }}"
+                                   style="background-color: #D97706; color: #ffffff;"
+                                   class="w-full font-bold text-xs sm:text-sm py-3.5 px-4 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm hover:opacity-95 active:scale-[0.99] text-center">
+                                    <i class="fa-solid fa-clock-rotate-left text-sm shrink-0"></i>
+                                    <span class="whitespace-nowrap truncate">Lihat / Ganti Bukti Transfer</span>
+                                </a>
+                            @endif
+
+                            <button type="button"
+                                    onclick="window.dispatchEvent(new CustomEvent('buka-batal'))"
+                                    style="background-color: #FFF1F2; color: #BE123C; border: 1px solid #FECDD3;"
+                                    class="{{ $adaTombolBayar ? 'w-full' : 'w-full sm:w-auto px-6' }} font-bold text-xs sm:text-sm py-3.5 px-4 rounded-xl transition uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-rose-100 hover:border-rose-300 active:scale-[0.99] text-center">
+                                <i class="fa-solid fa-xmark text-sm shrink-0"></i>
+                                <span class="whitespace-nowrap">Batalkan Pesanan</span>
+                            </button>
+                        </div>
 
                     {{-- Akibatnya ditulis di depan, sebelum tombolnya ditekan --}}
                     <p class="batal-keterangan mt-2.5 text-xs text-gray-500 flex items-center gap-1.5">

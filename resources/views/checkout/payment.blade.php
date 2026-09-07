@@ -555,19 +555,37 @@
 
                 <div class="space-y-2">
                     @foreach($pembayaranTersedia as $item)
-                        <label @click="selectedNewMethod = '{{ $item['code'] }}'"
-                               class="border p-3.5 rounded-sm transition flex items-center justify-between cursor-pointer"
-                               :class="selectedNewMethod === '{{ $item['code'] }}' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300 bg-white'">
+                        @php
+                            $isMaintenance = ($item['code'] !== 'MANUAL_BCA');
+                        @endphp
+                        <label @if(!$isMaintenance) @click="selectedNewMethod = '{{ $item['code'] }}'" @endif
+                               class="border p-3.5 rounded-sm transition flex items-center justify-between {{ $isMaintenance ? 'bg-gray-50/70 border-gray-200 opacity-60 cursor-not-allowed' : 'cursor-pointer' }}"
+                               @if(!$isMaintenance)
+                                   :class="selectedNewMethod === '{{ $item['code'] }}' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300 bg-white'"
+                               @endif>
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-sm bg-gray-50 flex items-center justify-center border border-gray-200 shrink-0 text-primary">
                                     <i class="{{ $item['icon'] }} text-xs"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-bold text-gray-800">{{ $item['name'] }}</p>
-                                    <p class="text-[10px] text-gray-500">{{ $item['desc'] }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-xs font-bold text-gray-800">{{ $item['name'] }}</p>
+                                        @if($isMaintenance)
+                                            <span class="bg-amber-100 text-amber-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-amber-300">Maintenance</span>
+                                        @else
+                                            <span class="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-emerald-300">Tersedia</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-[10px] {{ $isMaintenance ? 'text-amber-700 font-medium' : 'text-gray-500' }}">
+                                        {{ $isMaintenance ? 'Sementara dinonaktifkan (Sedang Maintenance)' : $item['desc'] }}
+                                    </p>
                                 </div>
                             </div>
-                            <input type="radio" name="modal_payment_method" value="{{ $item['code'] }}" x-model="selectedNewMethod" class="text-primary focus:ring-primary h-4 w-4">
+                            @if($isMaintenance)
+                                <i class="fa-solid fa-lock text-gray-400 text-xs shrink-0"></i>
+                            @else
+                                <input type="radio" name="modal_payment_method" value="{{ $item['code'] }}" x-model="selectedNewMethod" class="text-primary focus:ring-primary h-4 w-4">
+                            @endif
                         </label>
                     @endforeach
                 </div>
