@@ -182,10 +182,23 @@ class Product extends Model
 
     /**
      * Check if product is in stock.
+     *
+     * Jika relasi variants sudah di-load (eager loading), cek stok dari varian.
+     * Jika produk tidak punya varian, fallback ke stok produk utama.
      */
     public function isInStock(): bool
     {
-        return $this->status === 'active' && $this->stock > 0;
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        // Jika relasi variants sudah di-load, gunakan data varian
+        if ($this->relationLoaded('variants') && $this->variants->isNotEmpty()) {
+            return $this->variants->contains(fn($v) => $v->stock > 0);
+        }
+
+        // Fallback: produk tanpa varian pakai stok kolom utama
+        return $this->stock > 0;
     }
 
     /**

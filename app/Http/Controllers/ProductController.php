@@ -16,7 +16,7 @@ class ProductController extends Controller
         // Bintang rata-rata ikut dihitung di kueri yang sama supaya daftar
         // produk tidak menembak dua kueri tambahan untuk setiap kartunya.
         $query = Product::active()
-            ->with(['category', 'activeDiscount'])
+            ->with(['category', 'activeDiscount', 'variants'])
             ->withAvg('reviewsTampil as bintang_rata', 'rating')
             ->withCount('reviewsTampil as jumlah_ulasan');
 
@@ -57,7 +57,7 @@ class ProductController extends Controller
         $relatedProducts = Product::active()
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->with(['category', 'activeDiscount'])
+            ->with(['category', 'activeDiscount', 'variants'])
             ->withAvg('reviewsTampil as bintang_rata', 'rating')
             ->withCount('reviewsTampil as jumlah_ulasan')
             ->take(4)

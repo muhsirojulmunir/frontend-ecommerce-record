@@ -3,7 +3,7 @@
 <div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-4">
     <!-- Badge Status (SOLD / DISKON) -->
     <div class="absolute top-4 left-4 z-10 flex flex-col gap-1">
-        @if($product->status === 'sold_out' || $product->stock <= 0)
+        @if(!$product->isInStock())
             <span class="bg-warning text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
                 SOLD
             </span>
@@ -115,7 +115,7 @@
             </div>
 
             <!-- "BELI SEKARANG" Button (Figma) -->
-            @if($product->status === 'sold_out' || $product->stock <= 0)
+            @if(!$product->isInStock())
                 <button disabled class="w-full bg-gray-200 text-gray-400 text-xs font-bold py-2.5 rounded-sm uppercase tracking-wide cursor-not-allowed">
                     STOK HABIS
                 </button>

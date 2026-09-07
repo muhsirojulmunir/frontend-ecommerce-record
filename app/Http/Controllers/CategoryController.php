@@ -13,7 +13,7 @@ class CategoryController extends Controller
      */
     public function show(Category $category, Request $request)
     {
-        $query = $category->activeProducts()->with(['category', 'activeDiscount']);
+        $query = $category->activeProducts()->with(['category', 'activeDiscount', 'variants']);
 
         // Urutan tampil produk
         $sort = $request->get('sort', 'terbaru');
