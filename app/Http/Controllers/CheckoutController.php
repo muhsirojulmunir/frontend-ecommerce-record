@@ -862,13 +862,32 @@ class CheckoutController extends Controller
         }
 
         // Hapus file bukti lama jika ada penggantian
-        if (!empty($order->payment_proof) && \Illuminate\Support\Facades\Storage::disk('public')->exists($order->payment_proof)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($order->payment_proof);
+        if (!empty($order->payment_proof)) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($order->payment_proof)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($order->payment_proof);
+            }
+            if (config('filesystems.disks.bersama') && \Illuminate\Support\Facades\Storage::disk('bersama')->exists($order->payment_proof)) {
+                try {
+                    \Illuminate\Support\Facades\Storage::disk('bersama')->delete($order->payment_proof);
+                } catch (\Throwable) {}
+            }
         }
 
         $file = $request->file('payment_proof');
         $filename = 'proof_' . $order->order_number . '_' . time() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('payment_proofs', $filename, 'public');
+
+        // Salin juga ke disk bersama (backend admin) jika dikonfigurasi
+        if (config('filesystems.disks.bersama')) {
+            try {
+                \Illuminate\Support\Facades\Storage::disk('bersama')->put(
+                    $path,
+                    \Illuminate\Support\Facades\Storage::disk('public')->get($path)
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal menyinkronkan bukti pembayaran ke disk bersama: ' . $e->getMessage());
+            }
+        }
 
         $order->payment_proof             = $path;
         $order->payment_proof_uploaded_at = now();

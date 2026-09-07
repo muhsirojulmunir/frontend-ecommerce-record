@@ -167,11 +167,53 @@
             @if($order->payment_method === 'MANUAL_BCA')
                 {{-- ═══════════════ INSTRUKSI TRANSFER MANUAL BCA & UPLOAD BUKTI ═══════════════ --}}
                 <div class="space-y-6">
+
+                    {{-- ⚠️ PERINGATAN HATI-HATI PENIPUAN & SALAH TRANSFER ⚠️ --}}
+                    <div class="rounded-2xl border-2 border-rose-400 bg-rose-50/90 p-5 sm:p-6 text-slate-800 shadow-sm space-y-3.5">
+                        <div class="flex items-start sm:items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-xs" style="background-color: #E11D48; color: #ffffff;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-rose-900 text-sm sm:text-base uppercase tracking-wide flex items-center gap-2">
+                                    <span>Penting: Hati-Hati Penipuan &amp; Awas Keliru Transfer!</span>
+                                </h3>
+                                <p class="text-xs text-rose-700 font-semibold mt-0.5">
+                                    Mohon periksa nomor rekening dan nama penerima dengan sangat teliti sebelum memproses transfer:
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-rose-200 p-4 shadow-2xs space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-rose-100 pb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="px-2.5 py-1 rounded-md font-black text-xs text-white shadow-xs" style="background-color: #00529B; color: #ffffff;">BANK BCA</span>
+                                    <span class="text-xs text-slate-600 font-medium">Rekening Resmi Toko:</span>
+                                    <strong class="text-base sm:text-lg font-black font-mono text-slate-900 tracking-wider">1000028122</strong>
+                                </div>
+                                <div class="text-xs text-slate-700">
+                                    Atas Nama: <strong class="text-rose-700 font-black text-sm uppercase">Lily Minawati Prajogo</strong>
+                                </div>
+                            </div>
+
+                            <div class="text-[11px] sm:text-xs text-slate-700 leading-relaxed space-y-2">
+                                <div class="flex items-start gap-2.5">
+                                    <i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5 shrink-0"></i>
+                                    <span><strong>JANGAN TRANSFER KE REKENING LAIN:</strong> Toko kami <strong>HANYA</strong> menggunakan rekening BCA atas nama <strong>Lily Minawati Prajogo</strong> di atas. Kami <strong>TIDAK PERNAH</strong> meminta Anda mentransfer ke nomor rekening lain atau atas nama selain itu.</span>
+                                </div>
+                                <div class="flex items-start gap-2.5">
+                                    <i class="fa-solid fa-shield-halved text-rose-600 text-sm mt-0.5 shrink-0"></i>
+                                    <span><strong>PERINGATAN KERAS:</strong> Pastikan nama <strong>Lily Minawati Prajogo</strong> muncul di layar konfirmasi ATM / m-Banking / KlikBCA sebelum Anda memproses transaksi. <strong>Segala kelalaian, salah ketik, atau kesalahan transfer ke pihak lain adalah SEPENUHNYA DI LUAR TANGGUNG JAWAB KAMI</strong>.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- 1. Kartu Rekening Tujuan Transfer --}}
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 sm:p-6 text-slate-800 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-200/70 pb-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-xs shrink-0" style="background-color: #00529B; color: #ffffff;">
                                     BCA
                                 </div>
                                 <div>
@@ -192,12 +234,13 @@
                             <div class="bg-white border border-blue-200 p-4 rounded-xl shadow-xs flex items-center justify-between">
                                 <div>
                                     <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Nomor Rekening BCA</span>
-                                    <span class="text-xl sm:text-2xl font-black font-mono text-blue-700 tracking-wider select-all" id="bca-norek">1000028122</span>
+                                    <span class="text-xl sm:text-2xl font-black font-mono tracking-wider select-all" style="color: #00529B;" id="bca-norek">1000028122</span>
                                     <span class="text-xs text-gray-600 font-semibold block mt-0.5">a.n <strong>Lily Minawati Prajogo</strong></span>
                                 </div>
                                 <button type="button"
                                         onclick="navigator.clipboard.writeText('1000028122'); alert('Nomor Rekening BCA 1000028122 berhasil disalin!');"
-                                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-lg transition uppercase tracking-wider shadow-xs flex items-center gap-1.5 shrink-0">
+                                        class="text-white font-bold text-xs px-3.5 py-2.5 rounded-lg transition uppercase tracking-wider shadow-xs flex items-center gap-1.5 shrink-0 hover:opacity-90 cursor-pointer"
+                                        style="background-color: #00529B; color: #ffffff;">
                                     <i class="fa-regular fa-copy"></i>
                                     <span>Salin</span>
                                 </button>
@@ -214,7 +257,7 @@
                                 </div>
                                 <button type="button"
                                         onclick="navigator.clipboard.writeText('{{ (int) round($order->grand_total) }}'); alert('Nominal transfer berhasil disalin!');"
-                                        class="bg-gray-100 hover:bg-gray-200 text-slate-800 font-bold text-xs px-3.5 py-2.5 rounded-lg transition uppercase tracking-wider border border-gray-200 shadow-xs flex items-center gap-1.5 shrink-0">
+                                        class="bg-gray-100 hover:bg-gray-200 text-slate-800 font-bold text-xs px-3.5 py-2.5 rounded-lg transition uppercase tracking-wider border border-gray-200 shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer">
                                     <i class="fa-regular fa-copy"></i>
                                     <span>Salin</span>
                                 </button>
@@ -247,7 +290,7 @@
                     @endif
 
                     {{-- 3. Area Bukti Transfer (Status & Form Upload) --}}
-                    <div class="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 space-y-5" x-data="{ showReupload: false, previewSrc: null }">
+                    <div class="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 space-y-5" x-data="{ showReupload: false, previewSrc: null, fileName: '', fileSize: '' }">
                         <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                             <h4 class="font-black text-slate-900 text-sm uppercase tracking-wide flex items-center gap-2">
                                 <i class="fa-solid fa-receipt text-blue-600"></i>
@@ -286,7 +329,7 @@
                                             Admin sedang mencocokkan bukti ini dengan mutasi rekening BCA toko. Pesanan akan segera diproses begitu dana terkonfirmasi.
                                         </div>
                                         @if($order->payment_status !== 'paid' && $order->status !== 'cancelled')
-                                            <button type="button" @click="showReupload = true" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline inline-flex items-center gap-1 pt-1">
+                                            <button type="button" @click="showReupload = true" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline inline-flex items-center gap-1 pt-1 cursor-pointer">
                                                 <i class="fa-solid fa-arrows-rotate"></i> Ganti / Unggah Ulang Bukti
                                             </button>
                                         @endif
@@ -307,9 +350,9 @@
 
                                     <div>
                                         <label class="block text-xs font-bold text-slate-800 mb-1.5 uppercase tracking-wide">
-                                            Pilih Foto Struk / Screenshot Bukti Transfer
+                                            PILIH FOTO STRUK / SCREENSHOT BUKTI TRANSFER
                                         </label>
-                                        <div class="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-xl p-6 text-center transition bg-gray-50/50 cursor-pointer relative"
+                                        <div class="border-2 border-dashed border-blue-300 hover:border-blue-600 rounded-2xl p-6 text-center transition bg-blue-50/20 cursor-pointer relative"
                                              @click="document.getElementById('proof_input').click()">
                                             <input type="file"
                                                    id="proof_input"
@@ -319,6 +362,8 @@
                                                    @change="
                                                        const file = $event.target.files[0];
                                                        if (file) {
+                                                           fileName = file.name;
+                                                           fileSize = (file.size / 1024 < 1024) ? Math.round(file.size / 1024) + ' KB' : (file.size / (1024 * 1024)).toFixed(2) + ' MB';
                                                            const reader = new FileReader();
                                                            reader.onload = (e) => { previewSrc = e.target.result; };
                                                            reader.readAsDataURL(file);
@@ -326,36 +371,57 @@
                                                    ">
                                             
                                             <template x-if="!previewSrc">
-                                                <div class="space-y-2">
-                                                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto text-xl">
+                                                <div class="space-y-3 py-2">
+                                                    <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl shadow-xs" style="background-color: #EFF6FF; color: #00529B;">
                                                         <i class="fa-solid fa-cloud-arrow-up"></i>
                                                     </div>
-                                                    <p class="text-xs font-bold text-slate-800">Klik di sini untuk memilih foto bukti pembayaran</p>
-                                                    <p class="text-[11px] text-gray-500">Mendukung format JPG, JPEG, PNG, WEBP (Maks. 5 MB)</p>
+                                                    <div>
+                                                        <p class="text-sm font-bold text-slate-900">Klik di sini untuk memilih foto bukti pembayaran</p>
+                                                        <p class="text-xs text-gray-500 mt-0.5">Mendukung format JPG, JPEG, PNG, WEBP (Maks. 5 MB)</p>
+                                                    </div>
+                                                    <div>
+                                                        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-sm hover:opacity-90 transition cursor-pointer" style="background-color: #00529B; color: #ffffff;">
+                                                            <i class="fa-regular fa-image"></i>
+                                                            <span>Pilih Berkas Foto</span>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </template>
 
                                             <template x-if="previewSrc">
-                                                <div class="space-y-3">
-                                                    <img :src="previewSrc" alt="Pratinjau" class="max-h-48 mx-auto rounded-lg shadow-sm border border-gray-200 object-contain">
-                                                    <p class="text-xs text-blue-700 font-semibold">Klik untuk mengganti foto yang dipilih</p>
+                                                <div class="space-y-3 py-1">
+                                                    <img :src="previewSrc" alt="Pratinjau Bukti" class="max-h-56 mx-auto rounded-xl shadow-md border-2 border-blue-300 object-contain bg-white">
+                                                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold shadow-2xs">
+                                                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                                                        <span x-text="fileName + ' (' + fileSize + ')'"></span>
+                                                    </div>
+                                                    <p class="text-xs text-blue-700 font-bold hover:underline block">Foto siap diunggah. Klik di sini jika ingin mengganti foto lain.</p>
                                                 </div>
                                             </template>
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center gap-3 pt-2">
-                                        <button type="submit"
-                                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-3.5 rounded-xl transition uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
-                                            <i class="fa-solid fa-upload"></i>
-                                            <span>Unggah Bukti Pembayaran</span>
-                                        </button>
-                                        @if($order->payment_proof)
-                                            <button type="button" @click="showReupload = false; previewSrc = null"
-                                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs py-3.5 px-5 rounded-xl transition uppercase tracking-wider">
-                                                Batal
+                                    {{-- TOMBOL SIMPAN & UNGGAH BUKTI PEMBAYARAN (SANGAT JELAS & MENCOLOK) --}}
+                                    <div class="pt-2 space-y-2">
+                                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                                            <button type="submit"
+                                                    id="btn_simpan_bukti"
+                                                    class="w-full flex-1 text-white font-black text-sm py-4 px-6 rounded-xl transition uppercase tracking-wider shadow-md flex items-center justify-center gap-2.5 hover:opacity-95 active:scale-[0.99] cursor-pointer"
+                                                    style="background-color: #00529B; color: #ffffff;">
+                                                <i class="fa-solid fa-cloud-arrow-up text-base"></i>
+                                                <span>Unggah &amp; Simpan Bukti Pembayaran</span>
                                             </button>
-                                        @endif
+                                            @if($order->payment_proof)
+                                                <button type="button" @click="showReupload = false; previewSrc = null"
+                                                        class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs py-4 px-5 rounded-xl transition uppercase tracking-wider cursor-pointer">
+                                                    Batal
+                                                </button>
+                                            @endif
+                                        </div>
+                                        <p class="text-[11px] text-gray-500 text-center flex items-center justify-center gap-1.5 pt-1">
+                                            <i class="fa-solid fa-shield-check text-slate-400"></i>
+                                            <span>Pastikan Anda menekan tombol di atas agar bukti tersimpan dan dapat diverifikasi oleh admin toko.</span>
+                                        </p>
                                     </div>
                                 </form>
                             @else
