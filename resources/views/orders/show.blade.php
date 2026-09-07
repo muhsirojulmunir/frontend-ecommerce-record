@@ -293,8 +293,14 @@
                         @if($order->payment_status === 'unpaid')
                             <a href="{{ route('checkout.payment', $order->order_number) }}"
                                class="flex-1 bg-accent hover:bg-accent-dark text-white font-bold text-xs py-3.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-credit-card"></i>
-                                <span>Bayar Sekarang (Midtrans)</span>
+                                <i class="{{ $order->payment_method === 'MANUAL_BCA' ? 'fa-solid fa-building-columns' : 'fa-solid fa-credit-card' }}"></i>
+                                <span>{{ $order->payment_method === 'MANUAL_BCA' ? 'Transfer ke BCA & Unggah Bukti' : 'Bayar Sekarang (Online Payment)' }}</span>
+                            </a>
+                        @elseif($order->payment_status === 'pending_verification')
+                            <a href="{{ route('checkout.payment', $order->order_number) }}"
+                               class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs py-3.5 rounded-sm transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>Lihat / Ganti Bukti Transfer BCA</span>
                             </a>
                         @endif
 

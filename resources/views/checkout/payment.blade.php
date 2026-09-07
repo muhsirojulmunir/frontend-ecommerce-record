@@ -2,7 +2,7 @@
     <x-slot name="title">Pembayaran Pesanan #{{ $order->order_number }}</x-slot>
 
     {{-- Midtrans Snap JS --}}
-    @if($order->payment_method !== 'COD' && $snapToken)
+    @if($order->payment_method !== 'COD' && $order->payment_method !== 'MANUAL_BCA' && $snapToken)
         <script type="text/javascript"
                 src="{{ $isProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
                 data-client-key="{{ $clientKey }}"></script>
@@ -104,7 +104,13 @@
                     </div>
                 </div>
 
-                @if($order->payment_method !== 'COD')
+
+                @if($order->payment_method === 'MANUAL_BCA')
+                    <div x-show="!paymentSuccess" class="flex items-center justify-center gap-2 text-xs text-blue-200 pt-1">
+                        <i class="fa-solid fa-university text-blue-300"></i>
+                        <span>{{ $order->payment_proof ? 'Bukti diunggah — menunggu verifikasi admin...' : 'Transfer ke BCA &amp; unggah bukti di bawah ini' }}</span>
+                    </div>
+                @elseif($order->payment_method !== 'COD')
                     <div x-show="!paymentSuccess" class="flex items-center justify-center gap-2 text-xs text-blue-200 pt-1">
                         <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -158,7 +164,215 @@
                 </div>
             @endif
 
-            @if($order->payment_method !== 'COD')
+            @if($order->payment_method === 'MANUAL_BCA')
+                {{-- ═══════════════ INSTRUKSI TRANSFER MANUAL BCA & UPLOAD BUKTI ═══════════════ --}}
+                <div class="space-y-6">
+                    {{-- 1. Kartu Rekening Tujuan Transfer --}}
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 sm:p-6 text-slate-800 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-200/70 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                                    BCA
+                                </div>
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-sm sm:text-base uppercase tracking-wide">
+                                        Transfer Bank BCA (Manual)
+                                    </h3>
+                                    <p class="text-[11px] text-blue-800">Silakan transfer tepat sesuai total tagihan ke rekening di bawah ini:</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border border-blue-200 w-fit">
+                                <i class="fa-solid fa-user-check text-[10px]"></i> Verifikasi Admin
+                            </span>
+                        </div>
+
+                        {{-- Rincian Rekening --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            {{-- Nomor Rekening --}}
+                            <div class="bg-white border border-blue-200 p-4 rounded-xl shadow-xs flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Nomor Rekening BCA</span>
+                                    <span class="text-xl sm:text-2xl font-black font-mono text-blue-700 tracking-wider select-all" id="bca-norek">1000028122</span>
+                                    <span class="text-xs text-gray-600 font-semibold block mt-0.5">a.n <strong>Lily Minawati Prajogo</strong></span>
+                                </div>
+                                <button type="button"
+                                        onclick="navigator.clipboard.writeText('1000028122'); alert('Nomor Rekening BCA 1000028122 berhasil disalin!');"
+                                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-lg transition uppercase tracking-wider shadow-xs flex items-center gap-1.5 shrink-0">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span>Salin</span>
+                                </button>
+                            </div>
+
+                            {{-- Jumlah Transfer --}}
+                            <div class="bg-white border border-blue-200 p-4 rounded-xl shadow-xs flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Total Tagihan Transfer</span>
+                                    <span class="text-xl sm:text-2xl font-black font-mono text-emerald-600 tracking-wider select-all">
+                                        {{ $order->formatted_grand_total }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-500 block mt-0.5">Transfer persis hingga digit terakhir</span>
+                                </div>
+                                <button type="button"
+                                        onclick="navigator.clipboard.writeText('{{ (int) round($order->grand_total) }}'); alert('Nominal transfer berhasil disalin!');"
+                                        class="bg-gray-100 hover:bg-gray-200 text-slate-800 font-bold text-xs px-3.5 py-2.5 rounded-lg transition uppercase tracking-wider border border-gray-200 shadow-xs flex items-center gap-1.5 shrink-0">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span>Salin</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Notice --}}
+                        <div class="bg-blue-100/60 border border-blue-200/80 rounded-lg p-3 text-xs text-blue-900 flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 shrink-0"></i>
+                            <div class="leading-relaxed text-[11px]">
+                                <strong>PENTING:</strong> Setelah menyelesaikan transfer di ATM / m-Banking / KlikBCA, mohon <strong>unggah foto bukti/struk transfer</strong> pada form di bawah ini. Admin toko akan mengecek mutasi rekening sebelum pesanan Anda diproses dan dikirim.
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 2. Notifikasi Penolakan (Jika ada catatan penolakan dari admin) --}}
+                    @if($order->payment_rejection_note)
+                        <div class="bg-rose-50 border-2 border-rose-300 rounded-xl p-4 sm:p-5 text-xs text-rose-900 space-y-2 shadow-sm">
+                            <div class="flex items-center gap-2 font-black text-rose-800 text-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base"></i>
+                                <span>Bukti Pembayaran Ditolak Admin</span>
+                            </div>
+                            <p class="text-rose-700 leading-relaxed font-medium">
+                                Catatan Admin: <strong>{{ $order->payment_rejection_note }}</strong>
+                            </p>
+                            <p class="text-[11px] text-rose-600">
+                                Silakan pastikan dana sudah masuk ke rekening BCA toko dan unggah kembali foto bukti transfer yang jelas dan valid.
+                            </p>
+                        </div>
+                    @endif
+
+                    {{-- 3. Area Bukti Transfer (Status & Form Upload) --}}
+                    <div class="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 space-y-5" x-data="{ showReupload: false, previewSrc: null }">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <h4 class="font-black text-slate-900 text-sm uppercase tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-receipt text-blue-600"></i>
+                                <span>Bukti Transfer Pembayaran</span>
+                            </h4>
+                            @if($order->payment_proof)
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold {{ $order->payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
+                                    {{ $order->payment_status === 'paid' ? '✓ Pembayaran Lunas' : '⏳ Menunggu Pengecekan Admin' }}
+                                </span>
+                            @else
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                    Belum Diunggah
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Tampilan Bukti yang Sudah Diunggah --}}
+                        @if($order->payment_proof)
+                            <div class="space-y-4" x-show="!showReupload">
+                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4">
+                                    <a href="{{ $order->payment_proof_url }}" target="_blank" class="block shrink-0 group relative overflow-hidden rounded-lg border border-gray-300 shadow-xs">
+                                        <img src="{{ $order->payment_proof_url }}" alt="Bukti Transfer" class="w-32 h-32 object-cover transition duration-300 group-hover:scale-105">
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1">
+                                            <i class="fa-solid fa-magnifying-glass-plus"></i> Lihat
+                                        </div>
+                                    </a>
+                                    <div class="space-y-1.5 text-xs text-slate-700 flex-1 text-center sm:text-left">
+                                        <p class="font-bold text-slate-900">
+                                            Bukti transfer telah berhasil diunggah
+                                        </p>
+                                        <p class="text-[11px] text-gray-500">
+                                            Diunggah pada: <span class="font-semibold text-slate-700">{{ $order->payment_proof_uploaded_at?->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }} WIB</span>
+                                        </p>
+                                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[11px] leading-relaxed">
+                                            <i class="fa-solid fa-hourglass-half mr-1 text-amber-600"></i>
+                                            Admin sedang mencocokkan bukti ini dengan mutasi rekening BCA toko. Pesanan akan segera diproses begitu dana terkonfirmasi.
+                                        </div>
+                                        @if($order->payment_status !== 'paid' && $order->status !== 'cancelled')
+                                            <button type="button" @click="showReupload = true" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline inline-flex items-center gap-1 pt-1">
+                                                <i class="fa-solid fa-arrows-rotate"></i> Ganti / Unggah Ulang Bukti
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Form Unggah Bukti Baru / Re-upload --}}
+                        <div x-show="!{{ $order->payment_proof ? 'true' : 'false' }} || showReupload" class="space-y-4">
+                            @if($order->payment_status !== 'paid' && $order->status !== 'cancelled')
+                                <form action="{{ route('checkout.payment.upload-proof', $order->order_number) }}"
+                                      method="POST"
+                                      enctype="multipart/form-data"
+                                      class="space-y-4"
+                                      @submit="if(!document.getElementById('proof_input').files.length){ alert('Pilih foto bukti transfer terlebih dahulu!'); $event.preventDefault(); }">
+                                    @csrf
+
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-800 mb-1.5 uppercase tracking-wide">
+                                            Pilih Foto Struk / Screenshot Bukti Transfer
+                                        </label>
+                                        <div class="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-xl p-6 text-center transition bg-gray-50/50 cursor-pointer relative"
+                                             @click="document.getElementById('proof_input').click()">
+                                            <input type="file"
+                                                   id="proof_input"
+                                                   name="payment_proof"
+                                                   accept="image/png, image/jpeg, image/jpg, image/webp"
+                                                   class="hidden"
+                                                   @change="
+                                                       const file = $event.target.files[0];
+                                                       if (file) {
+                                                           const reader = new FileReader();
+                                                           reader.onload = (e) => { previewSrc = e.target.result; };
+                                                           reader.readAsDataURL(file);
+                                                       }
+                                                   ">
+                                            
+                                            <template x-if="!previewSrc">
+                                                <div class="space-y-2">
+                                                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto text-xl">
+                                                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-slate-800">Klik di sini untuk memilih foto bukti pembayaran</p>
+                                                    <p class="text-[11px] text-gray-500">Mendukung format JPG, JPEG, PNG, WEBP (Maks. 5 MB)</p>
+                                                </div>
+                                            </template>
+
+                                            <template x-if="previewSrc">
+                                                <div class="space-y-3">
+                                                    <img :src="previewSrc" alt="Pratinjau" class="max-h-48 mx-auto rounded-lg shadow-sm border border-gray-200 object-contain">
+                                                    <p class="text-xs text-blue-700 font-semibold">Klik untuk mengganti foto yang dipilih</p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-3 pt-2">
+                                        <button type="submit"
+                                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-3.5 rounded-xl transition uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-upload"></i>
+                                            <span>Unggah Bukti Pembayaran</span>
+                                        </button>
+                                        @if($order->payment_proof)
+                                            <button type="button" @click="showReupload = false; previewSrc = null"
+                                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs py-3.5 px-5 rounded-xl transition uppercase tracking-wider">
+                                                Batal
+                                            </button>
+                                        @endif
+                                    </div>
+                                </form>
+                            @else
+                                <p class="text-xs text-gray-500 italic">Pesanan ini sudah selesai atau dibatalkan.</p>
+                            @endif
+                        </div>
+
+                        <div class="pt-2 flex flex-col sm:flex-row gap-3 border-t border-gray-100">
+                            <a href="{{ route('orders.show', $order->order_number) }}"
+                               class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs py-3.5 px-6 rounded-xl text-center transition flex items-center justify-center uppercase tracking-wider gap-2">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                <span>Lihat Detail Pesanan</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @elseif($order->payment_method !== 'COD')
                 {{-- Konten Midtrans Snap --}}
                 @if($snapToken)
                     <div class="bg-sky-50 border border-sky-200 text-sky-900 rounded-sm p-5 text-xs space-y-2">
@@ -262,6 +476,7 @@
                 {{-- List Pilihan Metode Pembayaran --}}
                 @php
                     $pembayaranTersedia = [
+                        ['code' => 'MANUAL_BCA', 'name' => 'Transfer Bank Manual BCA',          'desc' => 'BCA 1000028122 a.n Lily Minawati Prajogo', 'icon' => 'fa-solid fa-money-bill-transfer'],
                         ['code' => 'QRIS',      'name' => 'QRIS (Semua E-Wallet & M-Banking)', 'desc' => 'GoPay, OVO, Dana, ShopeePay, LinkAja', 'icon' => 'fa-solid fa-qrcode'],
                         ['code' => 'BCA',       'name' => 'Transfer BCA Virtual Account',       'desc' => 'Verifikasi Otomatis 24 Jam',           'icon' => 'fa-solid fa-building-columns'],
                         ['code' => 'BNI',       'name' => 'Transfer BNI Virtual Account',       'desc' => 'Verifikasi Otomatis 24 Jam',           'icon' => 'fa-solid fa-building-columns'],
@@ -337,7 +552,7 @@
                     }
                 }, 1000);
 
-                @if($order->payment_method !== 'COD' && $snapToken)
+                @if($order->payment_method !== 'COD' && $order->payment_method !== 'MANUAL_BCA' && $snapToken)
                     setTimeout(() => this.payWithMidtrans(), 800);
                 @endif
 

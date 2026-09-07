@@ -99,6 +99,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/{orderNumber}/change-method', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.payment.change-method');
     Route::get('/checkout/{orderNumber}/status', [CheckoutController::class, 'paymentStatus'])->name('checkout.payment.status');
     Route::get('/checkout/{orderNumber}/finish', [CheckoutController::class, 'paymentFinish'])->name('checkout.payment.finish');
+    Route::post('/checkout/{orderNumber}/upload-proof', [CheckoutController::class, 'uploadPaymentProof'])->name('checkout.payment.upload-proof');
 
     // Riwayat pesanan & Tracking
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

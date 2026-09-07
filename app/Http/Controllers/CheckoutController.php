@@ -283,7 +283,7 @@ class CheckoutController extends Controller
             'new_address.longitude'       => 'nullable|numeric',
             'courier_code'               => 'required|string',
             'courier_cost'               => 'nullable|numeric|min:0',
-            'payment_method'             => 'required|string|in:R_Pay,QRIS,BCA,BNI,BRI,Mandiri,Indomaret,Alfamart',
+            'payment_method'             => 'required|string|in:R_Pay,MANUAL_BCA,QRIS,BCA,BNI,BRI,Mandiri,Indomaret,Alfamart',
             'referral_code'              => 'nullable|string|max:60',
             'notes'                      => 'nullable|string',
         ]);
@@ -546,8 +546,8 @@ class CheckoutController extends Controller
         $snapToken = null;
         $snapError = null;
 
-        // Jika bukan COD dan status masih unpaid, minta Snap Token Midtrans
-        if ($order->payment_method !== 'COD' && $order->payment_status === 'unpaid') {
+        // Jika bukan COD dan bukan MANUAL_BCA dan status masih unpaid, minta Snap Token Midtrans
+        if (!in_array($order->payment_method, ['COD', 'MANUAL_BCA']) && $order->payment_status === 'unpaid') {
             $midtransRes = $this->midtransService->createSnapToken($order);
 
             if ($midtransRes['success']) {
@@ -595,8 +595,8 @@ class CheckoutController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
         }
 
-        // Jika masih unpaid, tanyakan langsung ke API Midtrans
-        if ($order->payment_status === 'unpaid') {
+        // Jika masih unpaid dan bukan pembayaran manual/COD/R_Pay, tanyakan langsung ke API Midtrans
+        if ($order->payment_status === 'unpaid' && !in_array($order->payment_method, ['MANUAL_BCA', 'COD', 'R_Pay'])) {
             $midtransRes = $this->midtransService->checkStatus($order->order_number);
             $trxStatus   = $midtransRes['transaction_status'] ?? '';
             $fraudStatus = $midtransRes['fraud_status'] ?? 'accept';
@@ -733,7 +733,7 @@ class CheckoutController extends Controller
      */
     public function changePaymentMethod(Request $request, $orderNumber)
     {
-        $validMethods = ['QRIS', 'BCA', 'BNI', 'BRI', 'Mandiri', 'Indomaret', 'Alfamart', 'R_Pay'];
+        $validMethods = ['MANUAL_BCA', 'QRIS', 'BCA', 'BNI', 'BRI', 'Mandiri', 'Indomaret', 'Alfamart', 'R_Pay'];
 
         $request->validate([
             'payment_method' => ['required', \Illuminate\Validation\Rule::in($validMethods)],
@@ -833,5 +833,57 @@ class CheckoutController extends Controller
                 'order' => $order->order_number,
             ]);
         }
+    }
+
+    /**
+     * Upload bukti transfer pembayaran manual BCA oleh pembeli.
+     */
+    public function uploadPaymentProof(Request $request, $orderNumber)
+    {
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ], [
+            'payment_proof.required' => 'Silakan pilih berkas foto bukti transfer.',
+            'payment_proof.image'    => 'Berkas bukti transfer harus berupa gambar.',
+            'payment_proof.mimes'    => 'Format gambar bukti transfer harus JPG, JPEG, PNG, atau WEBP.',
+            'payment_proof.max'      => 'Ukuran berkas gambar maksimal 5 MB.',
+        ]);
+
+        $order = Order::where('order_number', $orderNumber)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($order->payment_status === 'paid') {
+            return redirect()->back()->with('error', 'Pesanan ini sudah lunas.');
+        }
+
+        if ($order->status === 'cancelled') {
+            return redirect()->back()->with('error', 'Pesanan ini sudah dibatalkan.');
+        }
+
+        // Hapus file bukti lama jika ada penggantian
+        if (!empty($order->payment_proof) && \Illuminate\Support\Facades\Storage::disk('public')->exists($order->payment_proof)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($order->payment_proof);
+        }
+
+        $file = $request->file('payment_proof');
+        $filename = 'proof_' . $order->order_number . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('payment_proofs', $filename, 'public');
+
+        $order->payment_proof             = $path;
+        $order->payment_proof_uploaded_at = now();
+        $order->payment_status            = 'pending_verification';
+        $order->payment_rejection_note    = null; // Reset catatan penolakan jika upload ulang
+        $order->save();
+
+        CatatAktivitas::tulis(
+            'pesanan',
+            'mengunggah bukti transfer manual BCA: ' . $order->order_number,
+            $order,
+            ['file' => $path],
+            'updated'
+        );
+
+        return redirect()->back()->with('success', 'Bukti transfer berhasil diunggah! Pembayaran Anda sedang menunggu pengecekan mutasi oleh admin.');
     }
 }

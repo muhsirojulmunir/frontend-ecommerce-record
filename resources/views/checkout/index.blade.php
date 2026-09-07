@@ -28,7 +28,7 @@
                 selectedAddressText: @json($addresses->first() ? $addresses->first()->recipient_name . " (" . $addresses->first()->phone . ") - " . $addresses->first()->full_address : ''),
                 selectedAddressLabel: @json($addresses->first()?->label ?? ''),
                 selectedCourier: @json($defaultCouriers[0]['code'] ?? ''),
-                selectedPayment: 'QRIS',
+                selectedPayment: 'MANUAL_BCA',
                 hasPhone: @json($hasPhone),
 
                 {{-- ── Penguncian bertahap ────────────────────────────── --}}
@@ -108,6 +108,7 @@
                 },
 
                 payments: [
+                    {code: 'MANUAL_BCA', name: 'Transfer Bank BCA (Manual)',          type: 'Rek: 1000028122 a.n Lily Minawati Prajogo (Verifikasi Admin)', icon: 'fa-solid fa-money-bill-transfer'},
                     {code: 'R_Pay', name: 'R_Pay (Saldo Dompet)', type: 'Langsung lunas, tanpa transfer', icon: 'fa-solid fa-wallet'},
                     {code: 'QRIS',      name: 'QRIS (Semua E-Wallet & M-Banking)', type: 'GoPay, OVO, Dana, ShopeePay, LinkAja', icon: 'fa-solid fa-qrcode'},
                     {code: 'BCA',       name: 'Transfer BCA Virtual Account',       type: 'Verifikasi Otomatis 24 Jam',           icon: 'fa-solid fa-building-columns'},

@@ -24,6 +24,9 @@ class Order extends Model
         'tracking_number',
         'payment_method',
         'payment_status',
+        'payment_proof',
+        'payment_proof_uploaded_at',
+        'payment_rejection_note',
         'notes',
         'cancellation_reason',
         'cancellation_note',
@@ -53,6 +56,7 @@ class Order extends Model
         'referral_discount' => 'decimal:2',
         'referral_commission' => 'decimal:2',
         'invoice_issued_at' => 'datetime',
+        'payment_proof_uploaded_at' => 'datetime',
         'midtrans_fee' => 'decimal:2',
         'shipping_actual_cost' => 'decimal:2',
         'shipping_markup_profit' => 'decimal:2',
@@ -90,6 +94,22 @@ class Order extends Model
     /**
      * Get formatted grand total.
      */
+    /**
+     * URL Bukti Pembayaran Manual (Storage).
+     */
+    public function getPaymentProofUrlAttribute(): ?string
+    {
+        if (blank($this->payment_proof)) {
+            return null;
+        }
+
+        if (str_starts_with($this->payment_proof, 'http://') || str_starts_with($this->payment_proof, 'https://')) {
+            return $this->payment_proof;
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->payment_proof);
+    }
+
     public function getFormattedGrandTotalAttribute(): string
     {
         return 'Rp ' . number_format($this->grand_total, 0, ',', '.');
