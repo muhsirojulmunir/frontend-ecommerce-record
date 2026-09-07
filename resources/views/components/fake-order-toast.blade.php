@@ -9,9 +9,9 @@
      x-transition:leave="transition ease-in duration-400 transform"
      x-transition:leave-start="translate-y-0 opacity-100 scale-100"
      x-transition:leave-end="-translate-y-8 opacity-0 scale-95"
-     class="fixed top-20 right-4 sm:right-6 z-50 max-w-sm w-full pointer-events-auto">
+     class="fixed top-16 right-3 sm:top-20 sm:right-6 z-50 max-w-[270px] sm:max-w-sm w-auto sm:w-full pointer-events-auto">
     
-    <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl p-4 shadow-2xl flex items-center gap-3.5 relative overflow-hidden">
+    <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-xl sm:shadow-2xl flex items-center gap-2.5 sm:gap-3.5 relative overflow-hidden">
         {{-- Progress Bar indicator --}}
         <div class="absolute bottom-0 left-0 h-1 bg-accent transition-all duration-100 ease-linear"
              :style="`width: ${progress}%`"></div>
@@ -19,14 +19,14 @@
         {{-- Product Image / Icon --}}
         <div class="shrink-0 relative">
             <template x-if="currentProduct && currentProduct.image">
-                <img :src="getImageUrl(currentProduct.image)" :alt="currentProduct.name" class="w-13 h-13 rounded-xl object-cover border border-gray-100 shadow-sm" />
+                <img :src="getImageUrl(currentProduct.image)" :alt="currentProduct.name" class="w-10 h-10 sm:w-13 sm:h-13 rounded-lg sm:rounded-xl object-cover border border-gray-100 shadow-sm" />
             </template>
             <template x-if="!currentProduct || !currentProduct.image">
-                <div class="w-13 h-13 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                <div class="w-10 h-10 sm:w-13 sm:h-13 rounded-lg sm:rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm sm:text-lg">
                     <i class="fa-solid fa-bag-shopping"></i>
                 </div>
             </template>
-            <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[10px] shadow-sm">
+            <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[7px] sm:text-[10px] shadow-sm">
                 <i class="fa-solid fa-check"></i>
             </span>
         </div>
@@ -34,20 +34,20 @@
         {{-- Text Info --}}
         <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1 mb-0.5">
-                <p class="text-xs font-bold text-gray-900 truncate">
+                <p class="text-[11px] sm:text-xs font-bold text-gray-900 truncate">
                     <span class="text-primary font-black" x-text="currentBuyer"></span>
-                    <span class="text-gray-500 font-normal">telah checkout</span>
+                    <span class="text-gray-500 font-normal text-[10px] sm:text-xs">telah checkout</span>
                 </p>
-                <span class="text-[10px] text-gray-400 shrink-0" x-text="timeAgo"></span>
+                <span class="text-[9px] sm:text-[10px] text-gray-400 shrink-0" x-text="timeAgo"></span>
             </div>
 
-            <p class="text-xs font-bold text-gray-800 truncate leading-snug" x-text="currentProduct ? currentProduct.name : 'Sepatu Record'"></p>
+            <p class="text-[11px] sm:text-xs font-bold text-gray-800 truncate leading-tight sm:leading-snug" x-text="currentProduct ? currentProduct.name : 'Sepatu Record'"></p>
             
-            <p class="text-xs font-black text-accent mt-0.5" x-text="formattedPrice"></p>
+            <p class="text-[11px] sm:text-xs font-black text-accent mt-0 sm:mt-0.5" x-text="formattedPrice"></p>
         </div>
 
         {{-- Close Button --}}
-        <button @click="hideToast()" class="shrink-0 text-gray-400 hover:text-gray-600 transition p-1 text-xs">
+        <button @click="hideToast()" class="shrink-0 text-gray-400 hover:text-gray-600 transition p-0.5 sm:p-1 text-[10px] sm:text-xs">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
