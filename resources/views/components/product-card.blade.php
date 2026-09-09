@@ -1,4 +1,10 @@
-@props(['product'])
+﻿@props(['product'])
+
+@php
+    // Ambil ends_at dari activeDiscount (jika ada dan ada tanggal berakhir)
+    $discountEndsAt = $product->activeDiscount?->ends_at;
+    $discountEndsAtTimestamp = $discountEndsAt ? $discountEndsAt->timestamp : null;
+@endphp
 
 <div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-4">
     <!-- Badge Status (SOLD / DISKON) -->
@@ -11,6 +17,22 @@
             <span class="bg-accent text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
                 DISKON {{ $product->discount_percentage }}%
             </span>
+            {{-- Countdown berakhirnya diskon (hanya tampil jika ends_at ada) --}}
+            @if($discountEndsAtTimestamp)
+                <span
+                    x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
+                    x-init="init()"
+                    x-show="!expired"
+                    x-cloak
+                    class="inline-flex items-center gap-1 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm shadow-sm leading-none"
+                    title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}"
+                >
+                    <svg class="w-2 h-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span x-text="display"></span>
+                </span>
+            @endif
         @endif
     </div>
 
@@ -63,8 +85,8 @@
 
     <!-- Product Image -->
     <a href="{{ route('products.show', $product->slug) }}" class="block overflow-hidden mb-4 aspect-square bg-gray-50 rounded-sm">
-        <img src="{{ $product->image_url }}" 
-            alt="{{ $product->name }}" 
+        <img src="{{ $product->image_url }}"
+            alt="{{ $product->name }}"
             class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
             onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80';">
     </a>
@@ -76,7 +98,7 @@
             <p class="text-[10px] uppercase font-bold tracking-wider text-text-light mb-1">
                 {{ $product->category->name }}
             </p>
-            
+
             <!-- Product Title -->
             <a href="{{ route('products.show', $product->slug) }}" class="block">
                 <h4 class="text-xs font-bold text-text hover:text-primary line-clamp-2 min-h-[32px] leading-tight mb-2">
@@ -98,19 +120,13 @@
         </div>
 
         <div>
-            <!-- Price Section -->
-            <div class="flex justify-center items-center gap-2 mb-3">
+            <!-- Price Section — nowrap agar tidak stack ke bawah di mobile -->
+            <div class="kartu-harga mb-3">
                 @if($product->hasDiscount())
-                    <span class="text-xs text-text-light line-through">
-                        {{ $product->formatted_original_price }}
-                    </span>
-                    <span class="text-sm font-bold text-accent">
-                        {{ $product->formatted_price }}
-                    </span>
+                    <span class="kartu-harga-coret">{{ $product->formatted_original_price }}</span>
+                    <span class="kartu-harga-diskon">{{ $product->formatted_price }}</span>
                 @else
-                    <span class="text-sm font-bold text-text">
-                        {{ $product->formatted_price }}
-                    </span>
+                    <span class="kartu-harga-normal">{{ $product->formatted_price }}</span>
                 @endif
             </div>
 
@@ -120,7 +136,7 @@
                     STOK HABIS
                 </button>
             @else
-                <a href="{{ route('products.show', $product->slug) }}" 
+                <a href="{{ route('products.show', $product->slug) }}"
                     class="block w-full bg-accent hover:bg-accent-light text-white text-xs font-bold py-2.5 rounded-sm transition uppercase tracking-wide text-center">
                     BELI SEKARANG
                 </a>
@@ -146,5 +162,80 @@
         font-size: 10px; color: #9ca3af; letter-spacing: 0;
     }
     .kartu-bintang:hover .kartu-bintang-jml { color: #4b5563; }
+
+    /* ── Harga kartu produk ──────────────────────────────────────── */
+    /* Selalu dalam satu baris; nowrap mencegah wrap ke bawah di mobile. */
+    .kartu-harga {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        line-height: 1.2;
+    }
+    .kartu-harga-coret {
+        font-size: 10px;
+        color: #9ca3af;
+        text-decoration: line-through;
+        white-space: nowrap;
+    }
+    .kartu-harga-diskon {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-accent, #e53e3e);
+        white-space: nowrap;
+    }
+    .kartu-harga-normal {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1a202c;
+        white-space: nowrap;
+    }
 </style>
+
+<script>
+    /**
+     * discountCountdown(endsAtTimestamp)
+     * Komponen Alpine.js untuk menampilkan countdown berakhirnya diskon.
+     * endsAtTimestamp: UNIX timestamp (detik) dari PHP time() / Carbon->timestamp
+     */
+    function discountCountdown(endsAtTimestamp) {
+        return {
+            display: '',
+            expired: false,
+            _timer: null,
+
+            init() {
+                this._update();
+                this._timer = setInterval(() => this._update(), 1000);
+            },
+
+            _update() {
+                const now = Math.floor(Date.now() / 1000);
+                const diff = endsAtTimestamp - now;
+
+                if (diff <= 0) {
+                    this.expired = true;
+                    clearInterval(this._timer);
+                    return;
+                }
+
+                const d = Math.floor(diff / 86400);
+                const h = Math.floor((diff % 86400) / 3600);
+                const m = Math.floor((diff % 3600) / 60);
+                const s = diff % 60;
+
+                const pad = (n) => String(n).padStart(2, '0');
+
+                if (d > 0) {
+                    // Lebih dari 1 hari: tampilkan "Xh HH:MM"
+                    this.display = d + 'h ' + pad(h) + ':' + pad(m);
+                } else {
+                    // Kurang dari 1 hari: tampilkan HH:MM:SS
+                    this.display = pad(h) + ':' + pad(m) + ':' + pad(s);
+                }
+            },
+        };
+    }
+</script>
 @endonce
