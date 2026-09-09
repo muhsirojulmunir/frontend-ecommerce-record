@@ -113,6 +113,16 @@ class CheckoutController extends Controller
         $kontakLengkap = $this->kontakLengkap();
         $sudahLogin    = Auth::check();
 
+        CatatAktivitas::tulisCheckout(
+            'checkout_view',
+            "Membuka halaman checkout ({$cartItems->count()} item, Total Rp " . number_format($cart->total_terpilih ?? 0, 0, ',', '.') . ")",
+            [
+                'items_count'  => $cartItems->count(),
+                'total_amount' => (float) ($cart->total_terpilih ?? 0),
+                'is_logged_in' => Auth::check(),
+            ]
+        );
+
         return view('checkout.index', compact(
             'cart', 'cartItems', 'addresses', 'defaultCouriers', 'kontakLengkap', 'sudahLogin'
         ));
@@ -181,6 +191,8 @@ class CheckoutController extends Controller
 
         Auth::login($user);
 
+        CatatAktivitas::tulisAuth('register', "Customer baru mendaftar akun di checkout: {$user->name} ({$user->email})", $user);
+
         // ID sesi berubah setelah login demi keamanan, karena itu keranjang
         // tamu dipindahkan memakai ID sesi yang lama.
         $request->session()->regenerate();
@@ -226,6 +238,8 @@ class CheckoutController extends Controller
         }
 
         RateLimiter::clear($kunci);
+
+        CatatAktivitas::tulisAuth('login', 'Customer masuk (login) ke akun melalui checkout', Auth::user());
 
         // ID sesi berubah setelah masuk demi keamanan, jadi keranjang tamu
         // dipindahkan memakai ID sesi yang lama.

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Support\CatatAktivitas;
 
 class RegisteredUserController extends Controller
 {
@@ -45,6 +46,8 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        CatatAktivitas::tulisAuth('register', "Customer baru mendaftar akun: {$user->name} ({$user->email})", $user);
 
         return redirect(route('dashboard', absolute: false));
     }

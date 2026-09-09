@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Support\CatatAktivitas;
 
 class ProductController extends Controller
 {
@@ -44,6 +45,10 @@ class ProductController extends Controller
         $products = $query->paginate(12)->withQueryString();
         $categories = Category::active()->ordered()->get();
 
+        if ($request->filled('search')) {
+            CatatAktivitas::tulisPencarian($request->search, $products->total(), $request->get('category'));
+        }
+
         return view('products.index', compact('products', 'categories', 'sort'));
     }
 
@@ -53,6 +58,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $product->load(['category', 'images', 'variants.activeDiscount', 'activeDiscount']);
+        CatatAktivitas::tulisProdukView($product);
 
         $relatedProducts = Product::active()
             ->where('category_id', $product->category_id)

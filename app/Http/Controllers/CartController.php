@@ -7,6 +7,7 @@ use App\Models\ProductVariant;
 use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Support\CatatAktivitas;
 
 class CartController extends Controller
 {
@@ -77,6 +78,19 @@ class CartController extends Controller
 
         // Tambah ke keranjang lewat CartService
         $item = $this->cartService->addItem($product, $variant, $quantity);
+
+        CatatAktivitas::tulisKeranjang(
+            'add_to_cart',
+            "Menambahkan ke keranjang: {$product->name}" . ($variant ? " ({$variant->variant_name})" : "") . " (Qty: {$quantity})",
+            [
+                'product_id'   => $product->id,
+                'product_name' => $product->name,
+                'variant_id'   => $variant?->id,
+                'variant_name' => $variant?->variant_name,
+                'quantity'     => $quantity,
+                'price'        => (float) ($variant ? $variant->price : $product->price),
+            ]
+        );
 
         // "Beli Sekarang" hanya membayar barang ini saja.
         if ($request->has('buy_now')) {
@@ -161,6 +175,12 @@ class CartController extends Controller
     public function destroy($id)
     {
         $this->cartService->removeItem((int) $id);
+
+        CatatAktivitas::tulisKeranjang(
+            'remove_from_cart',
+            'Menghapus item dari keranjang belanja',
+            ['cart_item_id' => $id]
+        );
 
         return redirect()->route('cart.index')->with('success', 'Item telah dihapus dari keranjang.');
     }
