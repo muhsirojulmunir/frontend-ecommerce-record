@@ -250,6 +250,7 @@ class MidtransService
             $orderStatus   = 'processing';
         } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
             $paymentStatus = 'failed';
+            $orderStatus   = 'cancelled';
         } elseif ($transactionStatus === 'refund') {
             $paymentStatus = 'refunded';
             $orderStatus   = 'cancelled';

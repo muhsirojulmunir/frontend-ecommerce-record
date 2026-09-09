@@ -20,6 +20,7 @@ class OrderController extends Controller
      */
     public function index()
     {
+        $this->batalkanPesananKedaluwarsa(Auth::id());
         // "items.review" ikut dimuat supaya tanda "Belum Dinilai" bisa dihitung
         // tanpa menembak satu kueri per barang di setiap kartu pesanan.
         $orders = Auth::user()->orders()
@@ -55,6 +56,7 @@ class OrderController extends Controller
      */
     public function show($orderNumber)
     {
+        $this->batalkanPesananKedaluwarsa(Auth::id(), $orderNumber);
         $order = Order::where('order_number', $orderNumber)
             ->where('user_id', Auth::id())
             // "items.review" ikut dimuat di sini supaya halaman tidak
@@ -395,5 +397,45 @@ class OrderController extends Controller
         }
 
         return view('orders.invoice', compact('order'));
+    }
+
+    /**
+     * Otomatis membatalkan pesanan milik customer ini jika sudah melewati batas waktu 24 jam.
+     */
+    private function batalkanPesananKedaluwarsa(int $userId, ?string $orderNumber = null): void
+    {
+        try {
+            $query = Order::where('user_id', $userId)
+                ->where('status', 'pending')
+                ->where('is_fake', false)
+                ->where('created_at', '<=', now()->subHours(24))
+                ->where(function ($q) {
+                    $q->whereIn('payment_status', ['unpaid', 'failed'])
+                      ->orWhere(function ($q2) {
+                          $q2->where('payment_status', 'unpaid')
+                             ->whereNull('payment_proof');
+                      });
+                })
+                ->where('payment_status', '!=', 'pending_verification');
+
+            if ($orderNumber) {
+                $query->where('order_number', $orderNumber);
+            }
+
+            $expiredOrders = $query->get();
+
+            if ($expiredOrders->isNotEmpty()) {
+                $pembatalan = app(PembatalanPesananService::class);
+                foreach ($expiredOrders as $expOrder) {
+                    $pembatalan->batalkan(
+                        $expOrder,
+                        'Waktu pembayaran telah habis (Kedaluwarsa)',
+                        'Sistem otomatis membatalkan pesanan karena telah melewati batas waktu pembayaran 24 jam.'
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Auto-cancel on-the-fly error: ' . $e->getMessage());
+        }
     }
 }

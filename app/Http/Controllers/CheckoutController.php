@@ -704,7 +704,20 @@ class CheckoutController extends Controller
         // Update payment_status & order_status
         $order->payment_status = $verified['payment_status'];
 
-        if ($verified['order_status']) {
+        if ($verified['order_status'] === 'cancelled' && $order->status !== 'cancelled') {
+            try {
+                app(\App\Services\PembatalanPesananService::class)->batalkan(
+                    $order,
+                    'Waktu pembayaran telah habis (' . ucfirst((string) ($verified['transaction_status'] ?? 'Kedaluwarsa')) . ')',
+                    'Midtrans menyatakan transaksi pembayaran ' . ($verified['transaction_status'] ?? 'expired') . '.'
+                );
+            } catch (\Throwable $err) {
+                Log::error('Gagal auto-cancel via webhook Midtrans: ' . $err->getMessage(), ['order' => $order->order_number]);
+                $order->status = 'cancelled';
+                $order->cancellation_reason = 'Waktu pembayaran telah habis (' . ucfirst((string) ($verified['transaction_status'] ?? 'Kedaluwarsa')) . ')';
+                $order->cancelled_at = now();
+            }
+        } elseif ($verified['order_status']) {
             $order->status = $verified['order_status'];
         }
 
