@@ -23,6 +23,10 @@
             ->groupBy('color')
             ->map(fn ($grup) => $grup->pluck('image_url')->filter()->unique()->values()->all())
             ->all();
+    
+        // Countdown diskon: ambil ends_at dari activeDiscount produk
+        $discountEndsAt          = $product->activeDiscount?->ends_at;
+        $discountEndsAtTimestamp = $discountEndsAt ? $discountEndsAt->timestamp : null;
     @endphp
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{
@@ -329,6 +333,26 @@
                         <span class="text-2xl font-black text-text" x-text="formatRp(currentPrice)"></span>
                     </template>
                 </div>
+
+                {{-- Countdown berakhirnya diskon — hanya tampil jika diskon punya ends_at --}}
+                @if($discountEndsAtTimestamp && $product->hasDiscount())
+                    <div
+                        x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
+                        x-init="init()"
+                        x-show="!expired && currentDiscountPct > 0"
+                        x-cloak
+                        class="flex flex-wrap items-center gap-2 px-3.5 py-2.5 rounded-md bg-red-50 border border-red-200 mb-4"
+                    >
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="text-xs font-bold text-red-700">Diskon berakhir:</span>
+                            <span class="font-mono font-black text-xs sm:text-sm text-red-700 bg-red-100/80 px-2 py-0.5 rounded" x-text="display"></span>
+                        </div>
+                        <span class="text-[11px] text-red-400 ml-auto">s/d {{ $discountEndsAt->translatedFormat('d M Y') }}</span>
+                    </div>
+                @endif
 
                 <!-- Form Tambah ke Keranjang -->
                 {{-- Tombol 'Beli Sekarang' tetap submit normal (langsung redirect ke checkout); hanya tombol 'Masukkan Keranjang' yang dicegat lewat AJAX di bawah --}}
@@ -1079,4 +1103,51 @@
 </style>
 @endpush
 
+
+<script>
+    /**
+     * discountCountdown(endsAtTimestamp)
+     * Komponen Alpine.js untuk menampilkan countdown berakhirnya diskon.
+     * Juga dipakai di product-card.blade.php — fungsi ini harus terdefinisi
+     * di halaman mana pun yang menampilkan countdown diskon.
+     */
+    if (typeof window.discountCountdown === 'undefined') {
+        window.discountCountdown = function discountCountdown(endsAtTimestamp) {
+            return {
+                display: '',
+                expired: false,
+                _timer: null,
+
+                init() {
+                    this._update();
+                    this._timer = setInterval(() => this._update(), 1000);
+                },
+
+                _update() {
+                    const now = Math.floor(Date.now() / 1000);
+                    const diff = endsAtTimestamp - now;
+
+                    if (diff <= 0) {
+                        this.expired = true;
+                        clearInterval(this._timer);
+                        return;
+                    }
+
+                    const d = Math.floor(diff / 86400);
+                    const h = Math.floor((diff % 86400) / 3600);
+                    const m = Math.floor((diff % 3600) / 60);
+                    const s = diff % 60;
+
+                    const pad = (n) => String(n).padStart(2, '0');
+
+                    if (d > 0) {
+                        this.display = d + 'hr ' + pad(h) + ':' + pad(m);
+                    } else {
+                        this.display = pad(h) + ':' + pad(m) + ':' + pad(s);
+                    }
+                },
+            };
+        };
+    }
+</script>
 </x-app-layout>

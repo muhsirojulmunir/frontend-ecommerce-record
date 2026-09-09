@@ -1,4 +1,4 @@
-﻿@props(['product'])
+@props(['product'])
 
 @php
     // Ambil ends_at dari activeDiscount (jika ada dan ada tanggal berakhir)
@@ -8,7 +8,7 @@
 
 <div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-4">
     <!-- Badge Status (SOLD / DISKON) -->
-    <div class="absolute top-4 left-4 z-10 flex flex-col gap-1">
+    <div class="absolute top-4 left-4 z-10 flex flex-col gap-1 items-start">
         @if(!$product->isInStock())
             <span class="bg-warning text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
                 SOLD
@@ -24,10 +24,10 @@
                     x-init="init()"
                     x-show="!expired"
                     x-cloak
-                    class="inline-flex items-center gap-1 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm shadow-sm leading-none"
+                    class="inline-flex items-center gap-1 bg-black/80 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-sm leading-none"
                     title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}"
                 >
-                    <svg class="w-2 h-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-2.5 h-2.5 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span x-text="display"></span>
@@ -163,33 +163,51 @@
     }
     .kartu-bintang:hover .kartu-bintang-jml { color: #4b5563; }
 
-    /* ── Harga kartu produk ──────────────────────────────────────── */
+        /* ── Harga kartu produk ──────────────────────────────────────── */
     /* Selalu dalam satu baris; nowrap mencegah wrap ke bawah di mobile. */
     .kartu-harga {
         display: flex;
-        align-items: center;
+        align-items: baseline;
         justify-content: center;
         flex-wrap: nowrap;
-        gap: 4px;
+        gap: 3px;
         line-height: 1.2;
+        max-width: 100%;
+        overflow: hidden;
     }
     .kartu-harga-coret {
         font-size: 10px;
         color: #9ca3af;
         text-decoration: line-through;
         white-space: nowrap;
+        flex-shrink: 1;
     }
     .kartu-harga-diskon {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         color: var(--color-accent, #e53e3e);
         white-space: nowrap;
+        flex-shrink: 0;
     }
     .kartu-harga-normal {
         font-size: 13px;
         font-weight: 700;
         color: #1a202c;
         white-space: nowrap;
+    }
+    @media (min-width: 640px) {
+        .kartu-harga {
+            gap: 6px;
+        }
+        .kartu-harga-coret {
+            font-size: 11px;
+        }
+        .kartu-harga-diskon {
+            font-size: 14px;
+        }
+        .kartu-harga-normal {
+            font-size: 14px;
+        }
     }
 </style>
 
@@ -199,7 +217,8 @@
      * Komponen Alpine.js untuk menampilkan countdown berakhirnya diskon.
      * endsAtTimestamp: UNIX timestamp (detik) dari PHP time() / Carbon->timestamp
      */
-    function discountCountdown(endsAtTimestamp) {
+    if (typeof window.discountCountdown === 'undefined') {
+        window.discountCountdown = function discountCountdown(endsAtTimestamp) {
         return {
             display: '',
             expired: false,
@@ -229,13 +248,14 @@
 
                 if (d > 0) {
                     // Lebih dari 1 hari: tampilkan "Xh HH:MM"
-                    this.display = d + 'h ' + pad(h) + ':' + pad(m);
+                    this.display = d + 'hr ' + pad(h) + ':' + pad(m);
                 } else {
                     // Kurang dari 1 hari: tampilkan HH:MM:SS
                     this.display = pad(h) + ':' + pad(m) + ':' + pad(s);
                 }
             },
         };
+    };
     }
 </script>
 @endonce
