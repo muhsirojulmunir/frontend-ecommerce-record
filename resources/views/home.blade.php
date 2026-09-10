@@ -628,18 +628,7 @@
                     <div class="h-1 w-20 bg-accent mx-auto mt-2"></div>
                 </div>
 
-                {{-- Kolom mengikuti jumlah produknya. --}}
-                @php
-                    $jumlahKoleksi = $featuredProducts->count();
-                    $kolomKoleksi  = match (true) {
-                        $jumlahKoleksi === 1 => 'grid-cols-1 max-w-xs mx-auto',
-                        $jumlahKoleksi === 2 => 'grid-cols-2 max-w-2xl mx-auto',
-                        $jumlahKoleksi === 3 => 'grid-cols-2 md:grid-cols-3 max-w-4xl mx-auto',
-                        default              => 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-                    };
-                @endphp
-
-                <div class="grid {{ $kolomKoleksi }} gap-3 sm:gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                     @foreach($featuredProducts as $product)
                         <x-product-card :product="$product" />
                     @endforeach
