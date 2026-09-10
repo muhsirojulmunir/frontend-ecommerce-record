@@ -1,285 +1,361 @@
-@props(['product'])
+﻿@props(['product'])
 
 @php
-    // Ambil ends_at dari activeDiscount (jika ada dan ada tanggal berakhir)
     $discountEndsAt = $product->activeDiscount?->ends_at;
     $discountEndsAtTimestamp = $discountEndsAt ? $discountEndsAt->timestamp : null;
 @endphp
 
-<div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-2.5 sm:p-4">
-    <!-- Badge Status (SOLD / DISKON) -->
-    <div class="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 z-10 flex flex-col gap-1 items-start">
-        @if(!$product->isInStock())
-            <span class="bg-warning text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
-                SOLD
-            </span>
-        @elseif($product->hasDiscount())
-            <span class="bg-accent text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
-                DISKON {{ $product->discount_percentage }}%
-            </span>
+{{--
+    Kartu Produk - Layout bersih dan presisi mobile/desktop.
+    - Badge DISKON/SOLD: di dalam flow (tidak absolute) tidak bertabrakan
+    - Tombol keranjang: absolute di sudut kanan bawah DALAM gambar
+    - Countdown: di bawah nama produk, selalu ada ruangnya (min-h)
+    - Harga: flex nowrap, tidak pernah wrap ke bawah
+--}}
+<div class="kartu-produk group">
 
-        @endif
-    </div>
+    {{-- Gambar + Tombol Keranjang (dalam satu blok relatif) --}}
+    <div class="kartu-produk-gambar-wrap">
+        <a href="{{ route('products.show', $product->slug) }}" class="kartu-produk-gambar-link">
+            <img src="{{ $product->image_url }}"
+                 alt="{{ $product->name }}"
+                 class="kartu-produk-img"
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80';">
+        </a>
 
-    <!-- Quick Add to Cart icon on top-right -->
-    <div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10" x-data="{ adding: false, added: false }">
-        <form
-            @submit.prevent="
+        {{-- Tombol keranjang absolute di sudut kanan bawah DALAM gambar --}}
+        <div class="kartu-produk-cart-wrap" x-data="{ adding: false, added: false }">
+            <form @submit.prevent="
                 if (adding) return;
                 adding = true;
                 const form = $event.target;
-                const imgEl = form.closest('.group')?.querySelector('img');
+                const imgEl = form.closest('.kartu-produk')?.querySelector('img');
                 fetch(form.action, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json' },
                     body: new FormData(form),
                 })
-                    .then((r) => r.json())
-                    .then((data) => {
-                        adding = false;
-                        added = true;
-                        if (imgEl) window.flyToCart(imgEl);
-                        window.dispatchEvent(new CustomEvent('cart-count-updated', { detail: { count: data.cart_count } }));
-                        setTimeout(() => (added = false), 1500);
-                    })
-                    .catch(() => { adding = false; });
-            "
-            action="{{ route('cart.store') }}" method="POST">
-            @csrf
-            <input type="hidden" name="product_id" value="{{ $product->id }}">
-            <input type="hidden" name="quantity" value="1">
+                .then(r => r.json())
+                .then(data => {
+                    adding = false; added = true;
+                    if (imgEl) window.flyToCart(imgEl);
+                    window.dispatchEvent(new CustomEvent('cart-count-updated', { detail: { count: data.cart_count } }));
+                    setTimeout(() => (added = false), 1500);
+                })
+                .catch(() => { adding = false; });
+            " action="{{ route('cart.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <input type="hidden" name="quantity" value="1">
+                @if($product->variants->isNotEmpty())
+                    <input type="hidden" name="product_variant_id" value="{{ $product->variants->first()->id }}">
+                @endif
 
-            <!-- We can pre-select the first variant if size/color are required -->
-            @if($product->variants->isNotEmpty())
-                <input type="hidden" name="product_variant_id" value="{{ $product->variants->first()->id }}">
-            @endif
-
-            <button type="submit" :disabled="adding"
-                class="h-9 w-9 rounded-full flex items-center justify-center border shadow-sm transition-all duration-200"
-                :class="added ? 'bg-emerald-500 border-emerald-500 text-white scale-110' : 'bg-white text-gray-600 hover:text-primary hover:scale-110 border-border'"
-                title="Masukkan Keranjang">
-                <svg x-show="!added" class="h-4.5 w-4.5" :class="adding ? 'animate-pulse' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                <svg x-show="added" x-transition.scale.duration.300ms class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                </svg>
-            </button>
-        </form>
+                <button type="submit" :disabled="adding"
+                    class="kartu-produk-cart-btn"
+                    :class="added ? 'kpc-done' : 'kpc-idle'"
+                    title="Masukkan Keranjang">
+                    <svg x-show="!added" :class="adding ? 'animate-pulse' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <svg x-show="added" x-transition.scale.duration.300ms xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- Product Image -->
-    <a href="{{ route('products.show', $product->slug) }}" class="block overflow-hidden mb-4 aspect-square bg-gray-50 rounded-sm">
-        <img src="{{ $product->image_url }}"
-            alt="{{ $product->name }}"
-            class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80';">
-    </a>
+    {{-- Konten bawah gambar --}}
+    <div class="kartu-produk-body">
 
-    <!-- Product Info -->
-    <div class="flex-grow flex flex-col justify-between text-center">
-        <div>
-            <!-- Category name -->
-            <p class="text-[10px] uppercase font-bold tracking-wider text-text-light mb-1">
-                {{ $product->category->name }}
-            </p>
-
-            <!-- Product Title -->
-            <a href="{{ route('products.show', $product->slug) }}" class="block">
-                <h4 class="text-xs font-bold text-text hover:text-primary line-clamp-2 min-h-[32px] leading-tight mb-2">
-                    {{ $product->name }}
-                </h4>
-            </a>
-
-            {{-- Bintang rata-rata. --}}
-            @isset($product->jumlah_ulasan)
-                @if($product->jumlah_ulasan > 0)
-                    <a href="{{ route('products.show', $product->slug) }}#ulasan" class="kartu-bintang">
-                        @for($b = 1; $b <= 5; $b++)
-                            <i class="fa-solid fa-star {{ $b <= round($product->bintang_rata) ? 'kb-isi' : 'kb-kosong' }}"></i>
-                        @endfor
-                        <span class="kartu-bintang-jml">({{ $product->jumlah_ulasan }})</span>
-                    </a>
-                @endif
-            @endisset
-        </div>
-
-        <div>
-            <!-- Countdown Flash Sale / Promo (Di luar foto produk — presisi & sejajar) -->
-            <div class="min-h-[22px] sm:min-h-[24px] flex items-center justify-center mb-1">
-                @if($discountEndsAtTimestamp && $product->hasDiscount())
-                    <div
-                        x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
-                        x-init="init()"
-                        x-show="!expired"
-                        x-cloak
-                        class="inline-flex items-center justify-center gap-1.5 bg-rose-50 border border-rose-200/90 text-rose-700 text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs"
-                        title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}"
-                    >
-                        <i class="fa-regular fa-clock text-rose-500 text-[9px] sm:text-[10px] animate-pulse"></i>
-                        <span class="text-[9px] sm:text-[10px] text-rose-600 uppercase tracking-wider font-semibold">Berakhir:</span>
-                        <span class="font-mono font-black text-rose-800 text-[10px] sm:text-[11px] tracking-tight" x-text="display"></span>
-                    </div>
-                @endif
-            </div>
-
-            <!-- Price Section — nowrap agar tidak stack ke bawah di mobile -->
-            <div class="kartu-harga mb-2.5 sm:mb-3">
-                @if($product->hasDiscount())
-                    <span class="kartu-harga-coret">{{ $product->formatted_original_price }}</span>
-                    <span class="kartu-harga-diskon">{{ $product->formatted_price }}</span>
-                @else
-                    <span class="kartu-harga-normal">{{ $product->formatted_price }}</span>
-                @endif
-            </div>
-
-            <!-- "BELI SEKARANG" Button (Figma) -->
+        {{-- Badge DISKON / SOLD di dalam flow, tidak melayang --}}
+        <div class="kartu-badge-wrap">
             @if(!$product->isInStock())
-                <button disabled class="w-full bg-gray-200 text-gray-400 text-xs font-bold py-2.5 rounded-sm uppercase tracking-wide cursor-not-allowed">
-                    STOK HABIS
-                </button>
+                <span class="kartu-badge kartu-badge-sold">SOLD OUT</span>
+            @elseif($product->hasDiscount())
+                <span class="kartu-badge kartu-badge-diskon">DISKON {{ $product->discount_percentage }}%</span>
             @else
-                <a href="{{ route('products.show', $product->slug) }}"
-                    class="block w-full bg-accent hover:bg-accent-light text-white text-xs font-bold py-2.5 rounded-sm transition uppercase tracking-wide text-center">
-                    BELI SEKARANG
-                </a>
+                <span class="kartu-badge-ph"></span>
             @endif
         </div>
+
+        {{-- Kategori --}}
+        <p class="kartu-kategori">{{ $product->category->name }}</p>
+
+        {{-- Nama Produk --}}
+        <a href="{{ route('products.show', $product->slug) }}" class="kartu-nama-link">
+            <h4 class="kartu-nama">{{ $product->name }}</h4>
+        </a>
+
+        {{-- Rating Bintang --}}
+        @isset($product->jumlah_ulasan)
+            @if($product->jumlah_ulasan > 0)
+                <a href="{{ route('products.show', $product->slug) }}#ulasan" class="kartu-bintang">
+                    @for($b = 1; $b <= 5; $b++)
+                        <i class="fa-solid fa-star {{ $b <= round($product->bintang_rata) ? 'kb-isi' : 'kb-kosong' }}"></i>
+                    @endfor
+                    <span class="kartu-bintang-jml">({{ $product->jumlah_ulasan }})</span>
+                </a>
+            @else
+                <div class="kartu-bintang-ph"></div>
+            @endif
+        @else
+            <div class="kartu-bintang-ph"></div>
+        @endisset
+
+        {{-- Countdown Flash Sale selalu ada ruang min-height --}}
+        <div class="kartu-countdown-wrap">
+            @if($discountEndsAtTimestamp && $product->hasDiscount())
+                <div x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
+                     x-init="init()"
+                     x-show="!expired"
+                     x-cloak
+                     class="kartu-countdown"
+                     title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}">
+                    <i class="fa-regular fa-clock kartu-cd-ikon animate-pulse"></i>
+                    <span class="kartu-cd-label">Berakhir:</span>
+                    <span class="kartu-cd-waktu font-mono" x-text="display"></span>
+                </div>
+            @endif
+        </div>
+
+        {{-- Harga selalu satu baris --}}
+        <div class="kartu-harga">
+            @if($product->hasDiscount())
+                <span class="kartu-harga-coret">{{ $product->formatted_original_price }}</span>
+                <span class="kartu-harga-diskon">{{ $product->formatted_price }}</span>
+            @else
+                <span class="kartu-harga-normal">{{ $product->formatted_price }}</span>
+            @endif
+        </div>
+
+        {{-- Tombol CTA --}}
+        @if(!$product->isInStock())
+            <button disabled class="kartu-btn kartu-btn-habis">STOK HABIS</button>
+        @else
+            <a href="{{ route('products.show', $product->slug) }}" class="kartu-btn kartu-btn-beli">BELI SEKARANG</a>
+        @endif
+
     </div>
 </div>
 
 @once
-{{-- Gaya ditanam di sini, bukan lewat @push('styles'). --}}
 <style>
-    .kartu-bintang {
-        display: inline-flex; align-items: center; gap: 2px;
-        margin-bottom: 8px;
-        font-size: 10px; letter-spacing: .5px;
-        text-decoration: none;
-    }
-    .kb-isi    { color: #F59E0B; }
-    .kb-kosong { color: #dfe3ea; }
+/* ════════════════════════════════════════
+   KARTU PRODUK - Sistem gaya terpusat
+   ════════════════════════════════════════ */
 
-    .kartu-bintang-jml {
-        margin-left: 3px;
-        font-size: 10px; color: #9ca3af; letter-spacing: 0;
-    }
-    .kartu-bintang:hover .kartu-bintang-jml { color: #4b5563; }
+/* Wrapper utama */
+.kartu-produk {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow .25s ease, transform .2s ease;
+}
+.kartu-produk:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,.10);
+    transform: translateY(-2px);
+}
 
-        /* ── Harga kartu produk ──────────────────────────────────────── */
-    /* Selalu dalam satu baris; nowrap mencegah wrap ke bawah di mobile. */
-        .kartu-harga {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        flex-wrap: nowrap;
-        gap: 3px;
-        line-height: 1.2;
-        width: 100%;
-        padding: 0 2px;
-    }
-    .kartu-harga-coret {
-        font-size: 9px;
-        color: #9ca3af;
-        text-decoration: line-through;
-        white-space: nowrap;
-        letter-spacing: -0.3px;
-        flex-shrink: 1;
-    }
-    .kartu-harga-diskon {
-        font-size: 11.5px;
-        font-weight: 800;
-        color: var(--color-accent, #e53e3e);
-        white-space: nowrap;
-        letter-spacing: -0.3px;
-        flex-shrink: 0;
-    }
-    .kartu-harga-normal {
-        font-size: 12px;
-        font-weight: 800;
-        color: #1a202c;
-        white-space: nowrap;
-        letter-spacing: -0.2px;
-    }
-    @media (min-width: 380px) {
-        .kartu-harga {
-            gap: 4px;
-        }
-        .kartu-harga-coret {
-            font-size: 10px;
-        }
-        .kartu-harga-diskon {
-            font-size: 12.5px;
-        }
-        .kartu-harga-normal {
-            font-size: 13px;
-        }
-    }
-    @media (min-width: 640px) {
-        .kartu-harga {
-            gap: 6px;
-            padding: 0;
-        }
-        .kartu-harga-coret {
-            font-size: 11px;
-            letter-spacing: normal;
-        }
-        .kartu-harga-diskon {
-            font-size: 14px;
-            letter-spacing: normal;
-        }
-        .kartu-harga-normal {
-            font-size: 14px;
-            letter-spacing: normal;
-        }
-    }
+/* Blok gambar */
+.kartu-produk-gambar-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f9fafb;
+    flex-shrink: 0;
+}
+.kartu-produk-gambar-link {
+    display: block; width: 100%; height: 100%;
+}
+.kartu-produk-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+    display: block;
+}
+.kartu-produk:hover .kartu-produk-img { transform: scale(1.06); }
+
+/* Tombol keranjang - sudut kanan bawah DALAM blok gambar */
+.kartu-produk-cart-wrap {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    z-index: 10;
+}
+.kartu-produk-cart-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.8);
+    background: rgba(255,255,255,.90);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.kartu-produk-cart-btn svg { width: 15px; height: 15px; }
+.kpc-idle { color: #374151; }
+.kpc-idle:hover { background: #fff; color: var(--color-primary, #1B3A6B); border-color: var(--color-primary, #1B3A6B); transform: scale(1.12); }
+.kpc-done { background: #10b981 !important; border-color: #10b981 !important; color: #fff !important; transform: scale(1.12); }
+
+/* Konten bawah gambar */
+.kartu-produk-body {
+    padding: 10px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    text-align: center;
+}
+@media (min-width: 640px) {
+    .kartu-produk-body { padding: 12px 14px 14px; }
+}
+
+/* Badge DISKON / SOLD - di dalam flow */
+.kartu-badge-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 22px;
+    margin-bottom: 5px;
+}
+.kartu-badge {
+    display: inline-block;
+    font-size: 9px; font-weight: 800;
+    letter-spacing: .07em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px; line-height: 1.4;
+}
+.kartu-badge-diskon { background: var(--color-accent, #e53e3e); color: #fff; }
+.kartu-badge-sold   { background: #f59e0b; color: #fff; }
+.kartu-badge-ph     { display: inline-block; height: 18px; }
+
+/* Kategori */
+.kartu-kategori {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: #9ca3af; margin-bottom: 3px;
+}
+
+/* Nama produk */
+.kartu-nama-link { text-decoration: none; }
+.kartu-nama {
+    font-size: 11.5px; font-weight: 700;
+    color: #111827; line-height: 1.35;
+    min-height: 31px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 5px;
+    transition: color .15s;
+}
+.kartu-nama-link:hover .kartu-nama { color: var(--color-primary, #1B3A6B); }
+@media (min-width: 640px) { .kartu-nama { font-size: 13px; } }
+
+/* Bintang */
+.kartu-bintang {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-size: 10px; text-decoration: none; margin-bottom: 5px;
+}
+.kb-isi    { color: #F59E0B; }
+.kb-kosong { color: #dde3ea; }
+.kartu-bintang-jml { margin-left: 2px; font-size: 10px; color: #9ca3af; }
+.kartu-bintang-ph  { height: 16px; margin-bottom: 5px; }
+
+/* Countdown flash sale */
+.kartu-countdown-wrap {
+    min-height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 5px;
+}
+.kartu-countdown {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: 99px;
+    padding: 3px 10px;
+}
+.kartu-cd-ikon  { font-size: 9px; color: #f43f5e; }
+.kartu-cd-label { font-size: 9px; font-weight: 700; color: #e11d48; text-transform: uppercase; letter-spacing: .06em; }
+.kartu-cd-waktu { font-size: 10.5px; font-weight: 900; color: #881337; letter-spacing: -.2px; }
+
+/* Harga */
+.kartu-harga {
+    display: flex; align-items: baseline;
+    justify-content: center; gap: 4px;
+    flex-wrap: nowrap; overflow: hidden;
+    margin-bottom: 10px;
+}
+.kartu-harga-coret {
+    font-size: 9.5px; color: #9ca3af;
+    text-decoration: line-through;
+    white-space: nowrap; flex-shrink: 1;
+    min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+.kartu-harga-diskon {
+    font-size: 12px; font-weight: 900;
+    color: var(--color-accent, #e53e3e);
+    white-space: nowrap; flex-shrink: 0;
+}
+.kartu-harga-normal {
+    font-size: 13px; font-weight: 900;
+    color: #111827; white-space: nowrap;
+}
+@media (min-width: 380px) {
+    .kartu-harga-coret  { font-size: 10px; }
+    .kartu-harga-diskon { font-size: 13px; }
+    .kartu-harga-normal { font-size: 13px; }
+}
+@media (min-width: 640px) {
+    .kartu-harga         { gap: 6px; margin-bottom: 12px; }
+    .kartu-harga-coret   { font-size: 11px; }
+    .kartu-harga-diskon  { font-size: 14.5px; }
+    .kartu-harga-normal  { font-size: 14.5px; }
+}
+
+/* Tombol CTA */
+.kartu-btn {
+    display: block; width: 100%;
+    font-size: 10.5px; font-weight: 800;
+    letter-spacing: .07em; text-transform: uppercase;
+    text-align: center; text-decoration: none;
+    padding: 9px 4px; border-radius: 3px;
+    border: none; cursor: pointer;
+    transition: background-color .18s ease;
+    margin-top: auto;
+}
+.kartu-btn-beli  { background: var(--color-accent, #e53e3e); color: #fff; }
+.kartu-btn-beli:hover { background: #c53030; }
+.kartu-btn-habis { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+@media (min-width: 640px) {
+    .kartu-btn { font-size: 11.5px; padding: 10px 4px; }
+}
 </style>
 
 <script>
-    /**
-     * discountCountdown(endsAtTimestamp)
-     * Komponen Alpine.js untuk menampilkan countdown berakhirnya diskon.
-     * endsAtTimestamp: UNIX timestamp (detik) dari PHP time() / Carbon->timestamp
-     */
-    if (typeof window.discountCountdown === 'undefined') {
-        window.discountCountdown = function discountCountdown(endsAtTimestamp) {
+if (typeof window.discountCountdown === 'undefined') {
+    window.discountCountdown = function(endsAtTimestamp) {
         return {
-            display: '',
-            expired: false,
-            _timer: null,
-
-            init() {
-                this._update();
-                this._timer = setInterval(() => this._update(), 1000);
-            },
-
+            display: '', expired: false, _timer: null,
+            init() { this._update(); this._timer = setInterval(() => this._update(), 1000); },
             _update() {
-                const now = Math.floor(Date.now() / 1000);
-                const diff = endsAtTimestamp - now;
-
-                if (diff <= 0) {
-                    this.expired = true;
-                    clearInterval(this._timer);
-                    return;
-                }
-
+                const diff = endsAtTimestamp - Math.floor(Date.now() / 1000);
+                if (diff <= 0) { this.expired = true; clearInterval(this._timer); return; }
                 const d = Math.floor(diff / 86400);
                 const h = Math.floor((diff % 86400) / 3600);
                 const m = Math.floor((diff % 3600) / 60);
                 const s = diff % 60;
-
-                const pad = (n) => String(n).padStart(2, '0');
-
-                if (d > 0) {
-                    // Lebih dari 1 hari: tampilkan "Xh HH:MM"
-                    this.display = d + 'hr ' + pad(h) + ':' + pad(m);
-                } else {
-                    // Kurang dari 1 hari: tampilkan HH:MM:SS
-                    this.display = pad(h) + ':' + pad(m) + ':' + pad(s);
-                }
+                const p = n => String(n).padStart(2,'0');
+                this.display = d > 0 ? d + 'hr ' + p(h) + ':' + p(m) : p(h) + ':' + p(m) + ':' + p(s);
             },
         };
     };
-    }
+}
 </script>
 @endonce
