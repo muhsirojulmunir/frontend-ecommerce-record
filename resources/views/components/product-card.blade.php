@@ -8,7 +8,7 @@
 
 <div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-3 sm:p-4">
     <!-- Badge Status (SOLD / DISKON) & Countdown di Pojok Kiri Atas -->
-    <div class="absolute top-2.5 left-2.5 sm:top-3.5 sm:left-3.5 z-10 flex flex-col gap-1 items-start">
+    <div class="kartu-badge-wrap">
         @if(!$product->isInStock())
             <span class="bg-warning text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-sm shadow-sm">
                 SOLD
@@ -36,8 +36,8 @@
         @endif
     </div>
 
-    <!-- Quick Add to Cart icon di Pojok Kanan Atas -->
-    <div class="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 z-10" x-data="{ adding: false, added: false }">
+    <!-- Quick Add to Cart icon di Pojok Kanan Atas (Ukuran responsif mobile lebih kecil) -->
+    <div class="kartu-cart-wrap" x-data="{ adding: false, added: false }">
         <form
             @submit.prevent="
                 if (adding) return;
@@ -69,13 +69,13 @@
             @endif
 
             <button type="submit" :disabled="adding"
-                class="h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center border shadow-sm transition-all duration-200"
+                class="kartu-cart-btn"
                 :class="added ? 'bg-emerald-500 border-emerald-500 text-white scale-110' : 'bg-white text-gray-600 hover:text-primary hover:scale-110 border-border'"
                 title="Masukkan Keranjang">
-                <svg x-show="!added" class="h-4 w-4 sm:h-4.5 sm:w-4.5" :class="adding ? 'animate-pulse' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg x-show="!added" :class="adding ? 'animate-pulse' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                <svg x-show="added" x-transition.scale.duration.300ms class="h-4 w-4 sm:h-4.5 sm:w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg x-show="added" x-transition.scale.duration.300ms fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                 </svg>
             </button>
@@ -121,7 +121,7 @@
 
         <div>
             <!-- Price Section — nowrap agar tidak stack ke bawah di mobile -->
-            <div class="kartu-harga mb-2.5 sm:mb-3">
+            <div class="kartu-harga">
                 @if($product->hasDiscount())
                     <span class="kartu-harga-coret">{{ $product->formatted_original_price }}</span>
                     <span class="kartu-harga-diskon">{{ $product->formatted_price }}</span>
@@ -147,6 +147,62 @@
 
 @once
 <style>
+    /* Posisi badge kiri atas */
+    .kartu-badge-wrap {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        align-items: flex-start;
+    }
+
+    /* Posisi keranjang kanan atas — pasti di sudut kanan */
+    .kartu-cart-wrap {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 10;
+    }
+
+    /* Tombol keranjang: lebih kecil di mobile agar proporsional */
+    .kartu-cart-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color-border, #e2e8f0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+    .kartu-cart-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    @media (min-width: 640px) {
+        .kartu-badge-wrap {
+            top: 12px;
+            left: 12px;
+        }
+        .kartu-cart-wrap {
+            top: 12px;
+            right: 12px;
+        }
+        .kartu-cart-btn {
+            width: 36px;
+            height: 36px;
+        }
+        .kartu-cart-btn svg {
+            width: 17px;
+            height: 17px;
+        }
+    }
+
     .kartu-bintang {
         display: inline-flex; align-items: center; gap: 2px;
         margin-bottom: 8px;
@@ -164,6 +220,7 @@
 
     /* ── Harga kartu produk ──────────────────────────────────────── */
     /* Selalu dalam satu baris; nowrap mencegah wrap ke bawah di mobile. */
+    /* Jarak bawah (margin-bottom) diperlebar agar tidak terlalu dekat dengan BELI SEKARANG */
     .kartu-harga {
         display: flex;
         align-items: baseline;
@@ -173,6 +230,7 @@
         line-height: 1.2;
         max-width: 100%;
         overflow: hidden;
+        margin-bottom: 14px;
     }
     .kartu-harga-coret {
         font-size: 9px;
@@ -205,6 +263,7 @@
     @media (min-width: 640px) {
         .kartu-harga {
             gap: 6px;
+            margin-bottom: 16px;
         }
         .kartu-harga-coret {
             font-size: 11px;
