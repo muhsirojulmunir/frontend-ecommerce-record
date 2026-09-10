@@ -912,7 +912,7 @@
                 <div class="h-1 w-20 bg-accent mx-auto mt-2"></div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
                 @foreach($relatedProducts as $related)
                     <x-product-card :product="$related" />
                 @endforeach

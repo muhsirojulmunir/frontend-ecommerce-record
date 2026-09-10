@@ -6,9 +6,9 @@
     $discountEndsAtTimestamp = $discountEndsAt ? $discountEndsAt->timestamp : null;
 @endphp
 
-<div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-4">
+<div class="bg-white border border-border rounded-sm hover:shadow-md transition-all duration-300 flex flex-col group relative p-2.5 sm:p-4">
     <!-- Badge Status (SOLD / DISKON) -->
-    <div class="absolute top-4 left-4 z-10 flex flex-col gap-1 items-start">
+    <div class="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 z-10 flex flex-col gap-1 items-start">
         @if(!$product->isInStock())
             <span class="bg-warning text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
                 SOLD
@@ -17,27 +17,12 @@
             <span class="bg-accent text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-sm shadow-sm">
                 DISKON {{ $product->discount_percentage }}%
             </span>
-            {{-- Countdown berakhirnya diskon (hanya tampil jika ends_at ada) --}}
-            @if($discountEndsAtTimestamp)
-                <span
-                    x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
-                    x-init="init()"
-                    x-show="!expired"
-                    x-cloak
-                    class="inline-flex items-center gap-1 bg-black/80 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-sm leading-none"
-                    title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}"
-                >
-                    <svg class="w-2.5 h-2.5 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span x-text="display"></span>
-                </span>
-            @endif
+
         @endif
     </div>
 
     <!-- Quick Add to Cart icon on top-right -->
-    <div class="absolute top-4 right-4 z-10" x-data="{ adding: false, added: false }">
+    <div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10" x-data="{ adding: false, added: false }">
         <form
             @submit.prevent="
                 if (adding) return;
@@ -120,8 +105,26 @@
         </div>
 
         <div>
+            <!-- Countdown Flash Sale / Promo (Di luar foto produk — presisi & sejajar) -->
+            <div class="min-h-[22px] sm:min-h-[24px] flex items-center justify-center mb-1">
+                @if($discountEndsAtTimestamp && $product->hasDiscount())
+                    <div
+                        x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
+                        x-init="init()"
+                        x-show="!expired"
+                        x-cloak
+                        class="inline-flex items-center justify-center gap-1.5 bg-rose-50 border border-rose-200/90 text-rose-700 text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs"
+                        title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}"
+                    >
+                        <i class="fa-regular fa-clock text-rose-500 text-[9px] sm:text-[10px] animate-pulse"></i>
+                        <span class="text-[9px] sm:text-[10px] text-rose-600 uppercase tracking-wider font-semibold">Berakhir:</span>
+                        <span class="font-mono font-black text-rose-800 text-[10px] sm:text-[11px] tracking-tight" x-text="display"></span>
+                    </div>
+                @endif
+            </div>
+
             <!-- Price Section — nowrap agar tidak stack ke bawah di mobile -->
-            <div class="kartu-harga mb-3">
+            <div class="kartu-harga mb-2.5 sm:mb-3">
                 @if($product->hasDiscount())
                     <span class="kartu-harga-coret">{{ $product->formatted_original_price }}</span>
                     <span class="kartu-harga-diskon">{{ $product->formatted_price }}</span>
@@ -165,48 +168,69 @@
 
         /* ── Harga kartu produk ──────────────────────────────────────── */
     /* Selalu dalam satu baris; nowrap mencegah wrap ke bawah di mobile. */
-    .kartu-harga {
+        .kartu-harga {
         display: flex;
         align-items: baseline;
         justify-content: center;
         flex-wrap: nowrap;
         gap: 3px;
         line-height: 1.2;
-        max-width: 100%;
-        overflow: hidden;
+        width: 100%;
+        padding: 0 2px;
     }
     .kartu-harga-coret {
-        font-size: 10px;
+        font-size: 9px;
         color: #9ca3af;
         text-decoration: line-through;
         white-space: nowrap;
+        letter-spacing: -0.3px;
         flex-shrink: 1;
     }
     .kartu-harga-diskon {
-        font-size: 12px;
-        font-weight: 700;
+        font-size: 11.5px;
+        font-weight: 800;
         color: var(--color-accent, #e53e3e);
         white-space: nowrap;
+        letter-spacing: -0.3px;
         flex-shrink: 0;
     }
     .kartu-harga-normal {
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 800;
         color: #1a202c;
         white-space: nowrap;
+        letter-spacing: -0.2px;
+    }
+    @media (min-width: 380px) {
+        .kartu-harga {
+            gap: 4px;
+        }
+        .kartu-harga-coret {
+            font-size: 10px;
+        }
+        .kartu-harga-diskon {
+            font-size: 12.5px;
+        }
+        .kartu-harga-normal {
+            font-size: 13px;
+        }
     }
     @media (min-width: 640px) {
         .kartu-harga {
             gap: 6px;
+            padding: 0;
         }
         .kartu-harga-coret {
             font-size: 11px;
+            letter-spacing: normal;
         }
         .kartu-harga-diskon {
             font-size: 14px;
+            letter-spacing: normal;
         }
         .kartu-harga-normal {
             font-size: 14px;
+            letter-spacing: normal;
         }
     }
 </style>

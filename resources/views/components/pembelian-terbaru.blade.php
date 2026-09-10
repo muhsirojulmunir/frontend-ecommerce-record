@@ -11,49 +11,49 @@
      x-transition:leave="transition ease-in duration-400 transform"
      x-transition:leave-start="translate-x-0 translate-y-0 opacity-100 scale-100"
      x-transition:leave-end="-translate-x-12 opacity-0 scale-95"
-     class="fixed bottom-3 left-3 sm:bottom-6 sm:left-6 z-50 max-w-[270px] sm:max-w-sm w-auto sm:w-full pointer-events-auto">
+     class="fixed bottom-5 left-3 right-3 sm:right-auto sm:left-6 sm:bottom-6 z-50 max-w-sm w-auto sm:w-full pointer-events-auto">
 
-    <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-xl sm:shadow-2xl flex items-center gap-2.5 sm:gap-3 relative overflow-hidden ring-1 ring-black/5">
+    <div class="bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl p-2.5 sm:p-3.5 shadow-2xl flex items-center gap-2.5 sm:gap-3 relative overflow-hidden ring-1 ring-black/5">
         {{-- Bilah waktu tayang meluncur --}}
-        <div class="absolute bottom-0 left-0 h-1 bg-orange-500 transition-all duration-100 ease-linear"
+        <div class="absolute bottom-0 left-0 h-0.5 bg-accent/80 transition-all duration-100 ease-linear"
              :style="`width: ${sisaWaktu}%`"></div>
 
         {{-- Gambar produk --}}
         <a :href="tautanProduk" class="shrink-0 relative group">
             <template x-if="kini && kini.gambar">
                 <img :src="alamatGambar(kini.gambar)" :alt="kini.produk"
-                     class="w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl object-cover border border-gray-100 shadow-sm group-hover:scale-105 transition duration-300">
+                     class="w-11 h-11 sm:w-13 sm:h-13 rounded-xl object-cover border border-gray-100 shadow-xs group-hover:scale-105 transition duration-300">
             </template>
             <template x-if="!kini || !kini.gambar">
-                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-sm sm:text-lg shadow-sm">
+                <div class="w-11 h-11 sm:w-13 sm:h-13 rounded-xl bg-orange-50 text-accent flex items-center justify-center text-base sm:text-lg shadow-xs">
                     <i class="fa-solid fa-bag-shopping"></i>
                 </div>
             </template>
-            <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[7px] sm:text-[10px] shadow-sm ring-1 sm:ring-2 ring-white">
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-4.5 sm:h-4.5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[8px] sm:text-[9px] shadow-xs ring-1.5 ring-white">
                 <i class="fa-solid fa-check"></i>
             </span>
         </a>
 
         {{-- Keterangan Pembeli & Produk --}}
-        <div class="flex-1 min-w-0 pr-1 sm:pr-2">
+        <div class="flex-1 min-w-0 pr-1">
             <div class="flex items-center gap-1 mb-0.5">
-                <p class="text-[11px] sm:text-xs font-bold text-gray-900 truncate">
-                    <span class="text-blue-900 font-extrabold" x-text="kini ? kini.nama : ''"></span>
-                    <span class="text-gray-400 text-[9px] sm:text-[10px] font-normal" x-show="kini && kini.kota" x-text="'(' + kini.kota + ')'"></span>
-                    <span class="text-gray-500 font-medium text-[9px] sm:text-[11px]">membeli</span>
+                <p class="text-[11px] sm:text-xs font-bold text-gray-900 truncate flex items-center gap-1">
+                    <span class="text-primary font-black" x-text="kini ? kini.nama : ''"></span>
+                    <span class="text-gray-400 text-[10px] font-normal" x-show="kini && kini.kota" x-text="'(' + kini.kota + ')'"></span>
+                    <span class="text-gray-500 font-medium text-[10px] sm:text-[11px]">membeli</span>
                 </p>
             </div>
 
             <a :href="tautanProduk"
-               class="block text-[11px] sm:text-xs font-bold text-gray-800 truncate leading-tight sm:leading-snug hover:text-orange-600 transition"
+               class="block text-[11px] sm:text-xs font-semibold text-gray-800 line-clamp-1 leading-snug hover:text-accent transition"
                x-text="kini ? kini.produk : ''"></a>
 
-            <p class="text-[11px] sm:text-xs font-black text-orange-600 mt-0 sm:mt-0.5" x-text="nominalTampil"></p>
+            <p class="text-[11px] sm:text-xs font-black text-accent mt-0.5" x-text="nominalTampil"></p>
         </div>
 
         {{-- Tombol Tutup --}}
         <button @click="sembunyikan(true)" aria-label="Tutup notifikasi"
-                class="shrink-0 text-gray-400 hover:text-gray-600 transition p-0.5 sm:p-1 text-[10px] sm:text-xs -mt-3 sm:-mt-5">
+                class="shrink-0 w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition flex items-center justify-center text-[10px]">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>

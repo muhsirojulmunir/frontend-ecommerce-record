@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="title">Detail & Tracking Pesanan #{{ $order->order_number }}</x-slot>
 
     <!-- Font Awesome -->
@@ -859,6 +859,19 @@
                                 <i class="fa-solid fa-clock mr-1 text-amber-600"></i>
                                 Pembayaran Anda sedang diverifikasi oleh tim admin kami. Pesanan akan diproses segera setelah dikonfirmasi.
                             </p>
+                        </div>
+                    @endif
+
+                    {{-- Tombol "Beli Lagi" untuk pesanan yang dibatalkan --}}
+                    @if($order->status === 'cancelled')
+                        <div class="pt-2">
+                            <form action="{{ route('orders.reorder', $order->order_number) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                        class="block w-full bg-accent hover:bg-accent-dark text-white font-bold py-3 rounded-sm text-center transition uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-rotate-right"></i> Beli Lagi
+                                </button>
+                            </form>
                         </div>
                     @endif
                 </div>

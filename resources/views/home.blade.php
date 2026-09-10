@@ -639,7 +639,7 @@
                     };
                 @endphp
 
-                <div class="grid {{ $kolomKoleksi }} gap-6">
+                <div class="grid {{ $kolomKoleksi }} gap-3 sm:gap-6">
                     @foreach($featuredProducts as $product)
                         <x-product-card :product="$product" />
                     @endforeach
@@ -733,7 +733,7 @@
                 <h2 class="text-2xl font-black text-primary uppercase tracking-wider">New Arrivals</h2>
                 <div class="h-1 w-20 bg-accent mx-auto mt-2"></div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 @forelse($newArrivals as $product)
                     <x-product-card :product="$product" />
                 @empty
