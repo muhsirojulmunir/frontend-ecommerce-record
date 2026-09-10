@@ -17,20 +17,21 @@
             <span class="bg-accent text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-sm shadow-sm">
                 DISKON {{ $product->discount_percentage }}%
             </span>
-            {{-- Countdown ditaruh tepat di bawah badge diskon --}}
+            {{-- Countdown diskon warna merah & berlabel jelas --}}
             @if($discountEndsAtTimestamp)
                 <span
                     x-data="discountCountdown({{ $discountEndsAtTimestamp }})"
                     x-init="init()"
                     x-show="!expired"
                     x-cloak
-                    class="inline-flex items-center gap-1 bg-black/80 text-white text-[8px] sm:text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-sm leading-none"
+                    class="kartu-countdown-badge"
                     title="Diskon berakhir {{ $discountEndsAt->translatedFormat('d M Y') }}"
                 >
-                    <svg class="w-2.5 h-2.5 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="kartu-countdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span x-text="display"></span>
+                    <span class="kartu-countdown-label">Diskon <span class="kartu-countdown-label-desktop">berakhir:</span></span>
+                    <span class="kartu-countdown-time" x-text="display"></span>
                 </span>
             @endif
         @endif
@@ -159,6 +160,44 @@
         align-items: flex-start;
     }
 
+    /* Countdown diskon warna merah & berlabel jelas */
+    .kartu-countdown-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        background: #dc2626; /* Merah solid khas promo / diskon */
+        color: #ffffff;
+        font-size: 8px;
+        font-weight: 800;
+        padding: 2px 5.5px;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px rgba(220, 38, 38, 0.35);
+        line-height: 1.1;
+        letter-spacing: -0.1px;
+    }
+    .kartu-countdown-icon {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+        color: #fef08a; /* Kuning cerah agar kontras & eye-catching */
+        animation: kartu-detak 1.5s ease-in-out infinite;
+    }
+    .kartu-countdown-label {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 7.5px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+    }
+    .kartu-countdown-label-desktop {
+        display: none;
+    }
+    .kartu-countdown-time {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
     /* Posisi keranjang kanan atas — pasti di sudut kanan */
     .kartu-cart-wrap {
         position: absolute;
@@ -189,6 +228,21 @@
             top: 12px;
             left: 12px;
         }
+        .kartu-countdown-badge {
+            font-size: 9px;
+            padding: 2.5px 7px;
+            gap: 4px;
+        }
+        .kartu-countdown-icon {
+            width: 11px;
+            height: 11px;
+        }
+        .kartu-countdown-label {
+            font-size: 8.5px;
+        }
+        .kartu-countdown-label-desktop {
+            display: inline;
+        }
         .kartu-cart-wrap {
             top: 12px;
             right: 12px;
@@ -201,6 +255,11 @@
             width: 17px;
             height: 17px;
         }
+    }
+
+    @keyframes kartu-detak {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.65; transform: scale(0.9); }
     }
 
     .kartu-bintang {
