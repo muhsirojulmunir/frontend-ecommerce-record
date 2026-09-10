@@ -402,6 +402,40 @@ class OrderController extends Controller
     /**
      * Otomatis membatalkan pesanan milik customer ini jika sudah melewati batas waktu 24 jam.
      */
+    /**
+     * Masukkan kembali barang dari pesanan yang dibatalkan ke keranjang belanja untuk checkout ulang.
+     */
+    public function reorder(Request $request, string $orderNumber)
+    {
+        $order = Order::with(['items.product', 'items.productVariant', 'items.variant'])
+            ->where('user_id', Auth::id())
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
+
+        $cartService = app(\App\Services\CartService::class);
+        $addedCount = 0;
+
+        foreach ($order->items as $item) {
+            if ($item->product && $item->product->stock > 0) {
+                $variant = $item->productVariant ?: ($item->variant ?? null);
+                $maxStock = $variant ? (int) $variant->stock : (int) $item->product->stock;
+                $qty = min((int) $item->quantity, $maxStock);
+                if ($qty > 0) {
+                    $cartService->addItem($item->product, $variant, $qty);
+                    $addedCount++;
+                }
+            }
+        }
+
+        if ($addedCount > 0) {
+            return redirect()->route('cart.index')
+                ->with('success', 'Produk dari pesanan sebelumnya berhasil dimasukkan ke keranjang belanja. Silakan lakukan checkout.');
+        }
+
+        return redirect()->back()
+            ->with('error', 'Maaf, stok produk dari pesanan ini sedang habis.');
+    }
+
     private function batalkanPesananKedaluwarsa(int $userId, ?string $orderNumber = null): void
     {
         try {

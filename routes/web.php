@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}/tracking-status', [OrderController::class, 'trackingStatus'])->name('orders.tracking-status');
     Route::post('/orders/{order}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::post('/orders/{order}/reorder', [OrderController::class, 'reorder'])->name('orders.reorder');
     Route::post('/orders/{order}/pengembalian', [ReturnController::class, 'store'])->name('orders.return');
     Route::post('/orders/{order}/pengembalian/resi', [ReturnController::class, 'kirimBalik'])->name('orders.return.resi');
 

@@ -55,6 +55,11 @@
                         class="px-4 py-2 rounded-sm text-xs transition shrink-0 uppercase tracking-wider">
                     Dikirim
                 </button>
+                <button @click="activeTab = 'cancelled'"
+                        :class="activeTab === 'cancelled' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold'"
+                        class="px-4 py-2 rounded-sm text-xs transition shrink-0 uppercase tracking-wider">
+                    Dibatalkan
+                </button>
                 <button @click="activeTab = 'completed'"
                         :class="activeTab === 'completed' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold'"
                         class="px-4 py-2 rounded-sm text-xs transition shrink-0 uppercase tracking-wider">
@@ -150,6 +155,14 @@
                                     <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-wider">
                                         <i class="fa-solid fa-clock mr-1"></i> Menunggu Konfirmasi Admin
                                     </span>
+                                @elseif($order->status === 'cancelled')
+                                    <form action="{{ route('orders.reorder', $order->order_number) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="bg-accent hover:bg-accent-dark text-white text-xs font-bold px-4 py-2 rounded-sm transition uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                            <i class="fa-solid fa-rotate-right"></i> Beli Lagi
+                                        </button>
+                                    </form>
                                 @endif
 
                                 @if($belumNilai > 0)

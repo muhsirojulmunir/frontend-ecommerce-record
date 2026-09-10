@@ -102,7 +102,16 @@
                         </div>
                     @endif
 
-                    <p class="text-xs text-rose-700">Pesanan ini telah dibatalkan. Jika Anda membutuhkan bantuan, silakan hubungi Customer Service kami.</p>
+                    <p class="text-xs text-rose-700">Batas waktu pembayaran pesanan ini telah habis atau pesanan telah dibatalkan. Jika Anda ingin memesan kembali produk ini, silakan klik tombol di bawah untuk checkout ulang.</p>
+                    <div class="pt-2">
+                        <form action="{{ route('orders.reorder', $order->order_number) }}" method="POST" class="inline-block">
+                            @csrf
+                            <button type="submit"
+                                    class="bg-accent hover:bg-accent-dark text-white text-xs font-bold px-6 py-2.5 rounded-sm transition uppercase tracking-wider shadow-sm inline-flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-right"></i> Beli Lagi / Checkout Ulang
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @else
                 {{-- Progress Bar Container --}}
