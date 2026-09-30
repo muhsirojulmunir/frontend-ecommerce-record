@@ -40,6 +40,8 @@ Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->na
 
 // Webhook Midtrans (Server-to-Server)
 Route::post('/midtrans/callback', [CheckoutController::class, 'midtransCallback'])->name('midtrans.callback');
+// Webhook Duitku (Server-to-Server)
+Route::post('/duitku/callback', [CheckoutController::class, 'duitkuCallback'])->name('duitku.callback');
 Route::post('/checkout/midtrans/callback', [CheckoutController::class, 'midtransCallback']);
 
 // Webhook Biteship — status pengiriman dikirim Biteship setiap kali berubah.
@@ -103,6 +105,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/{orderNumber}/change-method', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.payment.change-method');
     Route::get('/checkout/{orderNumber}/status', [CheckoutController::class, 'paymentStatus'])->name('checkout.payment.status');
     Route::get('/checkout/{orderNumber}/finish', [CheckoutController::class, 'paymentFinish'])->name('checkout.payment.finish');
+    Route::post('/checkout/{orderNumber}/simulate-paid', [CheckoutController::class, 'simulatePaid'])->name('checkout.payment.simulate-paid');
     Route::post('/checkout/{orderNumber}/upload-proof', [CheckoutController::class, 'uploadPaymentProof'])->name('checkout.payment.upload-proof');
 
     // Riwayat pesanan & Tracking

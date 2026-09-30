@@ -58,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'midtrans/callback',
+            'duitku/callback',
             'checkout/midtrans/callback',
 
             // Webhook Biteship juga datang dari peladen mereka, bukan dari

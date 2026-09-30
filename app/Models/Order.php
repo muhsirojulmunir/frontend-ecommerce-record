@@ -43,6 +43,9 @@ class Order extends Model
         'shipping_actual_cost',
         'shipping_markup_profit',
         'net_revenue',
+        'duitku_reference',
+        'duitku_payment_url',
+        'duitku_va_number',
     ];
 
     protected $casts = [

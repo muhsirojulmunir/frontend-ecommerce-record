@@ -11,6 +11,7 @@ use App\Models\OrderItem;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\MidtransService;
+use App\Services\DuitkuService;
 use App\Services\ShippingCostService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -32,15 +33,18 @@ class CheckoutController extends Controller
     protected $cartService;
     protected $shippingService;
     protected $midtransService;
+    protected $duitkuService;
 
     public function __construct(
         CartService $cartService,
         ShippingCostService $shippingService,
-        MidtransService $midtransService
+        MidtransService $midtransService,
+        DuitkuService $duitkuService
     ) {
         $this->cartService     = $cartService;
         $this->shippingService = $shippingService;
         $this->midtransService = $midtransService;
+        $this->duitkuService   = $duitkuService;
     }
 
     /**
@@ -101,7 +105,7 @@ class CheckoutController extends Controller
         } else {
             // Belum ada koordinat tujuan. Titik toko dipakai sekadar untuk
             // menampilkan perkiraan, tetapi pengiriman instan sengaja
-            // dibuang — kalau ikut tampil, pembeli luar kota akan melihat
+            // dibuang â€” kalau ikut tampil, pembeli luar kota akan melihat
             // tawaran yang langsung hilang begitu alamatnya diisi.
             $defaultCouriers = collect($this->shippingService->calculate(
                 (float) config('pengiriman.toko.lintang'),
@@ -167,7 +171,7 @@ class CheckoutController extends Controller
                 ->with('success', 'Data kontak diperbarui. Silakan lanjutkan ke alamat pengiriman.');
         }
 
-        // ── Tamu: buat akun, masuk, lalu pindahkan isi keranjangnya ──
+        // â”€â”€ Tamu: buat akun, masuk, lalu pindahkan isi keranjangnya â”€â”€
         $sesiTamu = Session::getId();
 
         $user = User::create([
@@ -183,7 +187,7 @@ class CheckoutController extends Controller
             try {
                 $user->assignRole('customer');
             } catch (\Throwable $e) {
-                // Peran belum ada di database — bukan penghalang untuk berbelanja
+                // Peran belum ada di database â€” bukan penghalang untuk berbelanja
             }
         }
 
@@ -297,7 +301,7 @@ class CheckoutController extends Controller
             'new_address.longitude'       => 'nullable|numeric',
             'courier_code'               => 'required|string',
             'courier_cost'               => 'nullable|numeric|min:0',
-            'payment_method'             => 'required|string|in:R_Pay,MANUAL_BCA,QRIS,BCA,BNI,BRI,Mandiri,Indomaret,Alfamart',
+            'payment_method'             => 'required|string|in:R_Pay,MANUAL_BCA,QR,BC,I1,AG,M2,IR,FT',
             'referral_code'              => 'nullable|string|max:60',
             'notes'                      => 'nullable|string',
         ]);
@@ -557,24 +561,67 @@ class CheckoutController extends Controller
                 ->with('error', 'Pesanan ini telah dibatalkan.');
         }
 
-        $snapToken = null;
-        $snapError = null;
+        $duitkuVaNumber   = null;
+        $duitkuPaymentUrl = null;
+        $duitkuError      = null;
+        $snapToken        = null;
+        $snapError        = null;
 
-        // Jika bukan COD dan bukan MANUAL_BCA dan status masih unpaid, minta Snap Token Midtrans
+        // Jika bukan COD dan bukan MANUAL_BCA dan status masih unpaid, buat/ambil transaksi Duitku
         if (!in_array($order->payment_method, ['COD', 'MANUAL_BCA']) && $order->payment_status === 'unpaid') {
-            $midtransRes = $this->midtransService->createSnapToken($order);
 
-            if ($midtransRes['success']) {
-                $snapToken = $midtransRes['token'];
+            // Jika sudah punya VA number tersimpan di DB, pakai yang lama
+            if (!empty($order->duitku_va_number)) {
+                $duitkuVaNumber   = $order->duitku_va_number;
+                $duitkuPaymentUrl = $order->duitku_payment_url;
             } else {
-                $snapError = $midtransRes['message'] ?? 'Gagal memuat sistem pembayaran.';
+                // Buat transaksi baru di Duitku
+                $user  = $order->user;
+                $items = $order->items->map(fn ($i) => [
+                    'product_name' => $i->product_name,
+                    'price'        => (int) $i->price,
+                    'quantity'     => (int) $i->quantity,
+                ])->toArray();
+
+                // Hitung sisa menit expired (max 24 jam dari created_at)
+                $expiredMins = max(5, (int) now()->diffInMinutes($order->created_at->copy()->addHours(24), false));
+
+                $duitkuRes = $this->duitkuService->createTransaction([
+                    'order_number'    => $order->order_number,
+                    'amount'          => (int) $order->grand_total,
+                    'payment_method'  => $order->payment_method,
+                    'customer_name'   => $user?->name ?? 'Customer',
+                    'customer_email'  => $user?->email ?? 'customer@record.test',
+                    'customer_phone'  => $user?->phone ?? '081234567890',
+                    'product_details' => 'Pembelian Produk RECORD - ' . $order->order_number,
+                    'items'           => $items,
+                    'expired_minutes' => $expiredMins,
+                ]);
+
+                if ($duitkuRes['success']) {
+                    $duitkuVaNumber   = $duitkuRes['vaNumber'];
+                    $duitkuPaymentUrl = $duitkuRes['paymentUrl'];
+
+                    // Simpan ke order agar tidak perlu generate ulang saat halaman di-refresh
+                    $order->update([
+                        'duitku_va_number'   => $duitkuVaNumber,
+                        'duitku_payment_url' => $duitkuPaymentUrl,
+                        'duitku_reference'   => $duitkuRes['reference'] ?? null,
+                    ]);
+                } else {
+                    $duitkuError = $duitkuRes['message'] ?? 'Gagal memuat sistem pembayaran Duitku.';
+                }
             }
         }
 
-        $clientKey = $this->midtransService->getClientKey();
+        $clientKey   = $this->midtransService->getClientKey();
         $isProduction = $this->midtransService->isProduction();
 
-        return view('checkout.payment', compact('order', 'snapToken', 'snapError', 'clientKey', 'isProduction', 'expiresAt', 'secondsRemaining'));
+        return view('checkout.payment', compact(
+            'order', 'duitkuVaNumber', 'duitkuPaymentUrl', 'duitkuError',
+            'snapToken', 'snapError', 'clientKey', 'isProduction',
+            'expiresAt', 'secondsRemaining'
+        ));
     }
 
     /**
@@ -609,19 +656,20 @@ class CheckoutController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
         }
 
-        // Jika masih unpaid dan bukan pembayaran manual/COD/R_Pay, tanyakan langsung ke API Midtrans
+        // Jika masih unpaid dan bukan pembayaran manual/COD/R_Pay, tanyakan langsung ke API Duitku
         if ($order->payment_status === 'unpaid' && !in_array($order->payment_method, ['MANUAL_BCA', 'COD', 'R_Pay'])) {
-            $midtransRes = $this->midtransService->checkStatus($order->order_number);
-            $trxStatus   = $midtransRes['transaction_status'] ?? '';
-            $fraudStatus = $midtransRes['fraud_status'] ?? 'accept';
+            $duitkuRes  = $this->duitkuService->checkTransactionStatus($order->order_number);
+            $statusCode = $duitkuRes['statusCode'] ?? '';
 
-            if ($trxStatus === 'settlement' || ($trxStatus === 'capture' && $fraudStatus === 'accept')) {
+            if ($this->duitkuService->isPaymentSuccessful($statusCode)) {
                 $order->payment_status = 'paid';
                 if (in_array($order->status, ['pending', 'unpaid'])) {
                     $order->status = 'processing';
                 }
                 $order->save();
-            } elseif (in_array($trxStatus, ['cancel', 'deny', 'expire'])) {
+
+                self::kirimEmailInvoice($order);
+            } elseif ($this->duitkuService->isPaymentFailed($statusCode)) {
                 $order->payment_status = 'failed';
                 $order->save();
             }
@@ -643,7 +691,7 @@ class CheckoutController extends Controller
         /*
          * Yang dicatat hanya penanda pesanannya, bukan seluruh muatan.
          * Muatan penuh berisi nomor Virtual Account dan keterangan pembayaran
-         * pembeli — data yang tidak perlu tersimpan selamanya di berkas catatan
+         * pembeli â€” data yang tidak perlu tersimpan selamanya di berkas catatan
          * yang biasanya dibaca lebih banyak orang daripada basis data.
          */
         Log::info('Notifikasi Midtrans diterima', [
@@ -755,12 +803,103 @@ class CheckoutController extends Controller
 
         return response()->json(['status' => 'OK']);
     }
-        /**
+
+    /**
+     * Webhook/Callback dari Duitku (dipanggil server-to-server oleh Duitku).
+     */
+    public function duitkuCallback(Request $request)
+    {
+        Log::info('Notifikasi Duitku diterima', [
+            'merchantOrderId' => $request->input('merchantOrderId'),
+            'resultCode'      => $request->input('resultCode'),
+            'amount'          => $request->input('amount'),
+        ]);
+
+        $callbackData = $request->all();
+
+        // Verifikasi signature Duitku
+        if (!$this->duitkuService->verifyCallbackSignature($callbackData)) {
+            Log::warning('Duitku callback signature tidak valid', $callbackData);
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 400);
+        }
+
+        $merchantOrderId = $callbackData['merchantOrderId'] ?? '';
+        $resultCode      = $callbackData['resultCode'] ?? '';
+
+        $order = Order::where('order_number', $merchantOrderId)->first();
+
+        if (!$order) {
+            Log::warning('Duitku callback: order tidak ditemukan', ['merchantOrderId' => $merchantOrderId]);
+            return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+        }
+
+        // Proteksi: pesanan sudah lunas tidak boleh turun status
+        if ($order->payment_status === 'paid') {
+            return response()->json(['status' => 'OK', 'message' => 'Already paid']);
+        }
+
+        if ($this->duitkuService->isPaymentSuccessful($resultCode)) {
+            $order->payment_status = 'paid';
+            if (in_array($order->status, ['pending', 'unpaid'])) {
+                $order->status = 'processing';
+            }
+            $order->save();
+            self::kirimEmailInvoice($order);
+            Log::info('Duitku callback: pembayaran berhasil', ['order' => $merchantOrderId]);
+        } elseif ($this->duitkuService->isPaymentFailed($resultCode)) {
+            $order->payment_status = 'failed';
+            $order->save();
+            Log::info('Duitku callback: pembayaran gagal', ['order' => $merchantOrderId, 'code' => $resultCode]);
+        } else {
+            Log::info('Duitku callback: status pending', ['order' => $merchantOrderId, 'code' => $resultCode]);
+        }
+
+        return response()->json(['status' => 'OK']);
+    }
+
+    /**
+     * Simulasi pembayaran berhasil untuk testing Sandbox (non-production saja).
+     */
+    public function simulatePaid(Request $request, $orderNumber)
+    {
+        if (app()->isProduction()) {
+            abort(403, 'Fitur simulasi tidak tersedia di lingkungan production.');
+        }
+
+        $order = Order::where('order_number', $orderNumber)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($order->payment_status === 'paid') {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Pesanan sudah lunas sebelumnya.',
+                'redirect' => route('orders.show', $order->order_number),
+            ]);
+        }
+
+        $order->payment_status = 'paid';
+        if (in_array($order->status, ['pending', 'unpaid'])) {
+            $order->status = 'processing';
+        }
+        $order->save();
+        self::kirimEmailInvoice($order);
+
+        Log::info('[SIMULATOR] Pembayaran disimulasikan berhasil', ['order' => $orderNumber]);
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Simulator: Pembayaran berhasil! Pesanan diproses.',
+            'redirect' => route('orders.show', $order->order_number),
+        ]);
+    }
+
+    /**
      * Ubah metode pembayaran untuk pesanan yang masih belum dibayar (unpaid).
      */
     public function changePaymentMethod(Request $request, $orderNumber)
     {
-        $validMethods = ['MANUAL_BCA', 'QRIS', 'BCA', 'BNI', 'BRI', 'Mandiri', 'Indomaret', 'Alfamart', 'R_Pay'];
+        $validMethods = ['MANUAL_BCA', 'QR', 'BC', 'I1', 'AG', 'M2', 'IR', 'FT', 'R_Pay'];
 
         $request->validate([
             'payment_method' => ['required', \Illuminate\Validation\Rule::in($validMethods)],
@@ -933,3 +1072,4 @@ class CheckoutController extends Controller
         return redirect()->back()->with('success', 'Bukti transfer berhasil diunggah! Pembayaran Anda sedang menunggu pengecekan mutasi oleh admin.');
     }
 }
+

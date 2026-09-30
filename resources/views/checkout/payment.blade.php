@@ -1,12 +1,7 @@
 <x-app-layout>
     <x-slot name="title">Pembayaran Pesanan #{{ $order->order_number }}</x-slot>
 
-    {{-- Midtrans Snap JS --}}
-    @if($order->payment_method !== 'COD' && $order->payment_method !== 'MANUAL_BCA' && $snapToken)
-        <script type="text/javascript"
-                src="{{ $isProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
-                data-client-key="{{ $clientKey }}"></script>
-    @endif
+    {{-- Duitku Payment Gateway --}}
 
     <style>
         @keyframes checkPop {
@@ -31,7 +26,7 @@
          x-data="paymentPage()"
          x-init="init()">
 
-        {{-- ── Overlay Animasi Sukses ── --}}
+        {{-- â”€â”€ Overlay Animasi Sukses â”€â”€ --}}
         <div x-show="paymentSuccess"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
@@ -49,16 +44,16 @@
                     <p class="text-sm text-gray-500">Pesanan Anda telah dikonfirmasi dan sedang diproses oleh toko.</p>
                 </div>
                 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 font-medium">
-                    ✓ Pesanan <strong>#{{ $order->order_number }}</strong> sudah LUNAS
+                    âœ“ Pesanan <strong>#{{ $order->order_number }}</strong> sudah LUNAS
                 </div>
                 <a href="{{ route('orders.show', $order->order_number) }}"
                    class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm py-3.5 rounded-xl transition uppercase tracking-wider">
-                    Lihat Detail Pesanan →
+                    Lihat Detail Pesanan â†’
                 </a>
             </div>
         </div>
 
-        {{-- ── Banner Countdown Batas Waktu Pembayaran ── --}}
+        {{-- â”€â”€ Banner Countdown Batas Waktu Pembayaran â”€â”€ --}}
         @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
             <div class="mb-6 bg-amber-50 border border-amber-200 rounded-sm p-4 sm:p-5 flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs text-center sm:text-left">
                 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
@@ -92,7 +87,7 @@
                 </div>
                 <h1 class="text-2xl font-black uppercase tracking-wider text-white">
                     <span x-show="!paymentSuccess">Instruksi Pembayaran</span>
-                    <span x-show="paymentSuccess">Pembayaran Berhasil ✓</span>
+                    <span x-show="paymentSuccess">Pembayaran Berhasil âœ“</span>
                 </h1>
                 <p class="text-xs text-blue-100">
                     Nomor Pesanan: <strong class="text-white font-mono text-sm tracking-wide">#{{ $order->order_number }}</strong>
@@ -108,7 +103,7 @@
                 @if($order->payment_method === 'MANUAL_BCA')
                     <div x-show="!paymentSuccess" class="flex items-center justify-center gap-2 text-xs text-blue-200 pt-1">
                         <i class="fa-solid fa-university text-blue-300"></i>
-                        <span>{{ $order->payment_proof ? 'Bukti diunggah — menunggu verifikasi admin...' : 'Transfer ke BCA &amp; unggah bukti di bawah ini' }}</span>
+                        <span>{{ $order->payment_proof ? 'Bukti diunggah â€” menunggu verifikasi admin...' : 'Transfer ke BCA &amp; unggah bukti di bawah ini' }}</span>
                     </div>
                 @elseif($order->payment_method !== 'COD')
                     <div x-show="!paymentSuccess" class="flex items-center justify-center gap-2 text-xs text-blue-200 pt-1">
@@ -165,10 +160,10 @@
             @endif
 
             @if($order->payment_method === 'MANUAL_BCA')
-                {{-- ═══════════════ INSTRUKSI TRANSFER MANUAL BCA & UPLOAD BUKTI ═══════════════ --}}
+                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• INSTRUKSI TRANSFER MANUAL BCA & UPLOAD BUKTI â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
                 <div class="space-y-6">
 
-                    {{-- ⚠️ PERINGATAN HATI-HATI PENIPUAN & SALAH TRANSFER ⚠️ --}}
+                    {{-- âš ï¸ PERINGATAN HATI-HATI PENIPUAN & SALAH TRANSFER âš ï¸ --}}
                     <div class="rounded-2xl border-2 border-rose-400 bg-rose-50/90 p-5 sm:p-6 text-slate-800 shadow-sm space-y-3.5">
                         <div class="flex items-start sm:items-center gap-3.5">
                             <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-xs" style="background-color: #E11D48; color: #ffffff;">
@@ -298,7 +293,7 @@
                             </h4>
                             @if($order->payment_proof)
                                 <span class="px-2.5 py-1 rounded-full text-[11px] font-bold {{ $order->payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
-                                    {{ $order->payment_status === 'paid' ? '✓ Pembayaran Lunas' : '⏳ Menunggu Pengecekan Admin' }}
+                                    {{ $order->payment_status === 'paid' ? 'âœ“ Pembayaran Lunas' : 'â³ Menunggu Pengecekan Admin' }}
                                 </span>
                             @else
                                 <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
@@ -481,82 +476,160 @@
                     </div>
                 </div>
             @elseif($order->payment_method !== 'COD')
-                {{-- Konten Midtrans Snap --}}
-                @if($snapToken)
-                    <div class="bg-sky-50 border border-sky-200 text-sky-900 rounded-sm p-5 text-xs space-y-2">
-                        <div class="flex items-center gap-2 font-bold text-sky-800 text-sm">
-                            <i class="fa-solid fa-shield-halved text-sky-600"></i>
-                            <span>Midtrans Payment Gateway</span>
+                {{-- Konten Pembayaran Duitku Payment Gateway --}}
+                @php
+                    $methodNames = [
+                        'BC' => 'Virtual Account BCA',
+                        'M2' => 'Virtual Account Mandiri',
+                        'I1' => 'Virtual Account BNI',
+                        'AG' => 'Virtual Account BRI',
+                        'VA' => 'Virtual Account Maybank',
+                        'B1' => 'Virtual Account CIMB Niaga',
+                        'BT' => 'Virtual Account Permata',
+                        'SA' => 'Virtual Account BSI',
+                        'NC' => 'Virtual Account Neo Commerce',
+                        'QR' => 'QRIS (Semua E-Wallet & M-Banking)',
+                        'FT' => 'Retail Alfamart / Alfamidi',
+                        'IR' => 'Retail Indomaret',
+                    ];
+                    $currentMethodName = $methodNames[$order->payment_method] ?? ('Metode ' . $order->payment_method);
+                @endphp
+
+                @if(!empty($duitkuError))
+                    <div class="bg-rose-50 border border-rose-200 text-rose-900 rounded-sm p-4 text-xs space-y-2 mb-4">
+                        <div class="flex items-center gap-2 font-bold text-rose-700 text-sm">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Kendala Sistem Pembayaran</span>
                         </div>
-                        <p class="leading-relaxed text-sky-800">
-                            Jendela pembayaran otomatis akan terbuka. Selesaikan pembayaran sebelum waktu kedaluwarsa, dan status akan otomatis terkonfirmasi.
-                        </p>
+                        <p class="leading-relaxed">{{ $duitkuError }}</p>
+                        <button type="button" @click="window.location.reload()"
+                                class="inline-flex items-center gap-1.5 font-bold text-rose-700 hover:text-rose-900 underline mt-1">
+                            <i class="fa-solid fa-rotate-right"></i> Muat Ulang Halaman
+                        </button>
+                    </div>
+                @endif
+
+                <div class="bg-white border border-gray-200 rounded-sm shadow-xs overflow-hidden">
+                    {{-- Header Duitku --}}
+                    <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-5 py-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-black text-sm text-white shadow-xs">
+                                D
+                            </div>
+                            <div>
+                                <span class="font-bold text-xs uppercase tracking-wider block">Duitku Payment Gateway</span>
+                                <span class="text-[11px] text-slate-300 font-medium">{{ $currentMethodName }}</span>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Menunggu Pembayaran
+                        </span>
                     </div>
 
-                    <div class="pt-4 flex flex-col sm:flex-row gap-3">
-                        <button type="button" @click="payWithMidtrans()"
-                                :disabled="paying || paymentSuccess"
-                                class="flex-1 bg-accent hover:bg-accent-dark text-white font-black text-xs py-4 rounded-sm text-center transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
-                            <i class="fa-solid fa-lock"></i>
-                            <span x-text="paying ? 'Membuka Jendela Pembayaran...' : 'Bayar Sekarang'"></span>
-                        </button>
-                        <a href="{{ route('orders.show', $order->order_number) }}"
-                           class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs py-3.5 px-6 rounded-sm text-center transition flex items-center justify-center uppercase tracking-wider">
-                            Bayar Nanti
-                        </a>
-                    </div>
-                @else
-                    {{-- Instruksi Manual Fallback --}}
-                    <div class="bg-gray-50 border border-gray-200 rounded-sm p-6 space-y-5 text-xs text-gray-800">
-                        <div class="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <h3 class="font-black text-primary uppercase text-sm tracking-wide">
-                                Transaksi {{ $order->payment_method }}
-                            </h3>
-                            <span class="bg-primary/10 text-primary font-bold text-[10px] px-2.5 py-1 rounded-sm uppercase">
-                                Instruksi Transfer / Kasir
+                    <div class="p-5 sm:p-6 space-y-5">
+                        {{-- Nomor Virtual Account Duitku --}}
+                        @php $vaDisplay = $order->duitku_va_number ?? $duitkuVaNumber; @endphp
+                        @if(!empty($vaDisplay))
+                            <div class="bg-slate-50 border border-slate-200 rounded-sm p-4 sm:p-5 space-y-3">
+                                <div class="flex items-center justify-between text-xs text-slate-500">
+                                    <span class="font-semibold uppercase tracking-wider text-[11px]">Nomor Virtual Account</span>
+                                    <span class="font-bold text-slate-700">{{ $currentMethodName }}</span>
+                                </div>
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border-2 border-primary/40 rounded-sm p-3.5">
+                                    <span class="text-xl sm:text-2xl font-black font-mono text-primary tracking-widest select-all">
+                                        {{ $vaDisplay }}
+                                    </span>
+                                    <button type="button"
+                                            @click="navigator.clipboard.writeText('{{ $vaDisplay }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                            class="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-light text-white text-xs font-bold px-4 py-2 rounded-sm transition shrink-0 shadow-xs cursor-pointer">
+                                        <i :class="copied ? 'fa-solid fa-check text-emerald-300' : 'fa-regular fa-copy'"></i>
+                                        <span x-text="copied ? 'Nomor Tersalin!' : 'Salin Nomor VA'"></span>
+                                    </button>
+                                </div>
+                                <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-info text-blue-500"></i>
+                                    Nomor Virtual Account resmi dari Duitku Sandbox, aktif khusus untuk transaksi Anda.
+                                </p>
+                            </div>
+                        @elseif($order->payment_method === 'QR')
+                            <div class="bg-slate-50 border border-slate-200 rounded-sm p-5 text-center space-y-3">
+                                <span class="font-semibold uppercase tracking-wider text-xs text-slate-600 block">Metode Pembayaran QRIS</span>
+                                <p class="text-xs text-slate-600">Buka link pembayaran Duitku di bawah ini untuk melihat kode QRIS pembayaran.</p>
+                            </div>
+                        @endif
+
+                        {{-- Total Pembayaran --}}
+                        <div class="flex items-center justify-between py-3 border-y border-dashed border-slate-200 text-xs">
+                            <span class="text-slate-600 font-medium">Total Tagihan Pesanan</span>
+                            <span class="text-lg font-black text-slate-900 font-mono">
+                                Rp {{ number_format($order->grand_total, 0, ',', '.') }}
                             </span>
                         </div>
 
-                        @if($order->payment_method === 'QRIS')
-                            <div class="text-center space-y-3">
-                                <p class="text-gray-700 font-semibold">Scan Kode QRIS di bawah ini menggunakan aplikasi e-wallet (GoPay, OVO, Dana, ShopeePay) atau Mobile Banking Anda:</p>
-                                <div class="bg-white p-4 inline-block border border-gray-200 shadow-sm rounded-sm">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode('RECORD-QRIS|ORDER:' . $order->order_number . '|TOTAL:' . $order->grand_total) }}"
-                                         alt="QRIS Code" class="w-48 h-48 mx-auto">
-                                </div>
-                                <p class="text-xs font-mono font-bold text-gray-500">Kode Referensi: RECORD-QRIS-{{ $order->order_number }}</p>
-                            </div>
-                        @else
-                            <div class="space-y-4">
-                                <p class="text-gray-700 font-semibold">Lakukan transfer bank ke nomor Virtual Account di bawah sebelum batas waktu pembayaran:</p>
-                                <div class="bg-white border-2 border-primary p-4 rounded-sm flex items-center justify-between shadow-sm">
-                                    <div>
-                                        <span class="text-[10px] text-gray-500 font-bold uppercase block">Nomor Virtual Account {{ $order->payment_method }}</span>
-                                        <span class="text-xl font-black font-mono text-primary tracking-wider select-all">
-                                            88012{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
-                                        </span>
-                                    </div>
-                                    <button type="button" onclick="navigator.clipboard.writeText('88012{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}'); alert('Nomor Virtual Account berhasil disalin!');"
-                                            class="bg-primary hover:bg-primary-light text-white font-bold text-xs px-3.5 py-2 rounded-sm transition uppercase">
-                                        <i class="fa-regular fa-copy mr-1"></i> Salin VA
-                                    </button>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
+                        {{-- Tombol Aksi Pembayaran & Simulator --}}
+                        <div class="space-y-3 pt-1">
+                            @php $payUrl = $order->duitku_payment_url ?? $duitkuPaymentUrl; @endphp
+                            @if(!empty($payUrl))
+                                <a href="{{ $payUrl }}" target="_blank" rel="noopener noreferrer"
+                                   class="w-full bg-accent hover:bg-accent-dark text-white font-black text-xs py-4 rounded-sm text-center transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    <span>Buka Halaman Duitku Sandbox (Tab Baru)</span>
+                                </a>
+                            @endif
 
-                    <div class="pt-4 flex flex-col sm:flex-row gap-3">
-                        <a href="{{ route('orders.show', $order->order_number) }}"
-                           class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold text-xs py-3.5 px-6 rounded-sm text-center transition flex items-center justify-center uppercase tracking-wider">
-                            Lihat Detail Pesanan
-                        </a>
+                            {{-- Card Khusus Simulator Testing Sandbox --}}
+                            <div class="p-4 bg-amber-50/90 border border-amber-300 rounded-sm space-y-3">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="font-bold text-amber-900 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-flask text-amber-600"></i>
+                                        Uji Coba Pembayaran (Mode Sandbox)
+                                    </span>
+                                    <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded uppercase tracking-wider">Testing Mode</span>
+                                </div>
+
+                                <p class="text-[11px] text-amber-800 leading-relaxed">
+                                    Dalam lingkungan pengujian lokal (Sandbox), Anda dapat langsung menguji alur pesanan lunas, email invoice, dan proses pengiriman tanpa transfer uang:
+                                </p>
+
+                                <button type="button" @click="simulatePayment()"
+                                        :disabled="simulating"
+                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3.5 px-4 rounded-sm transition flex items-center justify-center gap-2 uppercase tracking-wider shadow-sm disabled:opacity-50 cursor-pointer">
+                                    <i :class="simulating ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bolt'"></i>
+                                    <span x-text="simulating ? 'Memproses Simulasi...' : 'Simulasikan Pembayaran Lunas (Instan)'"></span>
+                                </button>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+                                <button type="button" @click="checkStatusManual()"
+                                        :disabled="checkingManual"
+                                        class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-3.5 px-4 rounded-sm text-center transition flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer">
+                                    <i :class="checkingManual ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-rotate'"></i>
+                                    <span x-text="checkingManual ? 'Memeriksa...' : 'Cek Status Pembayaran'"></span>
+                                </button>
+                                <a href="{{ route('orders.show', $order->order_number) }}"
+                                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs py-3.5 px-6 rounded-sm text-center transition flex items-center justify-center uppercase tracking-wider">
+                                    Bayar Nanti
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- Petunjuk Transfer Singkat --}}
+                        <div class="border-t border-slate-100 pt-4 text-xs text-slate-600 space-y-2">
+                            <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Petunjuk Pembayaran:</span>
+                            <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-600 pl-1 leading-relaxed">
+                                <li>Gunakan nomor <strong>Virtual Account</strong> yang tertera di atas.</li>
+                                <li>Nominal transfer harus sama persis: <strong>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</strong>.</li>
+                                <li>Atau klik tombol <strong>"⚡ Simulasikan Pembayaran Sukses"</strong> di atas untuk pengujian instan. Status akan langsung lunas otomatis!</li>
+                            </ol>
+                        </div>
                     </div>
-                @endif
+                </div>
             @endif
 
         </div>
 
-        {{-- ── MODAL UBAH METODE PEMBAYARAN ── --}}
+        {{-- â”€â”€ MODAL UBAH METODE PEMBAYARAN â”€â”€ --}}
         <div x-show="showChangePaymentModal" x-cloak
              class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
             <div @click.away="showChangePaymentModal = false"
@@ -585,20 +658,20 @@
                 @php
                     $pembayaranTersedia = [
                         ['code' => 'MANUAL_BCA', 'name' => 'Transfer Bank Manual BCA',          'desc' => 'BCA 1000028122 a.n Lily Minawati Prajogo', 'icon' => 'fa-solid fa-money-bill-transfer'],
-                        ['code' => 'QRIS',      'name' => 'QRIS (Semua E-Wallet & M-Banking)', 'desc' => 'GoPay, OVO, Dana, ShopeePay, LinkAja', 'icon' => 'fa-solid fa-qrcode'],
-                        ['code' => 'BCA',       'name' => 'Transfer BCA Virtual Account',       'desc' => 'Verifikasi Otomatis 24 Jam',           'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'BNI',       'name' => 'Transfer BNI Virtual Account',       'desc' => 'Verifikasi Otomatis 24 Jam',           'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'BRI',       'name' => 'Transfer BRI Virtual Account',       'desc' => 'Verifikasi Otomatis 24 Jam',           'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'Mandiri',   'name' => 'Mandiri Bill Payment',               'desc' => 'Verifikasi Otomatis 24 Jam',           'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'Indomaret', 'name' => 'Indomaret / Ceriamart',              'desc' => 'Bayar di Kasir Outlet Terdekat',       'icon' => 'fa-solid fa-store'],
-                        ['code' => 'Alfamart',  'name' => 'Alfamart / Alfamidi',                'desc' => 'Bayar di Kasir Outlet Terdekat',       'icon' => 'fa-solid fa-store'],
+                        ['code' => 'QR',         'name' => 'QRIS (Semua E-Wallet & M-Banking)', 'desc' => 'GoPay, OVO, Dana, ShopeePay, LinkAja',      'icon' => 'fa-solid fa-qrcode'],
+                        ['code' => 'BC',         'name' => 'Virtual Account BCA',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
+                        ['code' => 'I1',         'name' => 'Virtual Account BNI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
+                        ['code' => 'AG',         'name' => 'Virtual Account BRI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
+                        ['code' => 'M2',         'name' => 'Virtual Account Mandiri',            'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
+                        ['code' => 'IR',         'name' => 'Indomaret / Ceriamart',              'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
+                        ['code' => 'FT',         'name' => 'Alfamart / Alfamidi',                'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
                     ];
                 @endphp
 
                 <div class="space-y-2">
                     @foreach($pembayaranTersedia as $item)
                         @php
-                            $isMaintenance = ($item['code'] !== 'MANUAL_BCA');
+                            $isMaintenance = false; // Semua metode aktif via Duitku
                         @endphp
                         <label @if(!$isMaintenance) @click="selectedNewMethod = '{{ $item['code'] }}'" @endif
                                class="border p-3.5 rounded-sm transition flex items-center justify-between {{ $isMaintenance ? 'bg-gray-50/70 border-gray-200 opacity-60 cursor-not-allowed' : 'cursor-pointer' }}"
@@ -655,6 +728,9 @@
     function paymentPage() {
         return {
             paying: false,
+            simulating: false,
+            copied: false,
+            checkingManual: false,
             paymentSuccess: {{ $order->payment_status === 'paid' ? 'true' : 'false' }},
             pollInterval: null,
             showChangePaymentModal: false,
@@ -678,9 +754,6 @@
                     }
                 }, 1000);
 
-                @if($order->payment_method !== 'COD' && $order->payment_method !== 'MANUAL_BCA' && $snapToken)
-                    setTimeout(() => this.payWithMidtrans(), 800);
-                @endif
 
                 if (!this.paymentSuccess) {
                     this.startPolling();
@@ -752,48 +825,55 @@
                 }, 3000);
             },
 
-            payWithMidtrans() {
-                if (typeof snap === 'undefined') {
-                    const existingScript = document.querySelector('script[src*="snap.js"]');
-                    if (!existingScript) {
-                        const script = document.createElement('script');
-                        script.src = '{{ $isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js" }}';
-                        script.setAttribute('data-client-key', '{{ $clientKey }}');
-                        document.head.appendChild(script);
-                    }
-                    this.paying = true;
-                    setTimeout(() => {
-                        if (typeof snap !== 'undefined') {
-                            this.paying = false;
-                            this.payWithMidtrans();
-                        } else {
-                            this.paying = false;
-                        }
-                    }, 1000);
-                    return;
-                }
-                this.paying = true;
-                snap.pay('{{ $snapToken ?? '' }}', {
-                    onSuccess: (result) => {
+            async simulatePayment() {
+                this.simulating = true;
+                try {
+                    const res = await fetch('{{ route('checkout.payment.simulate-paid', $order->order_number) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({})
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
                         this.paymentSuccess = true;
                         clearInterval(this.pollInterval);
                         setTimeout(() => {
-                            window.location.href = '{{ route('checkout.payment.finish', $order->order_number) }}';
-                        }, 2500);
-                    },
-                    onPending: (result) => {
-                        this.paying = false;
-                    },
-                    onError: (result) => {
-                        this.paying = false;
-                        alert('Pembayaran gagal atau dibatalkan. Silakan coba lagi.');
-                    },
-                    onClose: () => {
-                        this.paying = false;
+                            window.location.href = data.redirect || '{{ route('orders.show', $order->order_number) }}';
+                        }, 2000);
+                    } else {
+                        alert(data.message || 'Gagal melakukan simulasi pembayaran.');
                     }
-                });
-            }
-        };
+                } catch (e) {
+                    alert('Terjadi kesalahan jaringan: ' + e.message);
+                } finally {
+                    this.simulating = false;
+                }
+            },
+
+            async checkStatusManual() {
+                this.checkingManual = true;
+                try {
+                    const res = await fetch('{{ route('checkout.payment.status', $order->order_number) }}', {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    if (data.payment_status === 'paid') {
+                        this.paymentSuccess = true;
+                        clearInterval(this.pollInterval);
+                        window.location.href = '{{ route('checkout.payment.finish', $order->order_number) }}';
+                    } else {
+                        alert('Status pembayaran: Belum lunas (' + (data.payment_status || 'unpaid') + '). Silakan selesaikan pembayaran di Duitku.');
+                    }
+                } catch (e) {
+                    alert('Gagal memeriksa status pembayaran. Silakan coba kembali.');
+                } finally {
+                    this.checkingManual = false;
+                }
+            }};
     }
     </script>
 </x-app-layout>
