@@ -37,7 +37,7 @@ class DuitkuService
     {
         $this->merchantCode    = config('duitku.merchant_code', env('DUITKU_MERCHANT_CODE', 'D0001'));
         $this->apiKey          = config('duitku.api_key', env('DUITKU_API_KEY', '732B39FC61796845775D2C4FB05332AF'));
-        $this->isSandbox       = config('duitku.sandbox', env('DUITKU_SANDBOX', true));
+        $this->isSandbox       = str_starts_with($this->merchantCode, 'DS') || filter_var(config('duitku.sandbox', env('DUITKU_SANDBOX', true)), FILTER_VALIDATE_BOOLEAN);
         $this->callbackBaseUrl = config('app.url', 'http://127.0.0.1:8000');
 
         $this->config = new \Duitku\Config($this->apiKey, $this->merchantCode);

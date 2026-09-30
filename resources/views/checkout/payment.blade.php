@@ -712,7 +712,7 @@
                     </button>
                     <button type="button"
                             @click="submitChangePaymentMethod()"
-                            :disabled="changingMethod || selectedNewMethod === '{{ $order->payment_method }}'"
+                            :disabled="changingMethod || selectedNewMethod === ''"
                             style="background-color: #1B3A6B; color: #ffffff;"
                             class="hover:bg-primary-light text-xs font-bold px-5 py-2.5 rounded-sm uppercase tracking-wider transition shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!changingMethod"><i class="fa-solid fa-check"></i> Simpan & Lanjutkan</span>
@@ -734,7 +734,7 @@
             paymentSuccess: {{ $order->payment_status === 'paid' ? 'true' : 'false' }},
             pollInterval: null,
             showChangePaymentModal: false,
-            selectedNewMethod: '{{ $order->payment_method }}',
+            selectedNewMethod: '',
             changingMethod: false,
             changeError: '',
             secondsRemaining: {{ $secondsRemaining ?? 86400 }},
