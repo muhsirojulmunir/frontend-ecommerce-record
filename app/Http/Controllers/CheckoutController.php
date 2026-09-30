@@ -826,7 +826,10 @@ class CheckoutController extends Controller
         $merchantOrderId = $callbackData['merchantOrderId'] ?? '';
         $resultCode      = $callbackData['resultCode'] ?? '';
 
-        $order = Order::where('order_number', $merchantOrderId)->first();
+        $baseOrderNumber = preg_replace('/-\d+$/', '', $merchantOrderId);
+        $order = Order::where('order_number', $merchantOrderId)
+            ->orWhere('order_number', $baseOrderNumber)
+            ->first();
 
         if (!$order) {
             Log::warning('Duitku callback: order tidak ditemukan', ['merchantOrderId' => $merchantOrderId]);

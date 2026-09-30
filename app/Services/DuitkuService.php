@@ -103,6 +103,34 @@ class DuitkuService
             return $this->fail($data['statusMessage'] ?? 'Gagal membuat tagihan Duitku.');
 
         } catch (\Throwable $e) {
+            // Jika Duitku mengembalikan 409 duplicate request (orderId pernah dikirim),
+            // otomatis coba sekali lagi dengan suffix timestamp agar transaksi tetap berhasil
+            if (str_contains($e->getMessage(), '409') || str_contains(strtolower($e->getMessage()), 'duplicate')) {
+                try {
+                    $retryOrderId = $merchantOrderId . '-' . substr((string) time(), -4);
+                    $payload['merchantOrderId'] = $retryOrderId;
+                    Log::info('Duitku 409 duplicate terdeteksi, mencoba ulang dengan orderId: ' . $retryOrderId);
+
+                    $rawResponse = \Duitku\Api::createInvoice($payload, $this->config);
+                    $data        = json_decode($rawResponse, true) ?? [];
+
+                    Log::info('Duitku createInvoice retry response', $data);
+
+                    if (($data['statusCode'] ?? '') === '00') {
+                        return [
+                            'success'    => true,
+                            'paymentUrl' => $data['paymentUrl'] ?? null,
+                            'reference'  => $data['reference'] ?? null,
+                            'vaNumber'   => $data['vaNumber'] ?? null,
+                            'qrCode'     => $data['qrCode'] ?? ($data['qrString'] ?? null),
+                            'message'    => $data['statusMessage'] ?? 'Transaksi Duitku berhasil dibuat.',
+                        ];
+                    }
+                } catch (\Throwable $retryErr) {
+                    Log::error('Duitku retry invoice exception: ' . $retryErr->getMessage());
+                }
+            }
+
             Log::error('Duitku createInvoice exception: ' . $e->getMessage());
             return $this->fail('Koneksi Duitku: ' . $e->getMessage());
         }
