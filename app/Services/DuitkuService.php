@@ -207,11 +207,41 @@ class DuitkuService
             ]];
         }
 
-        return collect($items)->map(fn ($item) => [
-            'name'     => mb_substr($item['product_name'] ?? 'Produk', 0, 50),
-            'price'    => (int) ($item['price'] ?? 0),
-            'quantity' => (int) ($item['quantity'] ?? 1),
-        ])->values()->toArray();
+        $list = [];
+        $sum  = 0;
+        foreach ($items as $item) {
+            $price = (int) ($item['price'] ?? 0);
+            $qty   = (int) ($item['quantity'] ?? 1);
+            if ($price > 0 && $qty > 0) {
+                $list[] = [
+                    'name'     => mb_substr($item['product_name'] ?? 'Produk', 0, 50),
+                    'price'    => $price,
+                    'quantity' => $qty,
+                ];
+                $sum += ($price * $qty);
+            }
+        }
+
+        $diff = $totalAmount - $sum;
+        if ($diff > 0) {
+            // Tambahkan ongkos kirim / selisih biaya agar total item persis sama dengan total tagihan
+            $list[] = [
+                'name'     => 'Ongkos Kirim & Layanan',
+                'price'    => $diff,
+                'quantity' => 1,
+            ];
+            return $list;
+        } elseif ($diff === 0) {
+            return $list;
+        } else {
+            // Jika ada diskon (total < sum items), Duitku tidak support harga negatif,
+            // sehingga kirim 1 agregat item sebesar totalAmount agar validasi Duitku selalu cocok.
+            return [[
+                'name'     => 'Total Pembelian Pesanan RECORD',
+                'price'    => $totalAmount,
+                'quantity' => 1,
+            ]];
+        }
     }
 
     private function fail(string $message): array
