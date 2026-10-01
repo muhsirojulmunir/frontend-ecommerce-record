@@ -109,14 +109,14 @@
 
                 payments: [
                     {code: 'MANUAL_BCA', name: 'Transfer Bank BCA (Manual)',          type: 'Rek: 1000028122 a.n Lily Minawati Prajogo (Verifikasi Admin)', icon: 'fa-solid fa-money-bill-transfer'},
-                    {code: 'R_Pay', name: 'R_Pay (Saldo Dompet)', type: 'Langsung lunas, tanpa transfer', icon: 'fa-solid fa-wallet'},
-                    {code: 'QRIS',      name: 'QRIS (Semua E-Wallet & M-Banking)', type: 'GoPay, OVO, Dana, ShopeePay, LinkAja', icon: 'fa-solid fa-qrcode'},
-                    {code: 'BCA',       name: 'Transfer BCA Virtual Account',       type: 'Verifikasi Otomatis 24 Jam',           icon: 'fa-solid fa-building-columns'},
-                    {code: 'BNI',       name: 'Transfer BNI Virtual Account',       type: 'Verifikasi Otomatis 24 Jam',           icon: 'fa-solid fa-building-columns'},
-                    {code: 'BRI',       name: 'Transfer BRI Virtual Account',       type: 'Verifikasi Otomatis 24 Jam',           icon: 'fa-solid fa-building-columns'},
-                    {code: 'Mandiri',   name: 'Mandiri Bill Payment',               type: 'Verifikasi Otomatis 24 Jam',           icon: 'fa-solid fa-building-columns'},
-                    {code: 'Indomaret', name: 'Indomaret / Ceriamart',              type: 'Bayar di Kasir Outlet',               icon: 'fa-solid fa-store'},
-                    {code: 'Alfamart',  name: 'Alfamart / Alfamidi',                type: 'Bayar di Kasir Outlet',               icon: 'fa-solid fa-store'},
+                    {code: 'R_Pay',      name: 'R_Pay (Saldo Dompet)',                type: 'Langsung lunas, tanpa transfer',                               icon: 'fa-solid fa-wallet'},
+                    {code: 'QR',         name: 'QRIS (Semua E-Wallet & M-Banking)',   type: 'GoPay, OVO, Dana, ShopeePay, LinkAja',                         icon: 'fa-solid fa-qrcode'},
+                    {code: 'BC',         name: 'Transfer BCA Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
+                    {code: 'I1',         name: 'Transfer BNI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
+                    {code: 'AG',         name: 'Transfer BRI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
+                    {code: 'M2',         name: 'Mandiri Bill Payment',                type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
+                    {code: 'IR',         name: 'Indomaret / Ceriamart',               type: 'Bayar di Kasir Outlet',                                        icon: 'fa-solid fa-store'},
+                    {code: 'FT',         name: 'Alfamart / Alfamidi',                 type: 'Bayar di Kasir Outlet',                                        icon: 'fa-solid fa-store'},
                 ],
                 newAddrLabel: 'Alamat Rumah',
                 newAddrName: @json($namaAkun),
@@ -1759,42 +1759,45 @@
                 {{-- Daftar Pembayaran: Pilihan teratas (Transfer BCA) langsung terlihat jelas --}}
                 <div class="overflow-y-auto p-4 sm:p-6 space-y-3 overscroll-contain flex-1">
                     <template x-for="item in payments" :key="item.code">
-                        <div @click="if (item.code === 'MANUAL_BCA') { selectedPayment = item.code; showPaymentModal = false; }"
-                            class="border p-4 rounded-2xl transition flex items-center gap-3"
+                        <div @click="
+                                if (item.code === 'R_Pay' && !rpayCukup) {
+                                    alert('Saldo R_Pay Anda tidak mencukupi untuk pesanan ini.');
+                                    return;
+                                }
+                                selectedPayment = item.code; 
+                                showPaymentModal = false;
+                            "
+                            class="border p-4 rounded-2xl transition flex items-center gap-3 cursor-pointer"
                             :class="{
                                 'border-primary bg-primary/5 ring-1 ring-primary': selectedPayment === item.code,
-                                'border-gray-200 hover:border-primary hover:bg-primary/5 cursor-pointer':
-                                    selectedPayment !== item.code && item.code === 'MANUAL_BCA',
-                                'border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed': item.code !== 'MANUAL_BCA'
+                                'border-gray-200 hover:border-primary hover:bg-primary/5': selectedPayment !== item.code && (item.code !== 'R_Pay' || rpayCukup),
+                                'border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed': item.code === 'R_Pay' && !rpayCukup
                             }">
-                            <div class="h-9 w-9 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0"
-                                 :class="item.code === 'MANUAL_BCA' ? 'text-primary' : 'text-gray-400'">
+                            <div class="h-9 w-9 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0 text-primary">
                                 <i :class="item.icon" class="text-xs"></i>
                             </div>
                             <div class="text-xs flex-grow">
                                 <p class="font-bold text-gray-800 flex items-center gap-1.5">
                                     <span x-text="item.name"></span>
-                                    <template x-if="item.code !== 'MANUAL_BCA'">
-                                        <span class="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-300">Maintenance</span>
+                                    <template x-if="item.code === 'R_Pay' && !rpayCukup">
+                                        <span class="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-300">Saldo Kurang</span>
                                     </template>
-                                    <template x-if="item.code === 'MANUAL_BCA'">
+                                    <template x-if="item.code !== 'R_Pay' || rpayCukup">
                                         <span class="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-300">Tersedia</span>
                                     </template>
                                 </p>
-                                <template x-if="item.code === 'MANUAL_BCA'">
-                                    <p class="mt-0.5 text-gray-500 font-medium" x-text="item.type"></p>
-                                </template>
-                                <template x-if="item.code !== 'MANUAL_BCA'">
+                                <p class="mt-0.5 text-gray-500 font-medium" x-text="item.type"></p>
+                                <template x-if="item.code === 'R_Pay' && !rpayCukup">
                                     <p class="mt-0.5 text-[11px] text-amber-700 font-semibold flex items-center gap-1">
                                         <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
-                                        <span>Sementara tidak dapat dipilih (Sedang Maintenance)</span>
+                                        <span>Saldo: <strong x-text="formatPrice(saldoRpay)"></strong> (Kurang <strong x-text="formatPrice(getTotal() - saldoRpay)"></strong>)</span>
                                     </p>
                                 </template>
                             </div>
-                            <template x-if="item.code === 'MANUAL_BCA'">
+                            <template x-if="item.code !== 'R_Pay' || rpayCukup">
                                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                             </template>
-                            <template x-if="item.code !== 'MANUAL_BCA'">
+                            <template x-if="item.code === 'R_Pay' && !rpayCukup">
                                 <i class="fa-solid fa-lock text-gray-400 text-xs shrink-0"></i>
                             </template>
                         </div>
