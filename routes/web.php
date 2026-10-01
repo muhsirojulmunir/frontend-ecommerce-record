@@ -42,6 +42,7 @@ Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->na
 Route::post('/midtrans/callback', [CheckoutController::class, 'midtransCallback'])->name('midtrans.callback');
 // Webhook Duitku (Server-to-Server)
 Route::post('/duitku/callback', [CheckoutController::class, 'duitkuCallback'])->name('duitku.callback');
+Route::post('/api/duitku/callback', [CheckoutController::class, 'duitkuCallback']);
 Route::post('/checkout/midtrans/callback', [CheckoutController::class, 'midtransCallback']);
 
 // Webhook Biteship — status pengiriman dikirim Biteship setiap kali berubah.
