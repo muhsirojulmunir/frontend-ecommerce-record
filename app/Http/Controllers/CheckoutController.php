@@ -9,6 +9,7 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\MidtransService;
 use App\Services\DuitkuService;
@@ -303,6 +304,7 @@ class CheckoutController extends Controller
             'courier_cost'               => 'nullable|numeric|min:0',
             'payment_method'             => 'required|string|in:R_Pay,MANUAL_BCA,QR,BC,I1,AG,M2,IR,FT',
             'referral_code'              => 'nullable|string|max:60',
+            'voucher_code'               => 'nullable|string|max:50',
             'notes'                      => 'nullable|string',
         ]);
 
@@ -414,7 +416,21 @@ class CheckoutController extends Controller
             $pemilikKode = $cekKode['pemilik']->id;
             $diskon      = $referral->diskon((float) $cart->total_terpilih);
             $komisi      = $referral->komisi((float) $cart->total_terpilih);
+        }        // Voucher belanja diperiksa ULANG di sini.
+        $voucherModel  = null;
+        $diskonVoucher = 0.0;
+        if ($request->filled('voucher_code')) {
+            $kodeVoucherInput = strtoupper(trim($request->input('voucher_code')));
+            $voucherModel     = Voucher::where('code', $kodeVoucherInput)->first();
+
+            if (! $voucherModel || $voucherModel->is_used || ($voucherModel->expires_at && $voucherModel->expires_at->isPast())) {
+                return back()->withInput()->with('error', 'Kode voucher tidak valid, sudah kadaluarsa, atau sudah pernah digunakan.');
+            }
+
+            $sisaSubtotal  = max(0, (float) $cart->total_terpilih - $diskon);
+            $diskonVoucher = min((float) $voucherModel->amount, $sisaSubtotal);
         }
+
 
         DB::beginTransaction();
         try {
@@ -425,11 +441,13 @@ class CheckoutController extends Controller
                 'shipping_cost'    => $courierCost,
                 'shipping_actual_cost'    => $selectedCourier ? (int)($selectedCourier['cost_actual'] ?? $courierCost) : (int)$courierCost,
                 'shipping_markup_profit'  => $selectedCourier ? max(0, $courierCost - (int)($selectedCourier['cost_actual'] ?? $courierCost)) : 0,
-                'grand_total'      => $cart->total_terpilih - $diskon + $courierCost,
+                'grand_total'         => max(0, $cart->total_terpilih - $diskon - $diskonVoucher + $courierCost),
                 'referral_code_used'  => $kodeReferal,
                 'referrer_id'         => $pemilikKode,
                 'referral_discount'   => $diskon,
                 'referral_commission' => $komisi,
+                'voucher_id'          => $voucherModel?->id,
+                'voucher_discount'    => $diskonVoucher,
                 'status'           => 'pending',
                 'shipping_address' => $address->toSnapshot(),
                 'courier'          => $courierName,
@@ -489,6 +507,11 @@ class CheckoutController extends Controller
 
             // Yang dibuang dari keranjang hanya barang yang benar-benar dibayar.
             $cart->items()->whereIn('id', $itemDibayar->pluck('id'))->delete();
+
+            // Tandai voucher telah digunakan
+            if ($voucherModel) {
+                $voucherModel->markAsUsed(Auth::id(), $order->id);
+            }
 
             DB::commit();
 

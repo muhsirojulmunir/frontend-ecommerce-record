@@ -46,6 +46,8 @@ class Order extends Model
         'duitku_reference',
         'duitku_payment_url',
         'duitku_va_number',
+        'voucher_id',
+        'voucher_discount',
     ];
 
     protected $casts = [
@@ -64,6 +66,7 @@ class Order extends Model
         'shipping_actual_cost' => 'decimal:2',
         'shipping_markup_profit' => 'decimal:2',
         'net_revenue' => 'decimal:2',
+        'voucher_discount' => 'decimal:2',
     ];
 
     /**
@@ -92,6 +95,10 @@ class Order extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(ProductReview::class);
+    }
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class);
     }
 
     /**
@@ -225,6 +232,14 @@ class Order extends Model
 
             if ($baruBatal) {
                 $layanan->saatDibatalkan($order);
+                if ($order->voucher_id) {
+                    \App\Models\Voucher::where('id', $order->voucher_id)->update([
+                        'is_used'  => false,
+                        'used_by'  => null,
+                        'used_at'  => null,
+                        'order_id' => null,
+                    ]);
+                }
             }
         });
     }

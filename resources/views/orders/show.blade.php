@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="title">Detail & Tracking Pesanan #{{ $order->order_number }}</x-slot>
 
     <!-- Font Awesome -->
@@ -817,6 +817,18 @@
                             <span>Subtotal Barang</span>
                             <span class="text-text font-semibold">{{ $order->formatted_total_price }}</span>
                         </div>
+                        @if(($order->voucher_discount ?? 0) > 0)
+                        <div class="flex justify-between text-emerald-600 font-semibold text-xs">
+                            <span>Potongan Voucher</span>
+                            <span>- Rp {{ number_format($order->voucher_discount, 0, ',', '.') }}</span>
+                        </div>
+                        @endif
+                        @if(($order->referral_discount ?? 0) > 0)
+                        <div class="flex justify-between text-emerald-600 font-semibold text-xs">
+                            <span>Diskon Referal</span>
+                            <span>- Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</span>
+                        </div>
+                        @endif
                         <div class="flex justify-between">
                             <span>Ongkos Kirim</span>
                             <span class="text-text font-semibold">{{ $order->formatted_shipping_cost }}</span>

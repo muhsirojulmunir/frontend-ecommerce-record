@@ -853,7 +853,7 @@
 
                 /** Total yang harus dibayar: harga barang − diskon + ongkos kirim. */
                 getTotal() {
-                    return this.subtotalBarang - this.diskonReferal + this.getCourierCost();
+                    return Math.max(0, this.subtotalBarang - this.diskonReferal - this.diskonVoucher + this.getCourierCost());
                 },
 
                 // ── Ubah jumlah langsung dari checkout ───────────────────
@@ -900,6 +900,7 @@
                         this.recalculateShippingCost();
 
                         if (this.referalStatus === 'benar') this.periksaReferal();
+                        if (this.voucherStatus === 'benar') this.periksaVoucher();
                     } catch (e) {
                         this.jumlahItem[id] = sebelumnya;
                     } finally {
@@ -958,6 +959,57 @@
                     this.referalPesan   = '';
                     this.pemilikReferal = '';
                     this.diskonReferal  = 0;
+                },
+                // ─── Kode voucher ───────────────────────────────────────────
+                kodeVoucher: '',
+                voucherStatus: 'kosong',   // kosong | benar | salah
+                voucherPesan: '',
+                nominalVoucher: 0,
+                diskonVoucher: 0,
+                memeriksaVoucher: false,
+
+                async periksaVoucher() {
+                    const kode = this.kodeVoucher.trim().toUpperCase();
+
+                    if (! kode) { this.lepasVoucher(); return; }
+
+                    this.memeriksaVoucher = true;
+
+                    try {
+                        const url = @json(route('voucher.periksa')) + '?kode=' + encodeURIComponent(kode);
+                        const res = await fetch(url, {
+                            headers: { 'Accept': 'application/json' },
+                            credentials: 'same-origin',
+                        });
+                        const data = await res.json();
+
+                        if (data.sah) {
+                            this.voucherStatus  = 'benar';
+                            this.nominalVoucher = data.nominal;
+                            this.diskonVoucher  = Math.min(data.nominal, Math.max(0, this.subtotalBarang - this.diskonReferal));
+                            this.voucherPesan   = '';
+                        } else {
+                            this.voucherStatus  = 'salah';
+                            this.voucherPesan   = data.alasan || 'Kode voucher tidak valid.';
+                            this.diskonVoucher  = 0;
+                            this.nominalVoucher = 0;
+                        }
+                    } catch (e) {
+                        this.voucherStatus = 'salah';
+                        this.voucherPesan  = 'Gagal memeriksa kode voucher. Periksa koneksi internetmu.';
+                        this.diskonVoucher = 0;
+                        this.nominalVoucher = 0;
+                    }
+
+                    this.memeriksaVoucher = false;
+                },
+
+                lepasVoucher() {
+                    this.kodeVoucher    = '';
+                    this.voucherStatus  = 'kosong';
+                    this.voucherPesan   = '';
+                    this.nominalVoucher = 0;
+                    this.diskonVoucher  = 0;
                 },
 
                 {{-- Semua langkah harus beres, mulai dari kontak --}}
@@ -1500,6 +1552,53 @@
                     </div>
                 </div>
 
+                <!-- 3b. KODE VOUCHER — boleh dikosongkan -->
+                <div class="kartu-voucher">
+                    <div class="voucher-kepala">
+                        <div class="voucher-ikon"><i class="fa-solid fa-gift"></i></div>
+                        <div class="min-w-0">
+                            <h4 class="voucher-judul">Punya Voucher Belanja?</h4>
+                            <p class="voucher-sub">
+                                Masukkan kode voucher untuk mendapatkan potongan belanja langsung. Boleh dikosongkan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="voucher-baris">
+                        <input type="text" x-model="kodeVoucher"
+                               @input="kodeVoucher = kodeVoucher.toUpperCase(); voucherStatus = 'kosong'"
+                               @keydown.enter.prevent="periksaVoucher()"
+                               placeholder="CONTOH: 7B5K"
+                               autocomplete="off" maxlength="20"
+                               class="voucher-isian"
+                               :class="voucherStatus === 'salah' ? 'voucher-isian-salah'
+                                     : (voucherStatus === 'benar' ? 'voucher-isian-benar' : '')">
+
+                        <button type="button" @click="periksaVoucher()"
+                                :disabled="!kodeVoucher.trim() || memeriksaVoucher"
+                                class="voucher-tombol">
+                            <span x-show="!memeriksaVoucher">Pakai</span>
+                            <span x-show="memeriksaVoucher" x-cloak>
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            </span>
+                        </button>
+                    </div>
+
+                    {{-- Nilai yang ikut terkirim bersama pesanan --}}
+                    <input type="hidden" name="voucher_code" :value="voucherStatus === 'benar' ? kodeVoucher : ''">
+
+                    <p class="voucher-galat" x-show="voucherStatus === 'salah'" x-cloak x-text="voucherPesan"></p>
+
+                    <div class="voucher-berhasil" x-show="voucherStatus === 'benar'" x-cloak>
+                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                        <span>
+                            Voucher <strong x-text="kodeVoucher"></strong> berhasil dipasang! Kamu hemat
+                            <strong x-text="formatPrice(diskonVoucher)"></strong>.
+                        </span>
+                        <button type="button" @click="lepasVoucher()" class="voucher-lepas">Lepas</button>
+                    </div>
+                </div>
+
                 <!-- 4. KERANJANG CARD -->
                 <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6"
                      data-track-section="checkout_cart" data-track-label="Checkout - Review Keranjang">
@@ -1577,6 +1676,15 @@
                             <span class="text-[10px] text-emerald-500" x-text="'(' + kodeReferal + ')'"></span>
                         </span>
                         <span x-text="'− ' + formatPrice(diskonReferal)"></span>
+                    </div>
+                    {{-- Potongan voucher hanya muncul kalau kodenya memang terpakai --}}
+                    <div class="flex justify-between font-semibold text-emerald-600"
+                         x-show="voucherStatus === 'benar' && diskonVoucher > 0" x-cloak>
+                        <span>
+                            Potongan voucher
+                            <span class="text-[10px] text-emerald-500" x-text="'(' + kodeVoucher + ')'"></span>
+                        </span>
+                        <span x-text="'- ' + formatPrice(diskonVoucher)"></span>
                     </div>
 
                     <div class="flex justify-between font-semibold text-gray-400">
@@ -1994,6 +2102,66 @@
             }
             .referal-berhasil > i { margin-top: 2px; }
             .referal-lepas {
+                margin-left: auto; font-size: 10.5px; font-weight: 800;
+                color: #047857; text-decoration: underline;
+            }
+
+            /* ─── Kartu kode voucher ────────────────────────────────────────── */
+            .kartu-voucher {
+                background: #f0fdf4;
+                border: 1px solid #bbf7d0;
+                border-radius: 16px;
+                padding: 18px;
+                box-shadow: 0 1px 2px rgb(0 0 0 / .04);
+            }
+            .voucher-kepala { display: flex; align-items: flex-start; gap: 13px; }
+            .voucher-ikon {
+                width: 40px; height: 40px; border-radius: 999px; flex-shrink: 0;
+                background: #10b981; color: #fff;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 14px; box-shadow: 0 1px 3px rgb(16 185 129 / .4);
+            }
+            .voucher-judul { font-size: 12.5px; font-weight: 800; color: #065f46; }
+            .voucher-sub { font-size: 10.5px; color: #047857; line-height: 1.6; margin-top: 3px; }
+
+            .voucher-baris { display: flex; gap: 8px; margin-top: 14px; }
+            .voucher-isian {
+                flex: 1 1 auto; min-width: 0;
+                border: 1px solid #a7f3d0; border-radius: 10px;
+                padding: 10px 12px; font-size: 12px; font-weight: 700;
+                letter-spacing: .05em; background: #fff; color: #1f2937;
+                text-transform: uppercase;
+            }
+            .voucher-isian::placeholder { font-weight: 500; letter-spacing: 0; color: #9ca3af; }
+            .voucher-isian:focus {
+                outline: none; border-color: #059669;
+                box-shadow: 0 0 0 3px rgb(16 185 129 / .15);
+            }
+            .voucher-isian-salah { border-color: #fca5a5; background: #fef2f2; }
+            .voucher-isian-benar { border-color: #6ee7b7; background: #ecfdf5; }
+
+            .voucher-tombol {
+                flex-shrink: 0; min-width: 74px;
+                background: #059669; color: #fff;
+                border-radius: 10px; padding: 10px 16px;
+                font-size: 12px; font-weight: 800;
+                transition: background-color 160ms ease;
+            }
+            .voucher-tombol:hover:not(:disabled) { background: #047857; }
+            .voucher-tombol:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+            .voucher-galat {
+                margin-top: 9px; font-size: 11px; font-weight: 700; color: #dc2626;
+            }
+
+            .voucher-berhasil {
+                display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;
+                margin-top: 12px; padding: 11px 13px;
+                background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 10px;
+                font-size: 11px; color: #065f46; line-height: 1.6;
+            }
+            .voucher-berhasil > i { margin-top: 2px; }
+            .voucher-lepas {
                 margin-left: auto; font-size: 10.5px; font-weight: 800;
                 color: #047857; text-decoration: underline;
             }

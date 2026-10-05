@@ -317,6 +317,12 @@
                         <td class="summary-val" style="color: #059669;">- Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</td>
                     </tr>
                     @endif
+                @if(!empty($order->voucher_discount) && $order->voucher_discount > 0)
+                <tr>
+                    <td class="summary-label" style="color: #059669;">Potongan Voucher:</td>
+                    <td class="summary-val" style="color: #059669;">- Rp {{ number_format($order->voucher_discount, 0, ',', '.') }}</td>
+                </tr>
+                @endif
                     <tr class="grand-total">
                         <td class="summary-label">TOTAL PEMBAYARAN:</td>
                         <td class="summary-val">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>

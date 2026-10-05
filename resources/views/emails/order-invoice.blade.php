@@ -117,6 +117,12 @@
                         <td style="text-align: right; font-weight: 600; color: #059669; padding: 4px 0;">- Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</td>
                     </tr>
                     @endif
+                    @if(!empty($order->voucher_discount) && $order->voucher_discount > 0)
+                    <tr>
+                        <td style="color: #059669; padding: 4px 0;">Potongan Voucher:</td>
+                        <td style="text-align: right; font-weight: 600; color: #059669; padding: 4px 0;">- Rp {{ number_format($order->voucher_discount, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
                     <tr style="border-top: 2px solid #1B3A6B;">
                         <td style="font-weight: 800; font-size: 15px; color: #1B3A6B; padding: 10px 0 4px;">TOTAL:</td>
                         <td style="text-align: right; font-weight: 800; font-size: 16px; color: #1B3A6B; padding: 10px 0 4px;">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>

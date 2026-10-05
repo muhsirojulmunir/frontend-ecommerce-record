@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeocodingController;
 use App\Http\Controllers\KodePosController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\RpayController;
@@ -80,6 +81,8 @@ Route::middleware('throttle:30,1')->group(function () {
 
     // Pemeriksaan kode referal saat checkout.
     Route::get('/referal/periksa', [ReferralController::class, 'periksa'])->name('referal.periksa');
+    // Pemeriksaan kode voucher saat checkout.
+    Route::get('/voucher/periksa', [VoucherController::class, 'periksa'])->name('voucher.periksa');
 });
 
 // Menyegarkan token CSRF pada halaman yang lama dibiarkan terbuka (mis. checkout).
