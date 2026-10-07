@@ -423,7 +423,7 @@ class CheckoutController extends Controller
             $kodeVoucherInput = strtoupper(trim($request->input('voucher_code')));
             $voucherModel     = Voucher::where('code', $kodeVoucherInput)->first();
 
-            if (! $voucherModel || $voucherModel->is_used || ($voucherModel->expires_at && $voucherModel->expires_at->isPast())) {
+            if (! $voucherModel || $voucherModel->is_used || ($voucherModel->expires_at && $voucherModel->expires_at->isPast()) || ($voucherModel->used_by && Auth::check() && $voucherModel->used_by !== Auth::id())) {
                 return back()->withInput()->with('error', 'Kode voucher tidak valid, sudah kadaluarsa, atau sudah pernah digunakan.');
             }
 

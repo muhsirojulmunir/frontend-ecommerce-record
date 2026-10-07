@@ -140,6 +140,9 @@
         {{-- Toast Notifikasi Pembelian Otomatis (Fake Purchase Toast) --}}
         <x-pembelian-terbaru :pembelian="$pembelianTerbaru ?? []" />
 
+        {{-- Mini-Game Stopwatch 10 Detik Berhadiah Voucher --}}
+        <x-game-stopwatch />
+
 
 
 

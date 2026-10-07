@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
@@ -12,13 +12,14 @@ use App\Http\Controllers\GeocodingController;
 use App\Http\Controllers\KodePosController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\GameStopwatchController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\RpayController;
 use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 
-// ─── Halaman Publik (bisa diakses siapa saja) ────────────────────
+// â”€â”€â”€ Halaman Publik (bisa diakses siapa saja) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Pelacakan durasi atensi seksi website (dwell time)
 Route::post('/track/dwell', [TrackingController::class, 'recordSectionDwell'])->name('track.dwell');
@@ -46,13 +47,13 @@ Route::post('/duitku/callback', [CheckoutController::class, 'duitkuCallback'])->
 Route::post('/api/duitku/callback', [CheckoutController::class, 'duitkuCallback']);
 Route::post('/checkout/midtrans/callback', [CheckoutController::class, 'midtransCallback']);
 
-// Webhook Biteship — status pengiriman dikirim Biteship setiap kali berubah.
+// Webhook Biteship â€” status pengiriman dikirim Biteship setiap kali berubah.
 // Gratis, dan menggantikan pemanggilan Tracking API yang memotong saldo Rp 10
 // tiap kali halaman pelacakan dibuka.
 Route::post('/webhook/biteship', \App\Http\Controllers\BiteshipWebhookController::class)
     ->name('webhook.biteship');
 
-// ─── Keranjang & awal checkout: boleh diakses tamu ────────────────
+// â”€â”€â”€ Keranjang & awal checkout: boleh diakses tamu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //
 // Pembeli baru tidak dipaksa mendaftar lebih dulu. Ia bisa memasukkan
 // produk ke keranjang dan membuka checkout; pendaftaran akun dilakukan
@@ -93,7 +94,7 @@ Route::get('/token-sesi', fn () => response()->json(['token' => csrf_token()]))-
 Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
 Route::get('/orders/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
 
-// ─── Halaman Khusus Customer (wajib login) ────────────────────────
+// â”€â”€â”€ Halaman Khusus Customer (wajib login) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 Route::middleware('auth')->group(function () {
 
@@ -103,7 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/delete-request', [ProfileController::class, 'requestDeletionCode'])->name('profile.delete-request');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Pembuatan pesanan tetap wajib login — akun sudah terbentuk di langkah Kontak
+    // Pembuatan pesanan tetap wajib login â€” akun sudah terbentuk di langkah Kontak
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/{orderNumber}/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
     Route::post('/checkout/{orderNumber}/change-method', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.payment.change-method');
@@ -115,7 +116,7 @@ Route::middleware('auth')->group(function () {
     // Riwayat pesanan & Tracking
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
-    // Lacak pesanan — wajib login karena nomor resi termasuk data pribadi.
+    // Lacak pesanan â€” wajib login karena nomor resi termasuk data pribadi.
     // Didaftarkan sebelum /orders/{order} agar tidak tertangkap sebagai nomor pesanan.
     Route::get('/tracking', [OrderController::class, 'tracking'])->name('tracking');
 
@@ -132,7 +133,7 @@ Route::middleware('auth')->group(function () {
     // Penilaian produk, hanya untuk pesanan yang sudah selesai.
     Route::post('/orders/{order}/penilaian', [ProductReviewController::class, 'store'])->name('orders.review');
 
-    // R_Pay — dompet digital pembeli
+    // R_Pay â€” dompet digital pembeli
     Route::get('/rpay', [RpayController::class, 'index'])->name('rpay.index');
     Route::post('/rpay/pencairan', [RpayController::class, 'withdraw'])->name('rpay.withdraw');
 
@@ -140,6 +141,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-// ─── Route Autentikasi (dari Breeze) ─────────────────────────────
+// â”€â”€â”€ Route Autentikasi (dari Breeze) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+
+// ─── Stopwatch Challenge Mini-Game ───────────────────────────────────────────
+// Status bisa diakses publik (untuk deteksi apakah user sudah login atau belum)
+Route::get('/game/stopwatch/status', [GameStopwatchController::class, 'status'])->name('game.stopwatch.status');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/game/stopwatch/claim', [GameStopwatchController::class, 'claim'])->name('game.stopwatch.claim');
+    Route::post('/game/stopwatch/save', [GameStopwatchController::class, 'save'])->name('game.stopwatch.save');
+    Route::post('/game/stopwatch/discard', [GameStopwatchController::class, 'discard'])->name('game.stopwatch.discard');
+});
 
 require __DIR__.'/auth.php';
+
+
+

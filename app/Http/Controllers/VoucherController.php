@@ -37,6 +37,13 @@ class VoucherController extends Controller
             ]);
         }
 
+        if ($voucher->used_by && auth()->check() && $voucher->used_by !== auth()->id()) {
+            return response()->json([
+                'sah'    => false,
+                'alasan' => 'Kode voucher ini milik akun pengguna lain.',
+            ]);
+        }
+
         if ($voucher->expires_at && $voucher->expires_at->isPast()) {
             return response()->json([
                 'sah'    => false,

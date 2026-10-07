@@ -59,6 +59,7 @@ class User extends Authenticatable
             'is_blocked' => 'boolean',
             'rpay_balance' => 'decimal:2',
             'referral_issued_at' => 'datetime',
+            'last_game_at' => 'date',
         ];
     }
 
