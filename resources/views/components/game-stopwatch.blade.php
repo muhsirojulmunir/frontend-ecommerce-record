@@ -12,17 +12,15 @@
     {{-- 1. FLOATING ACTION BUTTON (Pojok Kanan Bawah)                      --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     <div x-show="!modalOpen" 
-         x-transition:enter="transition ease-out duration-300 transform"
-         x-transition:enter-start="opacity-0 translate-y-4 scale-90"
-         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-         class="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-[9999] flex items-center gap-2 group"
-         style="z-index: 9999;">
+         class="stopwatch-floating-trigger"
+         style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 999999 !important; display: flex !important; align-items: center !important;">
         
         {{-- Floating Pill Button --}}
         <button @click="openModal()" 
                 type="button"
                 aria-label="Buka Tantangan Stopwatch 10 Detik"
-                class="relative flex items-center gap-3.5 pl-4 pr-5 py-3 rounded-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/40 text-white shadow-[0_8px_30px_rgba(245,158,11,0.25)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.45)] hover:border-amber-400 active:scale-95 transition-all duration-300 cursor-pointer overflow-hidden">
+                class="stopwatch-floating-btn group hover:scale-105 active:scale-95 transition-transform duration-200"
+                style="position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; padding: 10px 18px 10px 14px !important; border-radius: 9999px !important; background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%) !important; border: 2px solid #f59e0b !important; color: #ffffff !important; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.45), 0 0 20px rgba(245, 158, 11, 0.25) !important; cursor: pointer !important; text-decoration: none !important;">
             
             {{-- Glowing Background Pulse --}}
             <span class="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 opacity-75 group-hover:opacity-100 transition-opacity"></span>
@@ -68,7 +66,8 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto" style="z-index: 99999;">
+         class="stopwatch-modal-backdrop"
+         style="position: fixed !important; inset: 0 !important; z-index: 9999999 !important; background: rgba(2, 6, 23, 0.85) !important; backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; overflow-y: auto !important;">
 
         {{-- Backdrop click (hanya bisa tutup jika bukan saat holding voucher) --}}
         <div class="fixed inset-0" @click="handleBackdropClick()"></div>
@@ -82,7 +81,8 @@
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
              @keydown.window.escape="handleEscapeKey()"
-             class="relative w-full max-w-lg my-auto bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-slate-800 text-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.7)] overflow-hidden z-10 flex flex-col">
+             class="stopwatch-modal-box"
+             style="position: relative !important; width: 100% !important; max-width: 512px !important; margin: auto !important; background: linear-gradient(180deg, #0f172a 0%, #0f172a 50%, #020617 100%) !important; border: 1px solid #1e293b !important; color: #ffffff !important; border-radius: 24px !important; box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 40px rgba(245,158,11,0.15) !important; overflow: hidden !important; z-index: 10 !important; display: flex !important; flex-direction: column !important;">
 
             {{-- Decorative Header Glow Accent --}}
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-violet-500 to-emerald-500"></div>
@@ -582,6 +582,20 @@
             background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 35%, #34d399 75%, #10b981 100%);
             box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35);
             border: 1px solid rgba(52, 211, 153, 0.6);
+        }
+            @media (max-width: 640px) {
+            .stopwatch-floating-trigger {
+                bottom: 16px !important;
+                right: 12px !important;
+            }
+            .stopwatch-floating-btn {
+                padding: 8px 14px 8px 10px !important;
+                gap: 8px !important;
+            }
+        }
+        .stopwatch-floating-btn:hover {
+            box-shadow: 0 14px 40px rgba(245, 158, 11, 0.65), 0 0 30px rgba(245, 158, 11, 0.4) !important;
+            border-color: #fbbf24 !important;
         }
     </style>
 
