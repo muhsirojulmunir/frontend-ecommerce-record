@@ -6,7 +6,6 @@
 
 <div x-data="gameStopwatchWidget()" 
      x-init="initWidget()"
-     x-cloak
      class="stopwatch-game-root">
 
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
@@ -16,7 +15,7 @@
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="opacity-0 translate-y-4 scale-90"
          x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-         class="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 flex items-center gap-2 group">
+         class="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 group">
         
         {{-- Floating Pill Button --}}
         <button @click="openModal()" 
@@ -589,7 +588,10 @@
     {{-- 4. ALPINE.JS COMPONENT LOGIC                                       --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     <script>
-        document.addEventListener('alpine:init', () => {
+    (function () {
+        function initStopwatchComponent() {
+            if (typeof Alpine === 'undefined') return;
+
             Alpine.data('gameStopwatchWidget', () => ({
                 open: false,
                 screen: 'intro', // 'intro' | 'running' | 'result' | 'saved'
@@ -866,6 +868,13 @@
                     }
                 }
             }));
-        });
+        }
+
+        if (window.Alpine) {
+            initStopwatchComponent();
+        } else {
+            document.addEventListener('alpine:init', initStopwatchComponent);
+        }
+    })();
     </script>
 </div>
