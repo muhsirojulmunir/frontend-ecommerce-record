@@ -11,11 +11,12 @@
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     {{-- 1. FLOATING ACTION BUTTON (Pojok Kanan Bawah)                      --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
-    <div x-show="!open" 
+    <div x-show="!modalOpen" 
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="opacity-0 translate-y-4 scale-90"
          x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-         class="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 group">
+         class="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-[9999] flex items-center gap-2 group"
+         style="z-index: 9999;">
         
         {{-- Floating Pill Button --}}
         <button @click="openModal()" 
@@ -60,20 +61,20 @@
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     {{-- 2. MODAL OVERLAY & CONTAINER                                       --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
-    <div x-show="open" 
+    <div x-show="modalOpen" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+         class="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto" style="z-index: 99999;">
 
         {{-- Backdrop click (hanya bisa tutup jika bukan saat holding voucher) --}}
         <div class="fixed inset-0" @click="handleBackdropClick()"></div>
 
         {{-- Modal Box --}}
-        <div x-show="open"
+        <div x-show="modalOpen"
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 scale-95 translate-y-4"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -593,7 +594,7 @@
             if (typeof Alpine === 'undefined') return;
 
             Alpine.data('gameStopwatchWidget', () => ({
-                open: false,
+                modalOpen: false,
                 screen: 'intro', // 'intro' | 'running' | 'result' | 'saved'
                 isAuthenticated: {{ auth()->check() ? 'true' : 'false' }},
                 canPlay: true,
@@ -626,7 +627,7 @@
 
                     // Spacebar shortcut to STOP during running screen
                     window.addEventListener('keydown', (e) => {
-                        if (this.open && this.screen === 'running' && e.code === 'Space') {
+                        if (this.modalOpen && this.screen === 'running' && e.code === 'Space') {
                             e.preventDefault();
                             this.stopGame();
                         }
@@ -652,7 +653,7 @@
                 },
 
                 openModal() {
-                    this.open = true;
+                    this.modalOpen = true;
                     if (this.screen !== 'result' && this.screen !== 'saved') {
                         this.screen = 'intro';
                         this.fetchStatus();
@@ -660,7 +661,7 @@
                 },
 
                 closeModal() {
-                    this.open = false;
+                    this.modalOpen = false;
                 },
 
                 handleBackdropClick() {
@@ -687,7 +688,7 @@
                         cancelAnimationFrame(this.rafId);
                     }
 
-                    this.open = false;
+                    this.modalOpen = false;
                 },
 
                 startGame() {
@@ -835,7 +836,7 @@
 
                     this.voucher = null;
                     this.hasVoucher = false;
-                    this.open = false;
+                    this.modalOpen = false;
                     this.screen = 'intro';
                 },
 
