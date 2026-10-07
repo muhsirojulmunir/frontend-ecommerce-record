@@ -104,6 +104,100 @@
             </div>
         </div>
 
+        <!-- ══ Voucher Hadiah Saya ══ -->
+        <div class="mb-10 bg-white border border-border p-6 rounded-sm shadow-sm" x-data="{ copiedCode: null }">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-border pb-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🎟️</span>
+                        <h2 class="text-sm font-black uppercase tracking-wider text-primary">Voucher Diskon Saya</h2>
+                    </div>
+                    <p class="text-xs text-text-light mt-0.5">Voucher hasil mini-game atau promo khusus yang dapat digunakan saat checkout.</p>
+                </div>
+                <button type="button"
+                        @click="$dispatch('open-stopwatch-game')"
+                        class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold uppercase tracking-wider hover:from-amber-600 hover:to-orange-600 transition shadow-xs">
+                    <i class="fa-solid fa-stopwatch"></i>
+                    <span>Tantangan Stopwatch</span>
+                </button>
+            </div>
+
+            @if(isset($myVouchers) && $myVouchers->isNotEmpty())
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($myVouchers as $voc)
+                        <div class="relative overflow-hidden rounded-xl border {{ $voc->is_used ? 'bg-gray-50/70 border-gray-200 opacity-75' : 'bg-gradient-to-br from-amber-50/60 via-white to-orange-50/60 border-amber-200/80 shadow-xs hover:border-amber-400' }} p-4 transition-all">
+                            <!-- Left decorative ticket notch -->
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider {{ $voc->is_used ? 'text-gray-400' : 'text-amber-700' }}">Voucher Belanja</span>
+                                    <p class="text-xl font-black {{ $voc->is_used ? 'text-gray-500 line-through' : 'text-primary' }}">
+                                        Rp {{ number_format($voc->amount, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                                <div>
+                                    @if($voc->is_used)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-600 uppercase tracking-wider">
+                                            <i class="fa-solid fa-check"></i> Terpakai
+                                        </span>
+                                    @elseif($voc->expires_at && $voc->expires_at->isPast())
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 uppercase tracking-wider">
+                                            Kadaluarsa
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider animate-pulse">
+                                            ● Siap Pakai
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-2 p-2 bg-white/90 border border-gray-200 rounded-lg font-mono text-xs">
+                                <span class="font-bold tracking-wider text-gray-900 select-all">{{ $voc->code }}</span>
+                                <button type="button"
+                                        @click="navigator.clipboard.writeText('{{ $voc->code }}'); copiedCode = '{{ $voc->code }}'; setTimeout(() => copiedCode = null, 2000)"
+                                        class="text-xs font-semibold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                                    <span x-show="copiedCode !== '{{ $voc->code }}'"><i class="fa-regular fa-copy"></i> Salin</span>
+                                    <span x-show="copiedCode === '{{ $voc->code }}'" x-cloak class="text-emerald-600 font-bold"><i class="fa-solid fa-check"></i> Tersalin</span>
+                                </button>
+                            </div>
+
+                            <div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
+                                <span>
+                                    @if($voc->expires_at)
+                                        Hingga {{ $voc->expires_at->format('d/m/Y') }}
+                                    @else
+                                        Berlaku selamanya
+                                    @endif
+                                </span>
+                                @if(! $voc->is_used)
+                                    <a href="{{ route('checkout.index') }}" class="font-bold text-accent hover:text-accent-dark transition">
+                                        Gunakan &rarr;
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="p-6 rounded-xl bg-gradient-to-r from-amber-50/50 via-orange-50/40 to-yellow-50/50 border border-amber-200/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 text-center sm:text-left">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+                            ⏱️
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900">Belum Punya Voucher Diskon?</h3>
+                            <p class="text-xs text-gray-600 mt-0.5">Uji ketepatan waktumu di <strong>Stopwatch Challenge</strong> dan raih voucher diskon s.d. <strong>Rp 50.000</strong>!</p>
+                        </div>
+                    </div>
+                    <button type="button"
+                            @click="$dispatch('open-stopwatch-game')"
+                            class="px-5 py-2.5 rounded-sm bg-primary hover:bg-accent text-white text-xs font-black uppercase tracking-wider transition shadow-sm flex-shrink-0">
+                        Mainkan Sekarang
+                    </button>
+                </div>
+            @endif
+        </div>
+
         <!-- Quick Access Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <!-- Riwayat Pesanan -->

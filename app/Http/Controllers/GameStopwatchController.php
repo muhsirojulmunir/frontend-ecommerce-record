@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 
 class GameStopwatchController extends Controller
 {
-    // ─── Konfigurasi Tier Hadiah ─────────────────────────────────────────────
     private const TIER_PERFECT = [
         'key'    => 'perfect',
         'label'  => 'PERFECT 10.00s! 🎯',
@@ -69,12 +67,15 @@ class GameStopwatchController extends Controller
 
         if ($playedToday) {
             $nextPlay = now()->addDay()->startOfDay();
+            $secondsUntilNextPlay = max(0, now()->diffInSeconds($nextPlay));
+
             return response()->json([
-                'can_play'         => false,
-                'is_authenticated' => true,
-                'reason'           => 'already_played',
-                'next_play_at'     => $nextPlay->toISOString(),
-                'message'          => 'Kamu sudah bermain hari ini. Kesempatan baru dibuka besok pukul 00:00!',
+                'can_play'                => false,
+                'is_authenticated'        => true,
+                'reason'                  => 'already_played',
+                'next_play_at'            => $nextPlay->toISOString(),
+                'seconds_until_next_play' => $secondsUntilNextPlay,
+                'message'                 => 'Kamu sudah bermain hari ini. Kesempatan baru dibuka besok pukul 00:00!',
             ]);
         }
 
@@ -102,6 +103,9 @@ class GameStopwatchController extends Controller
         $user  = auth()->user();
         $today = now()->toDateString();
 
+        // Bersihkan reservasi kadaluarsa sebelum mencari voucher
+        Voucher::releaseExpiredReservations();
+
         $playedToday = false;
         if (! empty($user->last_game_at)) {
             $lastDate = is_string($user->last_game_at) 
@@ -111,19 +115,24 @@ class GameStopwatchController extends Controller
         }
 
         if ($playedToday) {
+            $nextPlay = now()->addDay()->startOfDay();
             return response()->json([
-                'success' => false,
-                'message' => 'Kamu sudah bermain hari ini. Coba lagi besok!',
+                'success'                 => false,
+                'can_play'                => false,
+                'next_play_at'            => $nextPlay->toISOString(),
+                'seconds_until_next_play' => max(0, now()->diffInSeconds($nextPlay)),
+                'message'                 => 'Kamu sudah bermain hari ini. Coba lagi besok!',
             ], 422);
         }
 
         $elapsed = round((float) $request->elapsed_time, 2);
         $tier    = $this->resolveTier($elapsed);
 
-        // Catat tanggal main user
-        $user->update([
+        // Catat tanggal main user langsung ke database
+        DB::table('users')->where('id', $user->id)->update([
             'last_game_at' => $today,
         ]);
+        $user->last_game_at = $today;
 
         // Cari voucher tersedia untuk tier ini dari Kelola Voucher
         $voucher = Voucher::availableForGame($tier['amount'])->inRandomOrder()->first();
@@ -145,6 +154,11 @@ class GameStopwatchController extends Controller
         // Reservasi 5 menit agar voucher aman sementara
         $voucher->reserveFor($user->id);
 
+        $hasExpiry = ! empty($voucher->expires_at);
+        $expiresAtHuman = $hasExpiry 
+            ? $voucher->expires_at->format('d M Y, H:i') . ' WIB'
+            : 'Tanpa Batas Waktu (Selamanya)';
+
         return response()->json([
             'success'       => true,
             'has_voucher'   => true,
@@ -155,10 +169,13 @@ class GameStopwatchController extends Controller
             'elapsed_time'  => $elapsed,
             'diff'          => round($elapsed - 10.00, 2),
             'voucher'       => [
-                'code'             => $voucher->code,
-                'amount'           => $voucher->amount,
-                'formatted_amount' => 'Rp ' . number_format($voucher->amount, 0, ',', '.'),
-                'expires_at'       => $voucher->reserved_until?->toISOString(),
+                'code'                 => $voucher->code,
+                'amount'               => $voucher->amount,
+                'formatted_amount'     => 'Rp ' . number_format($voucher->amount, 0, ',', '.'),
+                'expires_at'           => $voucher->expires_at?->toISOString(),
+                'expires_at_human'     => $expiresAtHuman,
+                'has_expiry'           => $hasExpiry,
+                'reservation_deadline' => $voucher->reserved_until?->toISOString(),
             ],
         ]);
     }
@@ -190,13 +207,25 @@ class GameStopwatchController extends Controller
 
         $voucher->claimByUser($user->id);
 
+        // Simpan kode voucher di session agar otomatis terpasang saat user checkout
+        session()->put('auto_apply_voucher', $voucher->code);
+
+        $hasExpiry = ! empty($voucher->expires_at);
+        $expiresAtHuman = $hasExpiry 
+            ? $voucher->expires_at->format('d M Y, H:i') . ' WIB'
+            : 'Tanpa Batas Waktu (Selamanya)';
+
         return response()->json([
-            'success' => true,
-            'message' => 'Voucher berhasil disimpan ke akun kamu! Gunakan kode saat checkout belanja.',
-            'voucher' => [
+            'success'      => true,
+            'message'      => 'Voucher berhasil disimpan ke akun kamu! Voucher akan otomatis digunakan saat checkout belanja.',
+            'checkout_url' => route('checkout.index'),
+            'voucher'      => [
                 'code'             => $voucher->code,
                 'amount'           => $voucher->amount,
                 'formatted_amount' => 'Rp ' . number_format($voucher->amount, 0, ',', '.'),
+                'expires_at'       => $voucher->expires_at?->toISOString(),
+                'expires_at_human' => $expiresAtHuman,
+                'has_expiry'       => $hasExpiry,
             ],
         ]);
     }

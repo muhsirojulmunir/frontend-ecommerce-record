@@ -961,7 +961,7 @@
                     this.diskonReferal  = 0;
                 },
                 // ─── Kode voucher ───────────────────────────────────────────
-                kodeVoucher: '',
+                kodeVoucher: @json($autoVoucher?->code ?? ''),
                 voucherStatus: 'kosong',   // kosong | benar | salah
                 voucherPesan: '',
                 nominalVoucher: 0,
@@ -1564,6 +1564,16 @@
                         </div>
                     </div>
 
+                    @if(isset($autoVoucher) && $autoVoucher)
+                    <div class="mb-3 px-3 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-xl flex items-center justify-between gap-2 text-xs text-amber-900 font-medium"
+                         x-show="voucherStatus === 'benar' && kodeVoucher === '{{ $autoVoucher->code }}'">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🎁</span>
+                            <span>Voucher hadiah <strong>{{ $autoVoucher->code }}</strong> (Rp {{ number_format($autoVoucher->amount, 0, ',', '.') }}) otomatis dipasangkan!</span>
+                        </div>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-800 font-bold uppercase tracking-wider">Hemat Langsung</span>
+                    </div>
+                    @endif
                     <div class="voucher-baris">
                         <input type="text" x-model="kodeVoucher"
                                @input="kodeVoucher = kodeVoucher.toUpperCase(); voucherStatus = 'kosong'"
