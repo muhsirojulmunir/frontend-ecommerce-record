@@ -4,6 +4,12 @@
     Support Responsive HP & Desktop, Luxury Ticket Design, Confetti, Alpine.js State
 --}}
 
+@php
+    $swSetting = \App\Models\GameSetting::forGame('stopwatch');
+    $isSwActive = $swSetting ? (bool) $swSetting->is_active : true;
+@endphp
+
+@if($isSwActive)
 <div x-data="gameStopwatchWidget()" 
      x-init="initWidget()"
      @open-stopwatch-game.window="openModal()"
@@ -942,3 +948,4 @@
     })();
     </script>
 </div>
+@endif

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GameSetting;
 use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class GameStopwatchController extends Controller
         'title'  => 'Terima Kasih Sudah Mencoba!',
         'amount' => 10000,
         'min'    => 0,
-        'max'    => PHP_FLOAT_MAX,
+        'max'    => 999.0,
         'badge'  => 'Emerald Tier',
         'color'  => 'emerald',
     ];
@@ -45,9 +46,21 @@ class GameStopwatchController extends Controller
     // ─── Status (Cek kesempatan main hari ini) ────────────────────────────────
     public function status(Request $request): JsonResponse
     {
+        $gameSetting = GameSetting::forGame('stopwatch');
+        if ($gameSetting && ! $gameSetting->is_active) {
+            return response()->json([
+                'can_play'         => false,
+                'is_active'        => false,
+                'is_authenticated' => auth()->check(),
+                'reason'           => 'game_disabled',
+                'message'          => 'Tantangan Stopwatch saat ini sedang dinonaktifkan sementara oleh admin.',
+            ]);
+        }
+
         if (! auth()->check()) {
             return response()->json([
                 'can_play'         => false,
+                'is_active'        => true,
                 'is_authenticated' => false,
                 'reason'           => 'unauthenticated',
                 'message'          => 'Silakan login terlebih dahulu untuk mengikuti Stopwatch Challenge.',
@@ -71,6 +84,7 @@ class GameStopwatchController extends Controller
 
             return response()->json([
                 'can_play'                => false,
+                'is_active'               => true,
                 'is_authenticated'        => true,
                 'reason'                  => 'already_played',
                 'next_play_at'            => $nextPlay->toISOString(),
@@ -81,6 +95,7 @@ class GameStopwatchController extends Controller
 
         return response()->json([
             'can_play'         => true,
+            'is_active'        => true,
             'is_authenticated' => true,
             'message'          => 'Siap bermain! Target kamu 10.00 detik.',
         ]);
@@ -89,6 +104,14 @@ class GameStopwatchController extends Controller
     // ─── Claim (Proses hasil stopwatch & reservasi voucher) ─────────────────
     public function claim(Request $request): JsonResponse
     {
+        $gameSetting = GameSetting::forGame('stopwatch');
+        if ($gameSetting && ! $gameSetting->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tantangan Stopwatch saat ini sedang dinonaktifkan sementara.',
+            ], 422);
+        }
+
         if (! auth()->check()) {
             return response()->json([
                 'success' => false, 
@@ -126,7 +149,7 @@ class GameStopwatchController extends Controller
         }
 
         $elapsed = round((float) $request->elapsed_time, 2);
-        $tier    = $this->resolveTier($elapsed);
+        $tier    = $this->resolveTier($elapsed, $gameSetting);
 
         // Catat tanggal main user langsung ke database
         DB::table('users')->where('id', $user->id)->update([
@@ -134,11 +157,39 @@ class GameStopwatchController extends Controller
         ]);
         $user->last_game_at = $today;
 
-        // Cari voucher tersedia untuk tier ini dari Kelola Voucher (acak sesuai ketersediaan)
-        $voucher = Voucher::availableForGame($tier['amount'])
-            ->with('category')
-            ->inRandomOrder()
-            ->first();
+        // Jika tier nominal 0 (Zonk / tidak ada hadiah voucher)
+        if ($tier['amount'] <= 0) {
+            return response()->json([
+                'success'       => true,
+                'has_voucher'   => false,
+                'tier'          => $tier['label'],
+                'tier_key'      => $tier['key'],
+                'tier_title'    => $tier['title'],
+                'target_amount' => 0,
+                'elapsed_time'  => $elapsed,
+                'diff'          => round($elapsed - 10.00, 2),
+                'message'       => 'Terima kasih telah berpartisipasi! Coba lagi besok untuk memenangkan voucher diskon.',
+            ]);
+        }
+
+        // Cari voucher tersedia untuk tier ini dari Kelola Voucher
+        $targetCategoryId = $gameSetting ? $gameSetting->getConfigValue('category_id') : null;
+        $voucherQuery = Voucher::availableForGame($tier['amount'])->with('category');
+
+        if (!empty($targetCategoryId)) {
+            $voucherQuery->where('category_id', $targetCategoryId);
+        }
+
+        $voucher = $voucherQuery->inRandomOrder()->first();
+
+        // Jika stok voucher dengan target kategori kosong, cari dari voucher universal sebagai fallback
+        if (! $voucher && !empty($targetCategoryId)) {
+            $voucher = Voucher::availableForGame($tier['amount'])
+                ->with('category')
+                ->whereNull('category_id')
+                ->inRandomOrder()
+                ->first();
+        }
 
         if (! $voucher) {
             return response()->json([
@@ -210,31 +261,19 @@ class GameStopwatchController extends Controller
         if (! $voucher) {
             return response()->json([
                 'success' => false,
-                'message' => 'Voucher tidak ditemukan atau batas waktu penyimpanan (5 menit) telah lewat.',
+                'message' => 'Voucher tidak ditemukan atau masa klaim 5 menit telah berakhir.',
             ], 422);
         }
 
-        $voucher->claimByUser($user->id);
-
-        // Simpan kode voucher di session agar otomatis terpasang saat user checkout
-        session()->put('auto_apply_voucher', $voucher->code);
-
-        $hasExpiry = ! empty($voucher->expires_at);
-        $expiresAtHuman = $hasExpiry 
-            ? $voucher->expires_at->format('d M Y, H:i') . ' WIB'
-            : 'Tanpa Batas Waktu (Selamanya)';
+        $voucher->claimPermanently($user->id);
 
         return response()->json([
-            'success'      => true,
-            'message'      => 'Voucher berhasil disimpan ke akun kamu! Voucher akan otomatis digunakan saat checkout belanja.',
-            'checkout_url' => route('checkout.index'),
-            'voucher'      => [
+            'success' => true,
+            'message' => 'Voucher berhasil disimpan ke akun kamu!',
+            'voucher' => [
                 'code'             => $voucher->code,
                 'amount'           => $voucher->amount,
                 'formatted_amount' => 'Rp ' . number_format($voucher->amount, 0, ',', '.'),
-                'expires_at'       => $voucher->expires_at?->toISOString(),
-                'expires_at_human' => $expiresAtHuman,
-                'has_expiry'       => $hasExpiry,
             ],
         ]);
     }
@@ -264,16 +303,22 @@ class GameStopwatchController extends Controller
     }
 
     // ─── Helper Penentu Tier ─────────────────────────────────────────────────
-    private function resolveTier(float $elapsed): array
+    private function resolveTier(float $elapsed, ?GameSetting $gameSetting = null): array
     {
-        if ($elapsed >= self::TIER_PERFECT['min'] && $elapsed <= self::TIER_PERFECT['max']) {
-            return self::TIER_PERFECT;
+        $configTiers = $gameSetting?->getConfigValue('tiers');
+
+        $perfect = array_merge(self::TIER_PERFECT, $configTiers['perfect'] ?? []);
+        $near    = array_merge(self::TIER_NEAR, $configTiers['near'] ?? []);
+        $good    = array_merge(self::TIER_GOOD, $configTiers['good'] ?? []);
+
+        if ($elapsed >= (float)$perfect['min'] && $elapsed <= (float)$perfect['max']) {
+            return $perfect;
         }
 
-        if ($elapsed >= self::TIER_NEAR['min'] && $elapsed <= self::TIER_NEAR['max']) {
-            return self::TIER_NEAR;
+        if ($elapsed >= (float)$near['min'] && $elapsed <= (float)$near['max']) {
+            return $near;
         }
 
-        return self::TIER_GOOD;
+        return $good;
     }
 }
