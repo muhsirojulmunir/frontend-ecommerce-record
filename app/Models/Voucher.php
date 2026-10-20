@@ -75,18 +75,23 @@ class Voucher extends Model
      */
     public function scopeAvailableForGame($query, int $amount)
     {
-        return $query->where('is_used', false)
+        $query->where('is_used', false)
             ->where('amount', $amount)
             ->whereNull('used_by')
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>=', now());
-            })
-            ->where(function ($q) {
+            });
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
+            $query->where(function ($q) {
                 // Belum direservasi, ATAU reservasinya sudah kedaluwarsa
                 $q->whereNull('reserved_for')
                   ->orWhere('reserved_until', '<', now());
             });
+        }
+
+        return $query;
     }
 
     public function scopeUsed($query)
@@ -148,14 +153,19 @@ class Voucher extends Model
      */
     public function markAsUsed(int $userId, int $orderId): void
     {
-        $this->update([
-            'is_used'        => true,
-            'used_by'        => $userId,
-            'used_at'        => now(),
-            'order_id'       => $orderId,
-            'reserved_for'   => null,
-            'reserved_until' => null,
-        ]);
+        $payload = [
+            'is_used'  => true,
+            'used_by'  => $userId,
+            'used_at'  => now(),
+            'order_id' => $orderId,
+        ];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
+            $payload['reserved_for'] = null;
+            $payload['reserved_until'] = null;
+        }
+
+        $this->update($payload);
     }
 
     /**
@@ -163,10 +173,12 @@ class Voucher extends Model
      */
     public function reserveFor(int $userId): void
     {
-        $this->update([
-            'reserved_for'   => $userId,
-            'reserved_until' => now()->addMinutes(5),
-        ]);
+        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
+            $this->update([
+                'reserved_for'   => $userId,
+                'reserved_until' => now()->addMinutes(5),
+            ]);
+        }
     }
 
     /**
@@ -174,10 +186,30 @@ class Voucher extends Model
      */
     public function releaseReservation(): void
     {
-        $this->update([
-            'reserved_for'   => null,
-            'reserved_until' => null,
-        ]);
+        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
+            $this->update([
+                'reserved_for'   => null,
+                'reserved_until' => null,
+            ]);
+        }
+    }
+
+    /**
+     * Lepaskan semua reservasi voucher yang sudah kedaluwarsa (lewat dari 5 menit).
+     */
+    public static function releaseExpiredReservations(): int
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
+            return 0;
+        }
+
+        return static::whereNotNull('reserved_for')
+            ->where('reserved_until', '<', now())
+            ->where('is_used', false)
+            ->update([
+                'reserved_for'   => null,
+                'reserved_until' => null,
+            ]);
     }
 
     /**
@@ -186,10 +218,13 @@ class Voucher extends Model
      */
     public function claimByUser(int $userId): void
     {
-        $this->update([
-            'used_by'        => $userId,
-            'reserved_for'   => null,
-            'reserved_until' => null,
-        ]);
+        $payload = ['used_by' => $userId];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
+            $payload['reserved_for'] = null;
+            $payload['reserved_until'] = null;
+        }
+
+        $this->update($payload);
     }
 }
