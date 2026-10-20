@@ -134,8 +134,11 @@ class GameStopwatchController extends Controller
         ]);
         $user->last_game_at = $today;
 
-        // Cari voucher tersedia untuk tier ini dari Kelola Voucher
-        $voucher = Voucher::availableForGame($tier['amount'])->inRandomOrder()->first();
+        // Cari voucher tersedia untuk tier ini dari Kelola Voucher (acak sesuai ketersediaan)
+        $voucher = Voucher::availableForGame($tier['amount'])
+            ->with('category')
+            ->inRandomOrder()
+            ->first();
 
         if (! $voucher) {
             return response()->json([
@@ -159,6 +162,9 @@ class GameStopwatchController extends Controller
             ? $voucher->expires_at->format('d M Y, H:i') . ' WIB'
             : 'Tanpa Batas Waktu (Selamanya)';
 
+        $categoryName = $voucher->category ? $voucher->category->name : null;
+        $scopeLabel   = $categoryName ? 'Khusus Kategori: ' . $categoryName : 'Berlaku untuk: Semua Produk';
+
         return response()->json([
             'success'       => true,
             'has_voucher'   => true,
@@ -172,6 +178,9 @@ class GameStopwatchController extends Controller
                 'code'                 => $voucher->code,
                 'amount'               => $voucher->amount,
                 'formatted_amount'     => 'Rp ' . number_format($voucher->amount, 0, ',', '.'),
+                'category_id'          => $voucher->category_id,
+                'category_name'        => $categoryName,
+                'scope_label'          => $scopeLabel,
                 'expires_at'           => $voucher->expires_at?->toISOString(),
                 'expires_at_human'     => $expiresAtHuman,
                 'has_expiry'           => $hasExpiry,

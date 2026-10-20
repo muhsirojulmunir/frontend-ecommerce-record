@@ -416,19 +416,38 @@ class CheckoutController extends Controller
             $pemilikKode = $cekKode['pemilik']->id;
             $diskon      = $referral->diskon((float) $cart->total_terpilih);
             $komisi      = $referral->komisi((float) $cart->total_terpilih);
-        }        // Voucher belanja diperiksa ULANG di sini.
+        }
+
+        // Voucher belanja diperiksa ULANG di sini (maksimal 1 voucher per transaksi).
         $voucherModel  = null;
         $diskonVoucher = 0.0;
         if ($request->filled('voucher_code')) {
             $kodeVoucherInput = strtoupper(trim($request->input('voucher_code')));
-            $voucherModel     = Voucher::where('code', $kodeVoucherInput)->first();
+            $voucherModel     = Voucher::with('category')->where('code', $kodeVoucherInput)->first();
 
             if (! $voucherModel || $voucherModel->is_used || ($voucherModel->expires_at && $voucherModel->expires_at->isPast()) || ($voucherModel->used_by && Auth::check() && $voucherModel->used_by !== Auth::id())) {
                 return back()->withInput()->with('error', 'Kode voucher tidak valid, sudah kadaluarsa, atau sudah pernah digunakan.');
             }
 
-            $sisaSubtotal  = max(0, (float) $cart->total_terpilih - $diskon);
-            $diskonVoucher = min((float) $voucherModel->amount, $sisaSubtotal);
+            $sisaSubtotal = max(0, (float) $cart->total_terpilih - $diskon);
+
+            // Jika voucher terikat ke kategori tertentu
+            if ($voucherModel->category_id) {
+                $cartItemsDipilih = $this->cartService->itemTerpilih();
+                $eligibleItems = $cartItemsDipilih->filter(function ($item) use ($voucherModel) {
+                    return (int) $item->product?->category_id === (int) $voucherModel->category_id;
+                });
+
+                if ($eligibleItems->isEmpty()) {
+                    $namaKategori = $voucherModel->category ? $voucherModel->category->name : 'kategori khusus';
+                    return back()->withInput()->with('error', "Kode voucher hanya berlaku untuk produk dalam kategori {$namaKategori}.");
+                }
+
+                $subtotalKategori = (float) $eligibleItems->sum(fn ($item) => (float) $item->subtotal);
+                $diskonVoucher = min((float) $voucherModel->amount, $subtotalKategori, $sisaSubtotal);
+            } else {
+                $diskonVoucher = min((float) $voucherModel->amount, $sisaSubtotal);
+            }
         }
 
 

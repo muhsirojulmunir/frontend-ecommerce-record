@@ -345,9 +345,12 @@
                                     <h3 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight" x-text="voucher.formatted_amount">
                                         Rp 50.000
                                     </h3>
-                                    <p class="text-[11px] font-medium text-slate-500 mt-1">
-                                        Berlaku untuk semua produk di checkout
-                                    </p>
+                                    <div class="mt-2 flex items-center justify-center">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all"
+                                              :class="voucher.category_name ? 'bg-blue-50 text-[#1B3A6B] border-blue-200 shadow-sm' : 'bg-slate-100 text-slate-700 border-slate-200'"
+                                              x-text="voucher.scope_label || 'Berlaku untuk: Semua Produk'">
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {{-- Dashed Perforation Line --}}
@@ -474,14 +477,22 @@
 
                 {{-- Voucher Summary Box --}}
                 <template x-if="voucher">
-                    <div class="w-full bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6 flex items-center justify-between">
-                        <div class="text-left">
-                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Kode Diskon</span>
-                            <span class="font-mono text-xl font-black text-[#1B3A6B] tracking-wider" x-text="voucher.code"></span>
+                    <div class="w-full bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6 flex flex-col gap-2.5">
+                        <div class="flex items-center justify-between">
+                            <div class="text-left">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Kode Diskon</span>
+                                <span class="font-mono text-xl font-black text-[#1B3A6B] tracking-wider" x-text="voucher.code"></span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Nominal</span>
+                                <span class="text-sm font-black text-slate-900" x-text="voucher.formatted_amount"></span>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Nominal</span>
-                            <span class="text-sm font-black text-slate-900" x-text="voucher.formatted_amount"></span>
+                        <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-left">
+                            <span class="text-[11px] font-bold"
+                                  :class="voucher.category_name ? 'text-blue-700' : 'text-slate-600'"
+                                  x-text="voucher.scope_label || 'Berlaku untuk: Semua Produk'"></span>
+                            <span class="text-[10px] text-slate-400 font-medium">Maks. 1 voucher / order</span>
                         </div>
                     </div>
                 </template>

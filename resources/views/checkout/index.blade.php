@@ -986,8 +986,8 @@
                         if (data.sah) {
                             this.voucherStatus  = 'benar';
                             this.nominalVoucher = data.nominal;
-                            this.diskonVoucher  = Math.min(data.nominal, Math.max(0, this.subtotalBarang - this.diskonReferal));
-                            this.voucherPesan   = '';
+                            this.diskonVoucher  = Math.min(data.diskon, Math.max(0, this.subtotalBarang - this.diskonReferal));
+                            this.voucherPesan   = data.pesan || '';
                         } else {
                             this.voucherStatus  = 'salah';
                             this.voucherPesan   = data.alasan || 'Kode voucher tidak valid.';
@@ -1559,7 +1559,7 @@
                         <div class="min-w-0">
                             <h4 class="voucher-judul">Punya Voucher Belanja?</h4>
                             <p class="voucher-sub">
-                                Masukkan kode voucher untuk mendapatkan potongan belanja langsung. Boleh dikosongkan.
+                                Masukkan 1 kode voucher untuk mendapatkan potongan belanja. (Maks. 1 voucher per pesanan, tidak dapat digabungkan).
                             </p>
                         </div>
                     </div>

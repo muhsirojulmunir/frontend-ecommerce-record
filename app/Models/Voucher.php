@@ -18,6 +18,7 @@ class Voucher extends Model
         'expires_at',
         'batch_label',
         'created_by',
+        'category_id',
         'reserved_for',
         'reserved_until',
     ];
@@ -25,6 +26,7 @@ class Voucher extends Model
     protected function casts(): array
     {
         return [
+            'category_id'    => 'integer',
             'amount'         => 'integer',
             'is_used'        => 'boolean',
             'used_at'        => 'datetime',
@@ -34,6 +36,11 @@ class Voucher extends Model
     }
 
     // ─── Relationships ──────────────────────────────────────────────────────
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     public function usedByUser(): BelongsTo
     {
