@@ -38,6 +38,7 @@ class User extends Authenticatable
         'phone',
         'avatar',
         'password',
+        'last_game_at',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'last_game_at',
         'remember_token',
     ];
 
@@ -133,3 +135,4 @@ class User extends Authenticatable
     }
 
 }
+
