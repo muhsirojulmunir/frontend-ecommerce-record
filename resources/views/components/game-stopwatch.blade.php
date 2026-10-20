@@ -6,21 +6,21 @@
 
 <div x-data="gameStopwatchWidget()" 
      x-init="initWidget()"
+     @open-stopwatch-game.window="openModal()"
      class="stopwatch-game-root">
 
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     {{-- 1. FLOATING ACTION BUTTON (Pojok Kanan Bawah)                      --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
-    <div x-show="!modalOpen" 
-         class="stopwatch-floating-trigger"
-         style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 999999 !important; display: flex !important; align-items: center !important;">
+    <div x-cloak
+         x-show="!modalOpen" 
+         class="stopwatch-floating-trigger">
         
         {{-- Floating Pill Button --}}
         <button @click="openModal()" 
                 type="button"
                 aria-label="Buka Tantangan Stopwatch 10 Detik"
-                class="stopwatch-floating-btn group hover:scale-[1.03] active:scale-95 transition-all duration-200"
-                style="position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; padding: 10px 18px 10px 12px !important; border-radius: 9999px !important; background: #1B3A6B !important; border: 1.5px solid rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; box-shadow: 0 10px 25px -4px rgba(27, 58, 107, 0.4), 0 4px 10px -2px rgba(27, 58, 107, 0.2) !important; cursor: pointer !important; text-decoration: none !important;">
+                class="stopwatch-floating-btn group hover:scale-[1.03] active:scale-95 transition-all duration-200">
             
             {{-- Icon Stopwatch Container --}}
             <div class="relative flex items-center justify-center w-10 h-10 rounded-full bg-white text-[#1B3A6B] shadow-sm flex-shrink-0">
@@ -50,15 +50,15 @@
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     {{-- 2. MODAL OVERLAY & CONTAINER                                       --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
-    <div x-show="modalOpen" 
+    <div x-cloak
+         x-show="modalOpen" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="stopwatch-modal-backdrop"
-         style="position: fixed !important; inset: 0 !important; z-index: 9999999 !important; background: rgba(15, 23, 42, 0.65) !important; backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; overflow-y: auto !important;">
+         class="stopwatch-modal-backdrop">
 
         {{-- Backdrop click (hanya bisa tutup jika bukan saat holding voucher) --}}
         <div class="fixed inset-0" @click="handleBackdropClick()"></div>
@@ -72,8 +72,7 @@
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
              @keydown.window.escape="handleEscapeKey()"
-             class="stopwatch-modal-box"
-             style="position: relative !important; width: 100% !important; max-width: 480px !important; margin: auto !important; background: #ffffff !important; border: 1px solid #e2e8f0 !important; color: #0f172a !important; border-radius: 20px !important; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05) !important; overflow: hidden !important; z-index: 10 !important; display: flex !important; flex-direction: column !important;">
+             class="stopwatch-modal-box">
 
             {{-- Brand Navy Top Accent Stripe --}}
             <div class="absolute top-0 inset-x-0 h-1 bg-[#1B3A6B]"></div>
@@ -520,6 +519,67 @@
     {{-- 3. LUXURY TICKET CSS STYLES                                        --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     <style>
+        /* ── Floating Trigger & Button ── */
+        .stopwatch-floating-trigger {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+        }
+
+        .stopwatch-floating-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px 10px 12px;
+            border-radius: 9999px;
+            background: #1B3A6B;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            box-shadow: 0 10px 25px -4px rgba(27, 58, 107, 0.4), 0 4px 10px -2px rgba(27, 58, 107, 0.2);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .stopwatch-floating-btn:hover {
+            background: #2A4F8F;
+            box-shadow: 0 12px 28px -4px rgba(27, 58, 107, 0.5);
+        }
+
+        /* ── Modal Backdrop & Box ── */
+        .stopwatch-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9999999;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .stopwatch-modal-box {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #0f172a;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+
         /* ── Notch Cutouts (Sobekan Tiket Fisik) ── */
         .luxury-ticket {
             position: relative;
@@ -567,17 +627,13 @@
 
         @media (max-width: 640px) {
             .stopwatch-floating-trigger {
-                bottom: 16px !important;
-                right: 12px !important;
+                bottom: 16px;
+                right: 12px;
             }
             .stopwatch-floating-btn {
-                padding: 8px 14px 8px 10px !important;
-                gap: 8px !important;
+                padding: 8px 14px 8px 10px;
+                gap: 8px;
             }
-        }
-        .stopwatch-floating-btn:hover {
-            background: #2A4F8F !important;
-            box-shadow: 0 12px 28px -4px rgba(27, 58, 107, 0.5) !important;
         }
     </style>
 
