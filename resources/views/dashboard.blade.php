@@ -186,7 +186,13 @@
                         </div>
                         <div>
                             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900">Belum Punya Voucher Diskon?</h3>
-                            <p class="text-xs text-gray-600 mt-0.5">Uji ketepatan waktumu di <strong>Stopwatch Challenge</strong> dan raih voucher diskon s.d. <strong>Rp 50.000</strong>!</p>
+                            @php
+                                $dashSw = \App\Models\GameSetting::forGame('stopwatch');
+                                $dashTiers = (array) data_get($dashSw?->config, 'tiers', []);
+                                $dashAmounts = array_filter(array_map(fn($t) => (int)($t['amount'] ?? 0), $dashTiers));
+                                $dashMax = !empty($dashAmounts) ? max($dashAmounts) : 50000;
+                            @endphp
+                            <p class="text-xs text-gray-600 mt-0.5">Uji ketepatan waktumu di <strong>Stopwatch Challenge</strong> dan raih voucher diskon s.d. <strong>Rp {{ number_format($dashMax, 0, ',', '.') }}</strong>!</p>
                         </div>
                     </div>
                     <button type="button"

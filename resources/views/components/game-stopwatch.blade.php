@@ -7,6 +7,31 @@
 @php
     $swSetting = \App\Models\GameSetting::forGame('stopwatch');
     $isSwActive = $swSetting ? (bool) $swSetting->is_active : true;
+    $swConfig = $swSetting ? ($swSetting->config ?? []) : [];
+    $swTiers = $swConfig['tiers'] ?? [];
+
+    // Tier 1: Perfect
+    $perfectTier = $swTiers['perfect'] ?? [];
+    $perfectAmount = (int) ($perfectTier['amount'] ?? 50000);
+    $perfectMin = (float) ($perfectTier['min'] ?? 9.98);
+    $perfectMax = (float) ($perfectTier['max'] ?? 10.02);
+
+    // Tier 2: Near
+    $nearTier = $swTiers['near'] ?? [];
+    $nearAmount = (int) ($nearTier['amount'] ?? 30000);
+    $nearMin = (float) ($nearTier['min'] ?? 9.85);
+    $nearMax = (float) ($nearTier['max'] ?? 10.15);
+
+    // Tier 3: Good (Partisipasi)
+    $goodTier = $swTiers['good'] ?? [];
+    $goodAmount = (int) ($goodTier['amount'] ?? 10000);
+
+    // Tertinggi untuk badge tombol floating (otomatis berubah sesuai setting admin, misal Rp 30.000)
+    $maxVoucherAmount = max($perfectAmount, $nearAmount, $goodAmount);
+    $maxVoucherFormatted = number_format($maxVoucherAmount, 0, ',', '.');
+
+    // Batas kesempatan main harian
+    $swDailyLimit = (int) ($swConfig['daily_limit'] ?? 1);
 @endphp
 
 @if($isSwActive)
@@ -44,7 +69,7 @@
                     <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-white/20 text-white">Voucher</span>
                 </div>
                 <span class="text-xs sm:text-sm font-bold text-white tracking-tight flex items-center gap-1">
-                    Dapatkan s/d Rp 50.000
+                    Dapatkan s/d Rp {{ $maxVoucherFormatted }}
                     <svg class="w-3.5 h-3.5 text-blue-200 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                     </svg>
@@ -140,10 +165,16 @@
                                 <span class="inline-block w-2 h-2 rounded-full bg-[#1B3A6B]"></span>
                                 <span class="text-[10px] font-bold uppercase text-slate-900 tracking-wider">Perfect</span>
                             </div>
-                            <p class="text-[11px] text-slate-500 font-medium">10.00s pas</p>
+                            <p class="text-[11px] text-slate-500 font-medium">
+                                @if(abs($perfectMin - 10.00) < 0.001 && abs($perfectMax - 10.00) < 0.001)
+                                    10.00s pas
+                                @else
+                                    {{ number_format($perfectMin, 2) }}s - {{ number_format($perfectMax, 2) }}s
+                                @endif
+                            </p>
                         </div>
                         <div class="mt-2 pt-2 border-t border-slate-200/80">
-                            <span class="block text-xs font-black text-[#1B3A6B]">Rp 50.000</span>
+                            <span class="block text-xs font-black text-[#1B3A6B]">Rp {{ number_format($perfectAmount, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -154,10 +185,10 @@
                                 <span class="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
                                 <span class="text-[10px] font-bold uppercase text-slate-900 tracking-wider">Nyaris</span>
                             </div>
-                            <p class="text-[11px] text-slate-500 font-medium">9.85s - 10.15s</p>
+                            <p class="text-[11px] text-slate-500 font-medium">{{ number_format($nearMin, 2) }}s - {{ number_format($nearMax, 2) }}s</p>
                         </div>
                         <div class="mt-2 pt-2 border-t border-slate-200/80">
-                            <span class="block text-xs font-black text-slate-800">Rp 30.000</span>
+                            <span class="block text-xs font-black text-slate-800">Rp {{ number_format($nearAmount, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -171,7 +202,7 @@
                             <p class="text-[11px] text-slate-500 font-medium">Selain itu</p>
                         </div>
                         <div class="mt-2 pt-2 border-t border-slate-200/80">
-                            <span class="block text-xs font-black text-slate-800">Rp 10.000</span>
+                            <span class="block text-xs font-black text-slate-800">Rp {{ number_format($goodAmount, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -183,7 +214,7 @@
                             <svg class="w-4 h-4 text-[#1B3A6B] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span>1x kesempatan bermain per akun setiap harinya.</span>
+                            <span>{{ $swDailyLimit }}x kesempatan bermain per akun setiap harinya.</span>
                         </li>
                         <li class="flex items-center gap-2.5">
                             <svg class="w-4 h-4 text-[#1B3A6B] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -349,7 +380,7 @@
                                         Potongan Belanja Langsung
                                     </span>
                                     <h3 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight" x-text="voucher.formatted_amount">
-                                        Rp 50.000
+                                        Rp {{ $maxVoucherFormatted }}
                                     </h3>
                                     <div class="mt-2 flex items-center justify-center">
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all"
