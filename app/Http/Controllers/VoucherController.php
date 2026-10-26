@@ -17,7 +17,8 @@ class VoucherController extends Controller
     public function periksa(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'kode' => 'required|string|max:50',
+            'kode'      => 'required|string|max:50',
+            'device_id' => 'nullable|string|max:64',
         ]);
 
         $kode = strtoupper(trim($data['kode']));
@@ -30,10 +31,14 @@ class VoucherController extends Controller
             ]);
         }
 
-        if ($voucher->is_used) {
+        $userId   = auth()->id();
+        $deviceId = $request->input('device_id') ?? $request->query('device_id') ?? $request->header('X-Device-Id');
+
+        $validation = $voucher->validateForUsage($userId, $deviceId);
+        if (! $validation['valid']) {
             return response()->json([
                 'sah'    => false,
-                'alasan' => 'Kode voucher sudah pernah digunakan.',
+                'alasan' => $validation['message'],
             ]);
         }
 
@@ -41,13 +46,6 @@ class VoucherController extends Controller
             return response()->json([
                 'sah'    => false,
                 'alasan' => 'Kode voucher ini milik akun pengguna lain.',
-            ]);
-        }
-
-        if ($voucher->expires_at && $voucher->expires_at->isPast()) {
-            return response()->json([
-                'sah'    => false,
-                'alasan' => 'Kode voucher sudah kadaluarsa pada ' . $voucher->expires_at->format('d/m/Y H:i') . '.',
             ]);
         }
 

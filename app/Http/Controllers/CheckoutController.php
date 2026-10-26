@@ -421,12 +421,23 @@ class CheckoutController extends Controller
         // Voucher belanja diperiksa ULANG di sini (maksimal 1 voucher per transaksi).
         $voucherModel  = null;
         $diskonVoucher = 0.0;
+        $deviceId      = $request->input('device_id') ?? $request->header('X-Device-Id');
+
         if ($request->filled('voucher_code')) {
             $kodeVoucherInput = strtoupper(trim($request->input('voucher_code')));
             $voucherModel     = Voucher::with('category')->where('code', $kodeVoucherInput)->first();
 
-            if (! $voucherModel || $voucherModel->is_used || ($voucherModel->expires_at && $voucherModel->expires_at->isPast()) || ($voucherModel->used_by && Auth::check() && $voucherModel->used_by !== Auth::id())) {
-                return back()->withInput()->with('error', 'Kode voucher tidak valid, sudah kadaluarsa, atau sudah pernah digunakan.');
+            if (! $voucherModel) {
+                return back()->withInput()->with('error', 'Kode voucher tidak ditemukan.');
+            }
+
+            $validation = $voucherModel->validateForUsage(Auth::id(), $deviceId);
+            if (! $validation['valid']) {
+                return back()->withInput()->with('error', $validation['message']);
+            }
+
+            if ($voucherModel->used_by && Auth::check() && $voucherModel->used_by !== Auth::id()) {
+                return back()->withInput()->with('error', 'Kode voucher ini milik akun pengguna lain.');
             }
 
             $sisaSubtotal = max(0, (float) $cart->total_terpilih - $diskon);
@@ -529,7 +540,24 @@ class CheckoutController extends Controller
 
             // Tandai voucher telah digunakan
             if ($voucherModel) {
-                $voucherModel->markAsUsed(Auth::id(), $order->id);
+                if ($voucherModel->isPromo()) {
+                    $userAgent   = $request->userAgent();
+                    $ipAddress   = $request->ip();
+                    $deviceInfo  = \App\Support\DeviceDetector::detect($userAgent);
+                    $deviceLabel = $deviceInfo['formatted'] ?? 'Perangkat Browser';
+
+                    $voucherModel->recordPromoUsage(
+                        userId: (int) Auth::id(),
+                        orderId: (int) $order->id,
+                        deviceId: $deviceId,
+                        deviceLabel: $deviceLabel,
+                        ipAddress: $ipAddress,
+                        userAgent: $userAgent,
+                        discountAmount: (int) $diskonVoucher
+                    );
+                } else {
+                    $voucherModel->markAsUsed(Auth::id(), $order->id);
+                }
             }
 
             DB::commit();

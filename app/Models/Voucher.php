@@ -10,7 +10,12 @@ class Voucher extends Model
 {
     protected $fillable = [
         'code',
+        'type',
         'amount',
+        'total_quota',
+        'used_count',
+        'limit_per_user',
+        'limit_per_device',
         'is_used',
         'used_by',
         'used_at',
@@ -26,16 +31,25 @@ class Voucher extends Model
     protected function casts(): array
     {
         return [
-            'category_id'    => 'integer',
-            'amount'         => 'integer',
-            'is_used'        => 'boolean',
-            'used_at'        => 'datetime',
-            'expires_at'     => 'datetime',
-            'reserved_until' => 'datetime',
+            'category_id'      => 'integer',
+            'amount'           => 'integer',
+            'total_quota'      => 'integer',
+            'used_count'       => 'integer',
+            'limit_per_user'   => 'integer',
+            'limit_per_device' => 'integer',
+            'is_used'          => 'boolean',
+            'used_at'          => 'datetime',
+            'expires_at'       => 'datetime',
+            'reserved_until'   => 'datetime',
         ];
     }
 
     // ─── Relationships ──────────────────────────────────────────────────────
+
+    public function usages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(VoucherUsage::class);
+    }
 
     public function category(): BelongsTo
     {
@@ -82,23 +96,18 @@ class Voucher extends Model
      */
     public function scopeAvailableForGame($query, int $amount)
     {
-        $query->where('is_used', false)
+        return $query->where('is_used', false)
             ->where('amount', $amount)
             ->whereNull('used_by')
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>=', now());
-            });
-
-        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
-            $query->where(function ($q) {
+            })
+            ->where(function ($q) {
                 // Belum direservasi, ATAU reservasinya sudah kedaluwarsa
                 $q->whereNull('reserved_for')
                   ->orWhere('reserved_until', '<', now());
             });
-        }
-
-        return $query;
     }
 
     public function scopeUsed($query)
@@ -125,8 +134,23 @@ class Voucher extends Model
         return $this->expires_at && $this->expires_at->isPast();
     }
 
+    public function isPromo(): bool
+    {
+        return ($this->type ?? 'single') === 'promo';
+    }
+
     public function getStatusLabelAttribute(): string
     {
+        if ($this->isPromo()) {
+            if ($this->is_expired) {
+                return 'Kadaluarsa';
+            }
+            if ($this->total_quota !== null && $this->used_count >= $this->total_quota) {
+                return 'Kuota Habis';
+            }
+            return 'Promo Aktif';
+        }
+
         if ($this->is_used) {
             return 'Terpakai';
         }
@@ -137,6 +161,86 @@ class Voucher extends Model
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
+
+    /**
+     * Validasi apakah voucher ini bisa digunakan oleh user dan device tertentu.
+     */
+    public function validateForUsage(?int $userId, ?string $deviceId): array
+    {
+        if ($this->is_expired) {
+            return [
+                'valid'   => false,
+                'message' => 'Kode voucher sudah kadaluarsa pada ' . $this->expires_at->format('d/m/Y H:i') . '.',
+            ];
+        }
+
+        if ($this->isPromo()) {
+            if ($this->total_quota !== null && $this->used_count >= $this->total_quota) {
+                return [
+                    'valid'   => false,
+                    'message' => 'Kuota voucher ' . $this->code . ' sudah habis.',
+                ];
+            }
+
+            if ($userId) {
+                $userUsageCount = $this->usages()->where('user_id', $userId)->count();
+                if ($userUsageCount >= ($this->limit_per_user ?? 1)) {
+                    return [
+                        'valid'   => false,
+                        'message' => 'Akun Anda sudah pernah menggunakan voucher ' . $this->code . ' (maksimal 1x per akun).',
+                    ];
+                }
+            }
+
+            if (!empty($deviceId)) {
+                $deviceUsageCount = $this->usages()->where('device_id', $deviceId)->count();
+                if ($deviceUsageCount >= ($this->limit_per_device ?? 1)) {
+                    return [
+                        'valid'   => false,
+                        'message' => 'Perangkat ini sudah pernah menggunakan voucher ' . $this->code . ' (maksimal 1x per perangkat).',
+                    ];
+                }
+            }
+
+            return ['valid' => true, 'message' => 'Voucher valid.'];
+        }
+
+        if ($this->is_used) {
+            return [
+                'valid'   => false,
+                'message' => 'Kode voucher sudah pernah digunakan.',
+            ];
+        }
+
+        return ['valid' => true, 'message' => 'Voucher valid.'];
+    }
+
+    /**
+     * Catat pemakaian voucher promo.
+     */
+    public function recordPromoUsage(
+        int $userId,
+        int $orderId,
+        ?string $deviceId,
+        ?string $deviceLabel,
+        ?string $ipAddress,
+        ?string $userAgent,
+        int $discountAmount
+    ): VoucherUsage {
+        $usage = $this->usages()->create([
+            'user_id'         => $userId,
+            'order_id'        => $orderId,
+            'device_id'       => $deviceId ?: 'unknown',
+            'device_label'    => $deviceLabel,
+            'ip_address'      => $ipAddress,
+            'user_agent'      => $userAgent,
+            'discount_amount' => $discountAmount,
+        ]);
+
+        $this->increment('used_count');
+
+        return $usage;
+    }
 
     /**
      * Generate kode voucher unik 4 karakter (huruf besar + angka).
@@ -160,19 +264,14 @@ class Voucher extends Model
      */
     public function markAsUsed(int $userId, int $orderId): void
     {
-        $payload = [
-            'is_used'  => true,
-            'used_by'  => $userId,
-            'used_at'  => now(),
-            'order_id' => $orderId,
-        ];
-
-        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
-            $payload['reserved_for'] = null;
-            $payload['reserved_until'] = null;
-        }
-
-        $this->update($payload);
+        $this->update([
+            'is_used'        => true,
+            'used_by'        => $userId,
+            'used_at'        => now(),
+            'order_id'       => $orderId,
+            'reserved_for'   => null,
+            'reserved_until' => null,
+        ]);
     }
 
     /**
@@ -180,12 +279,10 @@ class Voucher extends Model
      */
     public function reserveFor(int $userId): void
     {
-        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
-            $this->update([
-                'reserved_for'   => $userId,
-                'reserved_until' => now()->addMinutes(5),
-            ]);
-        }
+        $this->update([
+            'reserved_for'   => $userId,
+            'reserved_until' => now()->addMinutes(5),
+        ]);
     }
 
     /**
@@ -193,30 +290,10 @@ class Voucher extends Model
      */
     public function releaseReservation(): void
     {
-        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
-            $this->update([
-                'reserved_for'   => null,
-                'reserved_until' => null,
-            ]);
-        }
-    }
-
-    /**
-     * Lepaskan semua reservasi voucher yang sudah kedaluwarsa (lewat dari 5 menit).
-     */
-    public static function releaseExpiredReservations(): int
-    {
-        if (! \Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
-            return 0;
-        }
-
-        return static::whereNotNull('reserved_for')
-            ->where('reserved_until', '<', now())
-            ->where('is_used', false)
-            ->update([
-                'reserved_for'   => null,
-                'reserved_until' => null,
-            ]);
+        $this->update([
+            'reserved_for'   => null,
+            'reserved_until' => null,
+        ]);
     }
 
     /**
@@ -225,13 +302,10 @@ class Voucher extends Model
      */
     public function claimByUser(int $userId): void
     {
-        $payload = ['used_by' => $userId];
-
-        if (\Illuminate\Support\Facades\Schema::hasColumn('vouchers', 'reserved_for')) {
-            $payload['reserved_for'] = null;
-            $payload['reserved_until'] = null;
-        }
-
-        $this->update($payload);
+        $this->update([
+            'used_by'        => $userId,
+            'reserved_for'   => null,
+            'reserved_until' => null,
+        ]);
     }
 }

@@ -976,9 +976,13 @@
                     this.memeriksaVoucher = true;
 
                     try {
-                        const url = @json(route('voucher.periksa')) + '?kode=' + encodeURIComponent(kode);
+                        const devId = window.getRecordDeviceId ? window.getRecordDeviceId() : (window.__recordDeviceId || '');
+                        const url = @json(route('voucher.periksa')) + '?kode=' + encodeURIComponent(kode) + '&device_id=' + encodeURIComponent(devId);
                         const res = await fetch(url, {
-                            headers: { 'Accept': 'application/json' },
+                            headers: { 
+                                'Accept': 'application/json',
+                                'X-Device-Id': devId
+                            },
                             credentials: 'same-origin',
                         });
                         const data = await res.json();
@@ -1596,6 +1600,7 @@
 
                     {{-- Nilai yang ikut terkirim bersama pesanan --}}
                     <input type="hidden" name="voucher_code" :value="voucherStatus === 'benar' ? kodeVoucher : ''">
+                    <input type="hidden" name="device_id" :value="window.getRecordDeviceId ? window.getRecordDeviceId() : (window.__recordDeviceId || '')">
 
                     <p class="voucher-galat" x-show="voucherStatus === 'salah'" x-cloak x-text="voucherPesan"></p>
 
