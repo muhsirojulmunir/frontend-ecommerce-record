@@ -25,12 +25,17 @@ class DuitkuService
         'B1'  => 'CIMB Niaga Virtual Account',
         'BT'  => 'Permata Virtual Account',
         'A1'  => 'ATM Bersama',
-        'AG'  => 'BRI Virtual Account',
+        'BR'  => 'BRI Virtual Account',
+        'AG'  => 'Artha Graha Virtual Account',
         'NC'  => 'BNC (Neo Commerce) Virtual Account',
+        'BV'  => 'BSI Virtual Account',
         'SA'  => 'BSI Virtual Account',
         'QR'  => 'QRIS (Semua E-Wallet)',
+        'SP'  => 'QRIS ShopeePay',
         'FT'  => 'Alfamart / Alfamidi',
         'IR'  => 'Indomaret',
+        'DM'  => 'Danamon Virtual Account',
+        'S1'  => 'Sampoerna Virtual Account',
     ];
 
     public function __construct()
@@ -166,20 +171,35 @@ class DuitkuService
 
     /**
      * Verifikasi signature callback webhook dari Duitku.
+     * Mendukung rumus standar Duitku API v1/POP dan Direct API.
      */
     public function verifyCallbackSignature(array $callbackData): bool
     {
-        $merchantCode    = $callbackData['merchantCode'] ?? '';
-        $amount          = $callbackData['amount'] ?? '';
-        $merchantOrderId = $callbackData['merchantOrderId'] ?? '';
-        $reference       = $callbackData['reference'] ?? '';
-        $resultCode      = $callbackData['resultCode'] ?? '';
-        $received        = $callbackData['signature'] ?? '';
+        $merchantCode    = (string) ($callbackData['merchantCode'] ?? '');
+        $amount          = (string) ($callbackData['amount'] ?? '');
+        $merchantOrderId = (string) ($callbackData['merchantOrderId'] ?? '');
+        $reference       = (string) ($callbackData['reference'] ?? '');
+        $resultCode      = (string) ($callbackData['resultCode'] ?? '');
+        $received        = (string) ($callbackData['signature'] ?? '');
 
+        if (empty($received) || empty($this->apiKey)) {
+            return false;
+        }
+
+        // 1. Rumus standar Duitku: MD5(merchantCode + amount + merchantOrderId + apiKey)
+        $standardExpected = md5($merchantCode . $amount . $merchantOrderId . $this->apiKey);
+        if (hash_equals($standardExpected, $received)) {
+            return true;
+        }
+
+        // 2. Rumus alternatif Duitku Direct: MD5(merchantCode + amount + merchantOrderId + reference + MD5(apiKey) + resultCode)
         $apiKeyMd5 = md5($this->apiKey);
-        $expected  = md5($merchantCode . $amount . $merchantOrderId . $reference . $apiKeyMd5 . $resultCode);
+        $legacyExpected = md5($merchantCode . $amount . $merchantOrderId . $reference . $apiKeyMd5 . $resultCode);
+        if (hash_equals($legacyExpected, $received)) {
+            return true;
+        }
 
-        return hash_equals($expected, $received);
+        return false;
     }
 
     public function isPaymentSuccessful(?string $resultCode): bool

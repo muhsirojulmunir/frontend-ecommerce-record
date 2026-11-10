@@ -482,10 +482,12 @@
                         'BC' => 'Virtual Account BCA',
                         'M2' => 'Virtual Account Mandiri',
                         'I1' => 'Virtual Account BNI',
+                        'BR' => 'Virtual Account BRI',
                         'AG' => 'Virtual Account BRI',
                         'VA' => 'Virtual Account Maybank',
                         'B1' => 'Virtual Account CIMB Niaga',
                         'BT' => 'Virtual Account Permata',
+                        'BV' => 'Virtual Account BSI',
                         'SA' => 'Virtual Account BSI',
                         'NC' => 'Virtual Account Neo Commerce',
                         'QR' => 'QRIS (Semua E-Wallet & M-Banking)',
@@ -502,10 +504,17 @@
                             <span>Kendala Sistem Pembayaran</span>
                         </div>
                         <p class="leading-relaxed">{{ $duitkuError }}</p>
-                        <button type="button" @click="window.location.reload()"
-                                class="inline-flex items-center gap-1.5 font-bold text-rose-700 hover:text-rose-900 underline mt-1">
-                            <i class="fa-solid fa-rotate-right"></i> Muat Ulang Halaman
-                        </button>
+                        <div class="flex flex-wrap items-center gap-2 pt-1">
+                            <button type="button" @click="window.location.reload()"
+                                    class="inline-flex items-center gap-1.5 font-bold text-rose-700 hover:text-rose-900 underline text-xs">
+                                <i class="fa-solid fa-rotate-right"></i> Muat Ulang Halaman
+                            </button>
+                            <span class="text-rose-300">•</span>
+                            <button type="button" @click="showChangePaymentModal = true"
+                                    class="inline-flex items-center gap-1.5 font-bold text-primary hover:text-primary-dark underline text-xs">
+                                <i class="fa-solid fa-arrows-rotate"></i> Ganti Metode Pembayaran Lain
+                            </button>
+                        </div>
                     </div>
                 @endif
 
@@ -549,7 +558,7 @@
                                 </div>
                                 <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-info text-blue-500"></i>
-                                    Nomor Virtual Account resmi dari Duitku Sandbox, aktif khusus untuk transaksi Anda.
+                                    Nomor Virtual Account resmi dari Duitku, aktif khusus untuk transaksi Anda.
                                 </p>
                             </div>
                         @elseif($order->payment_method === 'QR')
@@ -567,38 +576,16 @@
                             </span>
                         </div>
 
-                        {{-- Tombol Aksi Pembayaran & Simulator --}}
+                        {{-- Tombol Aksi Pembayaran --}}
                         <div class="space-y-3 pt-1">
                             @php $payUrl = $order->duitku_payment_url ?? $duitkuPaymentUrl; @endphp
                             @if(!empty($payUrl))
                                 <a href="{{ $payUrl }}" target="_blank" rel="noopener noreferrer"
                                    class="w-full bg-accent hover:bg-accent-dark text-white font-black text-xs py-4 rounded-sm text-center transition uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm">
                                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                    <span>Buka Halaman Duitku Sandbox (Tab Baru)</span>
+                                    <span>Buka Halaman Pembayaran (Tab Baru)</span>
                                 </a>
                             @endif
-
-                            {{-- Card Khusus Simulator Testing Sandbox --}}
-                            <div class="p-4 bg-amber-50/90 border border-amber-300 rounded-sm space-y-3">
-                                <div class="flex items-center justify-between text-xs">
-                                    <span class="font-bold text-amber-900 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-flask text-amber-600"></i>
-                                        Uji Coba Pembayaran (Mode Sandbox)
-                                    </span>
-                                    <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded uppercase tracking-wider">Testing Mode</span>
-                                </div>
-
-                                <p class="text-[11px] text-amber-800 leading-relaxed">
-                                    Dalam lingkungan pengujian lokal (Sandbox), Anda dapat langsung menguji alur pesanan lunas, email invoice, dan proses pengiriman tanpa transfer uang:
-                                </p>
-
-                                <button type="button" @click="simulatePayment()"
-                                        :disabled="simulating"
-                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3.5 px-4 rounded-sm transition flex items-center justify-center gap-2 uppercase tracking-wider shadow-sm disabled:opacity-50 cursor-pointer">
-                                    <i :class="simulating ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bolt'"></i>
-                                    <span x-text="simulating ? 'Memproses Simulasi...' : 'Simulasikan Pembayaran Lunas (Instan)'"></span>
-                                </button>
-                            </div>
 
                             <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
                                 <button type="button" @click="checkStatusManual()"
@@ -620,7 +607,6 @@
                             <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-600 pl-1 leading-relaxed">
                                 <li>Gunakan nomor <strong>Virtual Account</strong> yang tertera di atas.</li>
                                 <li>Nominal transfer harus sama persis: <strong>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</strong>.</li>
-                                <li>Atau klik tombol <strong>"⚡ Simulasikan Pembayaran Sukses"</strong> di atas untuk pengujian instan. Status akan langsung lunas otomatis!</li>
                             </ol>
                         </div>
                     </div>
@@ -661,10 +647,12 @@
                         ['code' => 'QR',         'name' => 'QRIS (Semua E-Wallet & M-Banking)', 'desc' => 'GoPay, OVO, Dana, ShopeePay, LinkAja',      'icon' => 'fa-solid fa-qrcode'],
                         ['code' => 'BC',         'name' => 'Virtual Account BCA',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
                         ['code' => 'I1',         'name' => 'Virtual Account BNI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'AG',         'name' => 'Virtual Account BRI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
+                        ['code' => 'BR',         'name' => 'Virtual Account BRI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
                         ['code' => 'M2',         'name' => 'Virtual Account Mandiri',            'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'IR',         'name' => 'Indomaret / Ceriamart',              'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
+                        ['code' => 'BV',         'name' => 'Virtual Account BSI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
+                        ['code' => 'BT',         'name' => 'Virtual Account Permata',            'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
                         ['code' => 'FT',         'name' => 'Alfamart / Alfamidi',                'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
+                        ['code' => 'IR',         'name' => 'Indomaret / Ceriamart',              'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
                     ];
                 @endphp
 
