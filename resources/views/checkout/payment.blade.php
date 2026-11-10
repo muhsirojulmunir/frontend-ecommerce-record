@@ -690,8 +690,6 @@
                                         <p class="text-xs font-bold text-gray-800">{{ $item['name'] }}</p>
                                         @if($isMaintenance)
                                             <span class="bg-amber-100 text-amber-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-amber-300">Maintenance</span>
-                                        @else
-                                            <span class="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-emerald-300">Tersedia</span>
                                         @endif
                                     </div>
                                     <p class="text-[10px] {{ $isMaintenance ? 'text-amber-700 font-medium' : 'text-gray-500' }}">

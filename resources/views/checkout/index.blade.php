@@ -1924,9 +1924,6 @@
                                     <template x-if="item.code === 'R_Pay' && !rpayCukup">
                                         <span class="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-300">Saldo Kurang</span>
                                     </template>
-                                    <template x-if="item.code !== 'R_Pay' || rpayCukup">
-                                        <span class="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-300">Tersedia</span>
-                                    </template>
                                 </p>
                                 <p class="mt-0.5 text-gray-500 font-medium" x-text="item.type"></p>
                                 <template x-if="item.code === 'R_Pay' && !rpayCukup">
