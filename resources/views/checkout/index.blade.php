@@ -108,16 +108,17 @@
                 },
 
                 payments: [
-                    {code: 'MANUAL_BCA', name: 'Transfer Bank BCA (Manual)',          type: 'Rek: 1000028122 a.n Lily Minawati Prajogo (Verifikasi Admin)', icon: 'fa-solid fa-money-bill-transfer'},
-                    {code: 'R_Pay',      name: 'R_Pay (Saldo Dompet)',                type: 'Langsung lunas, tanpa transfer',                               icon: 'fa-solid fa-wallet'},
-                    {code: 'QR',         name: 'QRIS (Semua E-Wallet & M-Banking)',   type: 'GoPay, OVO, Dana, ShopeePay, LinkAja',                         icon: 'fa-solid fa-qrcode'},
-                    {code: 'BC',         name: 'Transfer BCA Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
-                    {code: 'I1',         name: 'Transfer BNI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
-                    {code: 'BR',         name: 'Transfer BRI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
-                    {code: 'M2',         name: 'Mandiri Bill Payment',                type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
-                    {code: 'BV',         name: 'Transfer BSI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   icon: 'fa-solid fa-building-columns'},
-                    {code: 'IR',         name: 'Indomaret / Ceriamart',               type: 'Bayar di Kasir Outlet',                                        icon: 'fa-solid fa-store'},
-                    {code: 'FT',         name: 'Alfamart / Alfamidi',                 type: 'Bayar di Kasir Outlet',                                        icon: 'fa-solid fa-store'},
+                    {code: 'MANUAL_BCA', name: 'Transfer Bank BCA (Manual)',          type: 'Rek: 1000028122 a.n Lily Minawati Prajogo (Verifikasi Admin)', image: 'https://images.duitku.com/hotlink-ok/BC.PNG',   icon: 'fa-solid fa-money-bill-transfer'},
+                    {code: 'R_Pay',      name: 'R_Pay (Saldo Dompet)',                type: 'Langsung lunas dari saldo akun Anda',                          image: null,                                                    icon: 'fa-solid fa-wallet'},
+                    {code: 'I1',         name: 'Transfer BNI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/I1.PNG',   icon: 'fa-solid fa-building-columns'},
+                    {code: 'BR',         name: 'Transfer BRI Virtual Account (BRIVA)',type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/BR.PNG',   icon: 'fa-solid fa-building-columns'},
+                    {code: 'M2',         name: 'Mandiri Bill Payment (VA)',           type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/MV.PNG',   icon: 'fa-solid fa-building-columns'},
+                    {code: 'BV',         name: 'Transfer BSI Virtual Account',        type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/BSI.PNG',  icon: 'fa-solid fa-building-columns'},
+                    {code: 'BT',         name: 'Transfer Permata Virtual Account',    type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/PERMATA.PNG', icon: 'fa-solid fa-building-columns'},
+                    {code: 'B1',         name: 'Transfer CIMB Niaga Virtual Account',type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/B1.PNG',   icon: 'fa-solid fa-building-columns'},
+                    {code: 'VA',         name: 'Transfer Maybank Virtual Account',    type: 'Verifikasi Otomatis 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/VA.PNG',   icon: 'fa-solid fa-building-columns'},
+                    {code: 'A1',         name: 'Transfer ATM Bersama (Semua Bank)',   type: 'Transfer Antar Bank 24 Jam',                                   image: 'https://images.duitku.com/hotlink-ok/A1.PNG',   icon: 'fa-solid fa-network-wired'},
+                    {code: 'FT',         name: 'Alfamart / Retail',                  type: 'Bayar di Kasir Toko Retail Terdekat',                          image: 'https://images.duitku.com/hotlink-ok/RETAIL.PNG', icon: 'fa-solid fa-store'},
                 ],
                 newAddrLabel: 'Alamat Rumah',
                 newAddrName: @json($namaAkun),
@@ -843,6 +844,11 @@
                     return p ? p.name : '';
                 },
 
+                getPaymentImage() {
+                    const p = this.payments.find(item => item.code === this.selectedPayment);
+                    return p ? (p.image || null) : null;
+                },
+
                 formatPrice(price) {
                     return 'Rp ' + new Intl.NumberFormat('id-ID').format(price);
                 },
@@ -1486,10 +1492,17 @@
                     <div @click="bukaLangkah('bayar')"
                         class="flex items-center justify-between gap-4 py-3 rounded-xl px-2 -mx-2 transition"
                         :class="kurirTerpilih ? 'hover:bg-slate-50/50 cursor-pointer' : 'opacity-50 cursor-not-allowed'">
-                        <div class="flex items-center gap-4">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0">
-                                <i class="text-gray-500 text-sm" :class="kurirTerpilih ? 'fa-regular fa-credit-card' : 'fa-solid fa-lock'"></i>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <template x-if="getPaymentImage()">
+                                <div class="h-10 w-14 rounded-md bg-white flex items-center justify-center border border-gray-200 shrink-0 p-1 overflow-hidden shadow-2xs">
+                                    <img :src="getPaymentImage()" :alt="getPaymentName()" class="max-h-full max-w-full object-contain">
+                                </div>
+                            </template>
+                            <template x-if="!getPaymentImage()">
+                                <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0">
+                                    <i class="text-gray-500 text-sm" :class="kurirTerpilih ? 'fa-regular fa-credit-card' : 'fa-solid fa-lock'"></i>
+                                </div>
+                            </template>
                             <div>
                                 <h4 class="text-xs font-bold text-gray-800">Metode Pembayaran</h4>
                                 <template x-if="!kurirTerpilih">
@@ -1897,8 +1910,13 @@
                                 'border-gray-200 hover:border-primary hover:bg-primary/5': selectedPayment !== item.code && (item.code !== 'R_Pay' || rpayCukup),
                                 'border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed': item.code === 'R_Pay' && !rpayCukup
                             }">
-                            <div class="h-9 w-9 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0 text-primary">
-                                <i :class="item.icon" class="text-xs"></i>
+                            <div class="h-9 w-14 rounded-md bg-white flex items-center justify-center border border-gray-200 shrink-0 p-1 overflow-hidden shadow-2xs">
+                                <template x-if="item.image">
+                                    <img :src="item.image" :alt="item.name" class="max-h-full max-w-full object-contain">
+                                </template>
+                                <template x-if="!item.image">
+                                    <i :class="item.icon" class="text-xs text-primary"></i>
+                                </template>
                             </div>
                             <div class="text-xs flex-grow">
                                 <p class="font-bold text-gray-800 flex items-center gap-1.5">

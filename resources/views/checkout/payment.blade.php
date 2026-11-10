@@ -478,23 +478,28 @@
             @elseif($order->payment_method !== 'COD')
                 {{-- Konten Pembayaran Duitku Payment Gateway --}}
                 @php
-                    $methodNames = [
-                        'BC' => 'Virtual Account BCA',
-                        'M2' => 'Virtual Account Mandiri',
-                        'I1' => 'Virtual Account BNI',
-                        'BR' => 'Virtual Account BRI',
-                        'AG' => 'Virtual Account BRI',
-                        'VA' => 'Virtual Account Maybank',
-                        'B1' => 'Virtual Account CIMB Niaga',
-                        'BT' => 'Virtual Account Permata',
-                        'BV' => 'Virtual Account BSI',
-                        'SA' => 'Virtual Account BSI',
-                        'NC' => 'Virtual Account Neo Commerce',
-                        'QR' => 'QRIS (Semua E-Wallet & M-Banking)',
-                        'FT' => 'Retail Alfamart / Alfamidi',
-                        'IR' => 'Retail Indomaret',
+                    $methodInfo = [
+                        'MANUAL_BCA' => ['name' => 'Transfer Bank Manual BCA',           'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        'I1'         => ['name' => 'Virtual Account BNI',                 'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
+                        'M2'         => ['name' => 'Virtual Account Mandiri (Bill)',      'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
+                        'BR'         => ['name' => 'Virtual Account BRI (BRIVA)',         'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
+                        'BV'         => ['name' => 'Virtual Account BSI',                 'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
+                        'BT'         => ['name' => 'Virtual Account Permata',             'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
+                        'B1'         => ['name' => 'Virtual Account CIMB Niaga',         'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
+                        'VA'         => ['name' => 'Virtual Account Maybank',             'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
+                        'A1'         => ['name' => 'ATM Bersama (Semua Bank)',            'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
+                        'FT'         => ['name' => 'Retail Alfamart / Alfamidi',          'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
+                        'IR'         => ['name' => 'Retail Indomaret',                    'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
+                        'NC'         => ['name' => 'Virtual Account Neo Commerce',        'image' => 'https://images.duitku.com/hotlink-ok/NC.PNG'],
+                        'BC'         => ['name' => 'Virtual Account BCA',                 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        'QR'         => ['name' => 'QRIS (Semua E-Wallet & M-Banking)',   'image' => 'https://images.duitku.com/hotlink-ok/SP.PNG'],
                     ];
-                    $currentMethodName = $methodNames[$order->payment_method] ?? ('Metode ' . $order->payment_method);
+                    $currentMethod = $methodInfo[$order->payment_method] ?? [
+                        'name'  => 'Metode ' . $order->payment_method,
+                        'image' => null,
+                    ];
+                    $currentMethodName  = $currentMethod['name'];
+                    $currentMethodImage = $currentMethod['image'];
                 @endphp
 
                 @if(!empty($duitkuError))
@@ -522,9 +527,15 @@
                     {{-- Header Duitku --}}
                     <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-5 py-4 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-black text-sm text-white shadow-xs">
-                                D
-                            </div>
+                            @if(!empty($currentMethodImage))
+                                <div class="h-9 w-14 rounded-sm bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-2xs border border-white/20">
+                                    <img src="{{ $currentMethodImage }}" alt="{{ $currentMethodName }}" class="max-h-full max-w-full object-contain">
+                                </div>
+                            @else
+                                <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-black text-sm text-white shadow-xs">
+                                    D
+                                </div>
+                            @endif
                             <div>
                                 <span class="font-bold text-xs uppercase tracking-wider block">Duitku Payment Gateway</span>
                                 <span class="text-[11px] text-slate-300 font-medium">{{ $currentMethodName }}</span>
@@ -643,32 +654,36 @@
                 {{-- List Pilihan Metode Pembayaran --}}
                 @php
                     $pembayaranTersedia = [
-                        ['code' => 'MANUAL_BCA', 'name' => 'Transfer Bank Manual BCA',          'desc' => 'BCA 1000028122 a.n Lily Minawati Prajogo', 'icon' => 'fa-solid fa-money-bill-transfer'],
-                        ['code' => 'QR',         'name' => 'QRIS (Semua E-Wallet & M-Banking)', 'desc' => 'GoPay, OVO, Dana, ShopeePay, LinkAja',      'icon' => 'fa-solid fa-qrcode'],
-                        ['code' => 'BC',         'name' => 'Virtual Account BCA',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'I1',         'name' => 'Virtual Account BNI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'BR',         'name' => 'Virtual Account BRI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'M2',         'name' => 'Virtual Account Mandiri',            'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'BV',         'name' => 'Virtual Account BSI',                'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'BT',         'name' => 'Virtual Account Permata',            'desc' => 'Verifikasi Otomatis 24 Jam',                'icon' => 'fa-solid fa-building-columns'],
-                        ['code' => 'FT',         'name' => 'Alfamart / Alfamidi',                'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
-                        ['code' => 'IR',         'name' => 'Indomaret / Ceriamart',              'desc' => 'Bayar di Kasir Outlet Terdekat',            'icon' => 'fa-solid fa-store'],
+                        ['code' => 'MANUAL_BCA', 'name' => 'Transfer Bank Manual BCA',           'desc' => 'BCA 1000028122 a.n Lily Minawati Prajogo', 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        ['code' => 'I1',         'name' => 'Virtual Account BNI',                 'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
+                        ['code' => 'BR',         'name' => 'Virtual Account BRI (BRIVA)',         'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
+                        ['code' => 'M2',         'name' => 'Virtual Account Mandiri (Bill)',      'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
+                        ['code' => 'BV',         'name' => 'Virtual Account BSI',                 'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
+                        ['code' => 'BT',         'name' => 'Virtual Account Permata',             'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
+                        ['code' => 'B1',         'name' => 'Virtual Account CIMB Niaga',          'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
+                        ['code' => 'VA',         'name' => 'Virtual Account Maybank',             'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
+                        ['code' => 'A1',         'name' => 'ATM Bersama (Semua Bank)',            'desc' => 'Transfer Antar Bank 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
+                        ['code' => 'FT',         'name' => 'Alfamart / Retail',                   'desc' => 'Bayar di Kasir Toko Retail Terdekat',       'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
                     ];
                 @endphp
 
                 <div class="space-y-2">
                     @foreach($pembayaranTersedia as $item)
                         @php
-                            $isMaintenance = false; // Semua metode aktif via Duitku
+                            $isMaintenance = false;
                         @endphp
                         <label @if(!$isMaintenance) @click="selectedNewMethod = '{{ $item['code'] }}'" @endif
-                               class="border p-3.5 rounded-sm transition flex items-center justify-between {{ $isMaintenance ? 'bg-gray-50/70 border-gray-200 opacity-60 cursor-not-allowed' : 'cursor-pointer' }}"
+                               class="border p-3 rounded-sm transition flex items-center justify-between {{ $isMaintenance ? 'bg-gray-50/70 border-gray-200 opacity-60 cursor-not-allowed' : 'cursor-pointer' }}"
                                @if(!$isMaintenance)
                                    :class="selectedNewMethod === '{{ $item['code'] }}' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300 bg-white'"
                                @endif>
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-sm bg-gray-50 flex items-center justify-center border border-gray-200 shrink-0 text-primary">
-                                    <i class="{{ $item['icon'] }} text-xs"></i>
+                                <div class="h-9 w-14 rounded-sm bg-white flex items-center justify-center border border-gray-200 shrink-0 p-1 overflow-hidden shadow-2xs">
+                                    @if(!empty($item['image']))
+                                        <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="max-h-full max-w-full object-contain">
+                                    @else
+                                        <i class="fa-solid fa-building-columns text-xs text-primary"></i>
+                                    @endif
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-2">

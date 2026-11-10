@@ -59,11 +59,13 @@ class DuitkuService
         $amount          = (int) $params['amount'];
         $expiredMinutes  = (int) ($params['expired_minutes'] ?? 1440);
 
+        $productDetails  = (string) ($params['product_details'] ?? ('Pembelian Sepatu RECORD - ' . $merchantOrderId));
+
         $payload = [
             'paymentAmount'     => $amount,
             'paymentMethod'     => $params['payment_method'],
             'merchantOrderId'   => $merchantOrderId,
-            'productDetails'    => mb_substr($params['product_details'] ?? 'Pembelian Sepatu RECORD', 0, 250),
+            'productDetails'    => mb_substr($productDetails, 0, 250),
             'additionalParam'   => '',
             'merchantUserInfo'  => mb_substr($params['customer_email'] ?? '', 0, 50),
             'customerVaName'    => mb_substr($params['customer_name'] ?? 'Customer', 0, 20),
@@ -72,7 +74,7 @@ class DuitkuService
             'callbackUrl'       => $this->callbackBaseUrl . '/duitku/callback',
             'returnUrl'         => $this->callbackBaseUrl . '/pesanan',
             'expiryPeriod'      => $expiredMinutes,
-            'itemDetails'       => $this->buildItemDetails($params['items'] ?? [], $amount),
+            'itemDetails'       => $this->buildItemDetails($params['items'] ?? [], $amount, $productDetails),
             'customerDetail'    => [
                 'firstName'     => mb_substr($params['customer_name'] ?? 'Customer', 0, 20),
                 'lastName'      => '',
@@ -217,51 +219,22 @@ class DuitkuService
         return $resultCode === '02';
     }
 
-    private function buildItemDetails(array $items, int $totalAmount): array
+    /**
+     * Susun rincian item pesanan agar presisi totalnya sama persis dengan paymentAmount.
+     */
+    private function buildItemDetails(array $items, int $totalAmount, string $productDetails = ''): array
     {
-        if (empty($items)) {
-            return [[
-                'name'     => 'Pembelian Produk RECORD',
-                'price'    => $totalAmount,
+        // Untuk menjamin 100% total itemDetails selalu presisi sama dengan paymentAmount
+        // (menghindari error 409 'Payment amount must be equal to all item price' akibat diskon/voucher/ongkir/kupon),
+        // Duitku mewajibkan: sum(itemDetails[i].price * itemDetails[i].quantity) == paymentAmount.
+        $label = !empty($productDetails) ? $productDetails : 'Pembelian Produk RECORD';
+        return [
+            [
+                'name'     => mb_substr($label, 0, 50),
+                'price'    => (int) $totalAmount,
                 'quantity' => 1,
-            ]];
-        }
-
-        $list = [];
-        $sum  = 0;
-        foreach ($items as $item) {
-            $price = (int) ($item['price'] ?? 0);
-            $qty   = (int) ($item['quantity'] ?? 1);
-            if ($price > 0 && $qty > 0) {
-                $list[] = [
-                    'name'     => mb_substr($item['product_name'] ?? 'Produk', 0, 50),
-                    'price'    => $price,
-                    'quantity' => $qty,
-                ];
-                $sum += ($price * $qty);
-            }
-        }
-
-        $diff = $totalAmount - $sum;
-        if ($diff > 0) {
-            // Tambahkan ongkos kirim / selisih biaya agar total item persis sama dengan total tagihan
-            $list[] = [
-                'name'     => 'Ongkos Kirim & Layanan',
-                'price'    => $diff,
-                'quantity' => 1,
-            ];
-            return $list;
-        } elseif ($diff === 0) {
-            return $list;
-        } else {
-            // Jika ada diskon (total < sum items), Duitku tidak support harga negatif,
-            // sehingga kirim 1 agregat item sebesar totalAmount agar validasi Duitku selalu cocok.
-            return [[
-                'name'     => 'Total Pembelian Pesanan RECORD',
-                'price'    => $totalAmount,
-                'quantity' => 1,
-            ]];
-        }
+            ]
+        ];
     }
 
     private function fail(string $message): array
