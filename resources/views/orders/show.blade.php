@@ -842,7 +842,7 @@
                     <div class="border-t border-border pt-4 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] uppercase font-bold text-text-light">Metode Bayar:</span>
-                            <span class="font-bold text-primary uppercase">{{ $order->payment_method }}</span>
+                            <span class="font-bold text-primary uppercase">{{ $order->payment_method_clean_code ?? $order->payment_method }}</span>
                         </div>
 
                         <div class="flex justify-between items-center">

@@ -302,7 +302,7 @@ class CheckoutController extends Controller
             'new_address.longitude'       => 'nullable|numeric',
             'courier_code'               => 'required|string',
             'courier_cost'               => 'nullable|numeric|min:0',
-            'payment_method'             => 'required|string|in:R_Pay,MANUAL_BCA,QR,BC,I1,AG,BR,M2,BV,BT,B1,VA,A1,IR,FT',
+            'payment_method'             => 'required|string|in:R_Pay,MANUAL_BCA,BNI,BRI,MANDIRI,BSI,PERMATA,CIMB,MAYBANK,ATM_BERSAMA,ALFAMART,BCA,QRIS,QR,BC,I1,AG,BR,M2,BV,BT,B1,VA,A1,IR,FT',
             'referral_code'              => 'nullable|string|max:60',
             'voucher_code'               => 'nullable|string|max:50',
             'notes'                      => 'nullable|string',
@@ -972,7 +972,11 @@ class CheckoutController extends Controller
      */
     public function changePaymentMethod(Request $request, $orderNumber)
     {
-        $validMethods = ['MANUAL_BCA', 'QR', 'BC', 'I1', 'AG', 'BR', 'M2', 'BV', 'BT', 'B1', 'VA', 'A1', 'IR', 'FT', 'R_Pay'];
+        $validMethods = [
+            'MANUAL_BCA', 'R_Pay',
+            'BNI', 'BRI', 'MANDIRI', 'BSI', 'PERMATA', 'CIMB', 'MAYBANK', 'ATM_BERSAMA', 'ALFAMART',
+            'BCA', 'QRIS', 'QR', 'BC', 'I1', 'AG', 'BR', 'M2', 'BV', 'BT', 'B1', 'VA', 'A1', 'IR', 'FT'
+        ];
 
         $request->validate([
             'payment_method' => ['required', \Illuminate\Validation\Rule::in($validMethods)],

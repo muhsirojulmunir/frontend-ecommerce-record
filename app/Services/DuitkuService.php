@@ -18,25 +18,87 @@ class DuitkuService
     protected \Duitku\Config $config;
 
     public const PAYMENT_METHODS = [
-        'BC'  => 'BCA Virtual Account',
-        'M2'  => 'Mandiri Virtual Account',
-        'VA'  => 'Maybank Virtual Account',
-        'I1'  => 'BNI Virtual Account',
-        'B1'  => 'CIMB Niaga Virtual Account',
-        'BT'  => 'Permata Virtual Account',
-        'A1'  => 'ATM Bersama',
-        'BR'  => 'BRI Virtual Account',
-        'AG'  => 'Artha Graha Virtual Account',
-        'NC'  => 'BNC (Neo Commerce) Virtual Account',
-        'BV'  => 'BSI Virtual Account',
-        'SA'  => 'BSI Virtual Account',
-        'QR'  => 'QRIS (Semua E-Wallet)',
-        'SP'  => 'QRIS ShopeePay',
-        'FT'  => 'Alfamart / Alfamidi',
-        'IR'  => 'Indomaret',
-        'DM'  => 'Danamon Virtual Account',
-        'S1'  => 'Sampoerna Virtual Account',
+        'BNI'         => 'BNI Virtual Account',
+        'BRI'         => 'BRI Virtual Account',
+        'MANDIRI'     => 'Mandiri Virtual Account',
+        'BSI'         => 'BSI Virtual Account',
+        'PERMATA'     => 'Permata Virtual Account',
+        'CIMB'        => 'CIMB Niaga Virtual Account',
+        'MAYBANK'     => 'Maybank Virtual Account',
+        'ATM_BERSAMA' => 'ATM Bersama',
+        'ALFAMART'    => 'Alfamart / Retail',
+        'BCA'         => 'BCA Virtual Account',
+        'QRIS'        => 'QRIS (Semua E-Wallet)',
+        // Kode bawaan Duitku
+        'BC'          => 'BCA Virtual Account',
+        'M2'          => 'Mandiri Virtual Account',
+        'VA'          => 'Maybank Virtual Account',
+        'I1'          => 'BNI Virtual Account',
+        'B1'          => 'CIMB Niaga Virtual Account',
+        'BT'          => 'Permata Virtual Account',
+        'A1'          => 'ATM Bersama',
+        'BR'          => 'BRI Virtual Account',
+        'AG'          => 'Artha Graha Virtual Account',
+        'NC'          => 'BNC (Neo Commerce) Virtual Account',
+        'BV'          => 'BSI Virtual Account',
+        'SA'          => 'BSI Virtual Account',
+        'QR'          => 'QRIS (Semua E-Wallet)',
+        'SP'          => 'QRIS ShopeePay',
+        'FT'          => 'Alfamart / Alfamidi',
+        'IR'          => 'Indomaret',
+        'DM'          => 'Danamon Virtual Account',
+        'S1'          => 'Sampoerna Virtual Account',
     ];
+
+    /**
+     * Konversi kode bank ramah pengguna ke kode internal Duitku.
+     * Contoh: 'BNI' -> 'I1', 'BRI' -> 'BR', 'MANDIRI' -> 'M2', 'BSI' -> 'BV'.
+     */
+    public static function mapToDuitkuMethod(string $method): string
+    {
+        $map = [
+            'BNI'         => 'I1',
+            'BRI'         => 'BR',
+            'MANDIRI'     => 'M2',
+            'BSI'         => 'BV',
+            'PERMATA'     => 'BT',
+            'CIMB'        => 'B1',
+            'MAYBANK'     => 'VA',
+            'ATM_BERSAMA' => 'A1',
+            'ALFAMART'    => 'FT',
+            'BCA'         => 'BC',
+            'QRIS'        => 'QR',
+        ];
+
+        return $map[strtoupper(trim($method))] ?? $method;
+    }
+
+    /**
+     * Konversi kode internal Duitku ke kode bersih yang ramah pengguna.
+     * Contoh: 'I1' -> 'BNI', 'BR' -> 'BRI', 'M2' -> 'MANDIRI', 'BV' -> 'BSI'.
+     */
+    public static function mapFromDuitkuMethod(string $method): string
+    {
+        $map = [
+            'I1' => 'BNI',
+            'BR' => 'BRI',
+            'AG' => 'BRI',
+            'M2' => 'MANDIRI',
+            'BV' => 'BSI',
+            'SA' => 'BSI',
+            'BT' => 'PERMATA',
+            'B1' => 'CIMB',
+            'VA' => 'MAYBANK',
+            'A1' => 'ATM_BERSAMA',
+            'FT' => 'ALFAMART',
+            'IR' => 'INDOMARET',
+            'BC' => 'BCA',
+            'QR' => 'QRIS',
+            'SP' => 'QRIS',
+        ];
+
+        return $map[strtoupper(trim($method))] ?? $method;
+    }
 
     public function __construct()
     {
@@ -63,7 +125,7 @@ class DuitkuService
 
         $payload = [
             'paymentAmount'     => $amount,
-            'paymentMethod'     => $params['payment_method'],
+            'paymentMethod'     => self::mapToDuitkuMethod($params['payment_method']),
             'merchantOrderId'   => $merchantOrderId,
             'productDetails'    => mb_substr($productDetails, 0, 250),
             'additionalParam'   => '',

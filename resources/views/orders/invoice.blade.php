@@ -65,7 +65,7 @@
                     <table class="inv-meta">
                         <tr><td>No. Pesanan</td><td>{{ $order->order_number }}</td></tr>
                         <tr><td>Tanggal Invoice</td><td>{{ $order->invoice_issued_at?->translatedFormat('d F Y') }}</td></tr>
-                        <tr><td>Metode Bayar</td><td>{{ $order->payment_method }}</td></tr>
+                        <tr><td>Metode Bayar</td><td>{{ $order->payment_method_label ?? $order->payment_method }}</td></tr>
                         <tr><td>Kurir</td><td>{{ $order->courier ?: '-' }}</td></tr>
                         @if($order->tracking_number)
                             <tr><td>No. Resi</td><td>{{ $order->tracking_number }}</td></tr>

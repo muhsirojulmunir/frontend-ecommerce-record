@@ -276,5 +276,57 @@ class Order extends Model
 
         return "ORD-{$date}-{$newNumber}";
     }
+
+    /**
+     * Kode metode bayar yang bersih dan mudah dibaca (misal: 'BNI', 'BRI', 'MANDIRI', 'BSI').
+     */
+    public function getPaymentMethodCleanCodeAttribute(): string
+    {
+        $val = strtoupper(trim((string) $this->payment_method));
+        $map = [
+            'I1'          => 'BNI',
+            'BR'          => 'BRI',
+            'AG'          => 'BRI',
+            'M2'          => 'MANDIRI',
+            'BV'          => 'BSI',
+            'SA'          => 'BSI',
+            'BT'          => 'PERMATA',
+            'B1'          => 'CIMB',
+            'VA'          => 'MAYBANK',
+            'A1'          => 'ATM_BERSAMA',
+            'FT'          => 'ALFAMART',
+            'IR'          => 'INDOMARET',
+            'BC'          => 'BCA',
+            'QR'          => 'QRIS',
+            'SP'          => 'QRIS',
+        ];
+
+        return $map[$val] ?? ($this->payment_method ?: '-');
+    }
+
+    /**
+     * Label lengkap nama metode bayar untuk tampilan invoice & struk.
+     */
+    public function getPaymentMethodLabelAttribute(): string
+    {
+        $clean = $this->payment_method_clean_code;
+        $map = [
+            'MANUAL_BCA'  => 'Transfer Manual BCA',
+            'R_PAY'       => 'R_Pay (Saldo Dompet)',
+            'BNI'         => 'BNI Virtual Account',
+            'BRI'         => 'BRI Virtual Account',
+            'MANDIRI'     => 'Mandiri Virtual Account',
+            'BSI'         => 'BSI Virtual Account',
+            'PERMATA'     => 'Permata Virtual Account',
+            'CIMB'        => 'CIMB Niaga Virtual Account',
+            'MAYBANK'     => 'Maybank Virtual Account',
+            'ATM_BERSAMA' => 'ATM Bersama',
+            'ALFAMART'    => 'Alfamart / Retail',
+            'BCA'         => 'BCA Virtual Account',
+            'QRIS'        => 'QRIS',
+        ];
+
+        return $map[$clean] ?? $this->payment_method;
+    }
 }
 

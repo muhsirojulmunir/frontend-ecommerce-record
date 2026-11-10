@@ -241,7 +241,7 @@
                     @if($order->invoice_issued_at)
                     <div class="meta-row"><span class="meta-label">Tanggal Invoice</span>: {{ $order->invoice_issued_at->format('d/m/Y H:i') }}</div>
                     @endif
-                    <div class="meta-row"><span class="meta-label">Metode Bayar</span>: {{ strtoupper($order->payment_method ?: 'MIDTRANS') }}</div>
+                    <div class="meta-row"><span class="meta-label">Metode Bayar</span>: {{ strtoupper($order->payment_method_label ?: ($order->payment_method ?: 'ONLINE')) }}</div>
                     <div class="meta-row"><span class="meta-label">Jasa Kurir</span>: {{ strtoupper($order->courier ?: 'Reguler') }}</div>
                     @if($order->tracking_number)
                     <div class="meta-row"><span class="meta-label">Nomor Resi</span>: <strong>{{ $order->tracking_number }}</strong></div>

@@ -121,7 +121,7 @@
                 <div class="flex justify-between items-center border-b border-gray-200 pb-2.5">
                     <span class="text-gray-500 font-semibold">Metode Pembayaran</span>
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-primary uppercase text-sm">{{ $order->payment_method }}</span>
+                        <span class="font-bold text-primary uppercase text-sm">{{ $order->payment_method_clean_code ?? $order->payment_method }}</span>
                         @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
                             <button type="button" @click="openChangeModal()"
                                     style="background-color: #1B3A6B; color: #ffffff;"
@@ -479,23 +479,35 @@
                 {{-- Konten Pembayaran Duitku Payment Gateway --}}
                 @php
                     $methodInfo = [
-                        'MANUAL_BCA' => ['name' => 'Transfer Bank Manual BCA',           'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
-                        'I1'         => ['name' => 'Virtual Account BNI',                 'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
-                        'M2'         => ['name' => 'Virtual Account Mandiri (Bill)',      'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
-                        'BR'         => ['name' => 'Virtual Account BRI (BRIVA)',         'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
-                        'BV'         => ['name' => 'Virtual Account BSI',                 'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
-                        'BT'         => ['name' => 'Virtual Account Permata',             'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
-                        'B1'         => ['name' => 'Virtual Account CIMB Niaga',         'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
-                        'VA'         => ['name' => 'Virtual Account Maybank',             'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
-                        'A1'         => ['name' => 'ATM Bersama (Semua Bank)',            'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
-                        'FT'         => ['name' => 'Retail Alfamart / Alfamidi',          'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
-                        'IR'         => ['name' => 'Retail Indomaret',                    'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
-                        'NC'         => ['name' => 'Virtual Account Neo Commerce',        'image' => 'https://images.duitku.com/hotlink-ok/NC.PNG'],
-                        'BC'         => ['name' => 'Virtual Account BCA',                 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
-                        'QR'         => ['name' => 'QRIS (Semua E-Wallet & M-Banking)',   'image' => 'https://images.duitku.com/hotlink-ok/SP.PNG'],
+                        'MANUAL_BCA'  => ['name' => 'Transfer Bank Manual BCA',           'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        'BNI'         => ['name' => 'Virtual Account BNI',                 'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
+                        'BRI'         => ['name' => 'Virtual Account BRI (BRIVA)',         'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
+                        'MANDIRI'     => ['name' => 'Virtual Account Mandiri (Bill)',      'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
+                        'BSI'         => ['name' => 'Virtual Account BSI',                 'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
+                        'PERMATA'     => ['name' => 'Virtual Account Permata',             'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
+                        'CIMB'        => ['name' => 'Virtual Account CIMB Niaga',          'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
+                        'MAYBANK'     => ['name' => 'Virtual Account Maybank',             'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
+                        'ATM_BERSAMA' => ['name' => 'ATM Bersama (Semua Bank)',            'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
+                        'ALFAMART'    => ['name' => 'Retail Alfamart / Alfamidi',          'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
+                        'BCA'         => ['name' => 'Virtual Account BCA',                 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        'QRIS'        => ['name' => 'QRIS (Semua E-Wallet & M-Banking)',   'image' => 'https://images.duitku.com/hotlink-ok/SP.PNG'],
+                        // Kode legacy Duitku:
+                        'I1'          => ['name' => 'Virtual Account BNI',                 'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
+                        'M2'          => ['name' => 'Virtual Account Mandiri (Bill)',      'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
+                        'BR'          => ['name' => 'Virtual Account BRI (BRIVA)',         'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
+                        'BV'          => ['name' => 'Virtual Account BSI',                 'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
+                        'BT'          => ['name' => 'Virtual Account Permata',             'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
+                        'B1'          => ['name' => 'Virtual Account CIMB Niaga',          'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
+                        'VA'          => ['name' => 'Virtual Account Maybank',             'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
+                        'A1'          => ['name' => 'ATM Bersama (Semua Bank)',            'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
+                        'FT'          => ['name' => 'Retail Alfamart / Alfamidi',          'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
+                        'IR'          => ['name' => 'Retail Indomaret',                    'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
+                        'NC'          => ['name' => 'Virtual Account Neo Commerce',        'image' => 'https://images.duitku.com/hotlink-ok/NC.PNG'],
+                        'BC'          => ['name' => 'Virtual Account BCA',                 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        'QR'          => ['name' => 'QRIS (Semua E-Wallet & M-Banking)',   'image' => 'https://images.duitku.com/hotlink-ok/SP.PNG'],
                     ];
                     $currentMethod = $methodInfo[$order->payment_method] ?? [
-                        'name'  => 'Metode ' . $order->payment_method,
+                        'name'  => 'Metode ' . ($order->payment_method_clean_code ?? $order->payment_method),
                         'image' => null,
                     ];
                     $currentMethodName  = $currentMethod['name'];
@@ -654,16 +666,16 @@
                 {{-- List Pilihan Metode Pembayaran --}}
                 @php
                     $pembayaranTersedia = [
-                        ['code' => 'MANUAL_BCA', 'name' => 'Transfer Bank Manual BCA',           'desc' => 'BCA 1000028122 a.n Lily Minawati Prajogo', 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
-                        ['code' => 'I1',         'name' => 'Virtual Account BNI',                 'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
-                        ['code' => 'BR',         'name' => 'Virtual Account BRI (BRIVA)',         'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
-                        ['code' => 'M2',         'name' => 'Virtual Account Mandiri (Bill)',      'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
-                        ['code' => 'BV',         'name' => 'Virtual Account BSI',                 'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
-                        ['code' => 'BT',         'name' => 'Virtual Account Permata',             'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
-                        ['code' => 'B1',         'name' => 'Virtual Account CIMB Niaga',          'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
-                        ['code' => 'VA',         'name' => 'Virtual Account Maybank',             'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
-                        ['code' => 'A1',         'name' => 'ATM Bersama (Semua Bank)',            'desc' => 'Transfer Antar Bank 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
-                        ['code' => 'FT',         'name' => 'Alfamart / Retail',                   'desc' => 'Bayar di Kasir Toko Retail Terdekat',       'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
+                        ['code' => 'MANUAL_BCA',  'name' => 'Transfer Bank Manual BCA',           'desc' => 'BCA 1000028122 a.n Lily Minawati Prajogo', 'image' => 'https://images.duitku.com/hotlink-ok/BC.PNG'],
+                        ['code' => 'BNI',         'name' => 'Virtual Account BNI',                 'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/I1.PNG'],
+                        ['code' => 'BRI',         'name' => 'Virtual Account BRI (BRIVA)',         'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/BR.PNG'],
+                        ['code' => 'MANDIRI',     'name' => 'Virtual Account Mandiri (Bill)',      'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/MV.PNG'],
+                        ['code' => 'BSI',         'name' => 'Virtual Account BSI',                 'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/BSI.PNG'],
+                        ['code' => 'PERMATA',     'name' => 'Virtual Account Permata',             'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/PERMATA.PNG'],
+                        ['code' => 'CIMB',        'name' => 'Virtual Account CIMB Niaga',          'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/B1.PNG'],
+                        ['code' => 'MAYBANK',     'name' => 'Virtual Account Maybank',             'desc' => 'Verifikasi Otomatis 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/VA.PNG'],
+                        ['code' => 'ATM_BERSAMA', 'name' => 'ATM Bersama (Semua Bank)',            'desc' => 'Transfer Antar Bank 24 Jam',                'image' => 'https://images.duitku.com/hotlink-ok/A1.PNG'],
+                        ['code' => 'ALFAMART',    'name' => 'Alfamart / Retail',                   'desc' => 'Bayar di Kasir Toko Retail Terdekat',       'image' => 'https://images.duitku.com/hotlink-ok/RETAIL.PNG'],
                     ];
                 @endphp
 
